@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class CountriesLayersWithTopoJson(TopoJson? json) : ShapeLayer(json, "WB_countries_Admin0_10m")
+    public class CountriesLayersWithTopoJson(TopoJson? json) : TopoLayer(json, "WB_countries_Admin0_10m")
     {
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {

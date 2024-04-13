@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class BorderLayer(TopoJson? json) : ShapeLayer(json, null)
+    public class BorderLayer(TopoJson? json) : TopoLayer(json, null)
     {
-        private readonly SKPath[][] buffer = [[],[],[],[],[],[]];
+        private readonly (SKPath, SKRect)[][][] buffer = [[],[],[],[],[],[]];
         private readonly bool copy = false;
         public bool DrawCoast { get; set; } = false;
         public bool DrawCity { get; set; } = true;
@@ -39,8 +39,8 @@ namespace EarthQuake.Map.Layers
                             1 => 0.5,
                             _ => (i - 1) * (i)
                         };
-                        Data.AddAllLine(out var coast, out var pref, out var area, out var city, geo, geo.GeometryType, i == 0);
-                        buffer[i] = [coast, pref, area, city];
+                        
+                        buffer[i] = Data.AddAllLine(geo, geo.GeometryType, i == 0);
                     }
 
                 }
@@ -57,11 +57,18 @@ namespace EarthQuake.Map.Layers
                 Color = SKColors.Gray,
                 Style = SKPaintStyle.Stroke,
             };
-            if (DrawCity) canvas.DrawPath(paths[3], paint);
+            void draw((SKPath, SKRect) x)
+            {
+                if (bounds.IntersectsWith(x.Item2))
+                    canvas.DrawPath(x.Item1, paint); // 単に描画するだけ
+
+            }
+            if (DrawCity)
+                Array.ForEach(paths[3], draw);
             paint.Color = SKColors.DarkGray;
-            canvas.DrawPath(paths[2], paint);
-            canvas.DrawPath(paths[1], paint);
-            if (DrawCoast) canvas.DrawPath(paths[0], paint);
+            Array.ForEach(paths[2], draw);
+            Array.ForEach(paths[1], draw);
+            if (DrawCoast) Array.ForEach(paths[0], draw);
         }
     }
 }

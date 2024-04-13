@@ -124,32 +124,33 @@ namespace EarthQuake.Core.TopoJson
             }
 
         }
-        public void AddAllLine(out SKPath coast, out SKPath pref, out SKPath area, out SKPath city, GeoTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
+        public (SKPath, SKRect)[][] AddAllLine(GeoTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
         {
-            coast = new SKPath();
-            pref = new SKPath();
-            area = new SKPath();
-            city = new SKPath();
+            List<(SKPath, SKRect)> coastL = [];
+            List<(SKPath, SKRect)> prefL = [];
+            List<(SKPath, SKRect)> areaL = [];
+            List<(SKPath, SKRect)> cityL = [];
+
             for (int j = 0; j < _arcs.Length; j++)
             {
                 var type = ocean?[j];
-                if (type is PolygonType.City && !requireCity)
+                if (type is PolygonType.None || (type is PolygonType.City && !requireCity))
                 {
                     continue;
                 }
-                SKPath toWrite = type switch
-                {
-                    PolygonType.Area => area,
-                    PolygonType.City => city,
-                    PolygonType.Pref => pref,
-                    _ => coast
-                };
                 var coords = _arcs[j];
                 int x = coords[0][0], y = coords[0][1];
                 var _point = geo.Translate(_transform.ToPoint(x, y));
-
-                toWrite.MoveTo(_point);
-
+                float maxX = float.MinValue;
+                float maxY = float.MinValue;
+                float minX = float.MaxValue;
+                float minY = float.MaxValue;
+                SKPath path = new();
+                path.MoveTo(_point);
+                maxX = Math.Max(maxX, _point.X);
+                maxY = Math.Max(maxY, _point.Y);
+                minX = Math.Min(minX, _point.X);
+                minY = Math.Min(minY, _point.Y);
                 for (int i = 1; i < coords.Length; i++)
                 {
                     x += coords[i][0];
@@ -157,12 +158,25 @@ namespace EarthQuake.Core.TopoJson
                     var point = geo.Translate(_transform.ToPoint(x, y));
                     if (Simplify == 0 || (_point - point).Length >= Simplify || i == coords.Length - 1)
                     {
-                        toWrite.LineTo(point);
+                        path.LineTo(point);
+                        maxX = Math.Max(maxX, point.X);
+                        maxY = Math.Max(maxY, point.Y);
+                        minX = Math.Min(minX, point.X);
+                        minY = Math.Min(minY, point.Y);
                         _point = point;
                     }
                 }
+                SKRect rect = new(minX, minY, maxX, maxY);
+                switch (type)
+                {
+                    case PolygonType.City: cityL.Add((path, rect)); break;
+                    case PolygonType.Coast: coastL.Add((path, rect)); break;
+                    case PolygonType.Area: areaL.Add((path, rect)); break;
+                    case PolygonType.Pref: prefL.Add((path, rect)); break;
+                }
 
             }
+            return [[.. coastL], [.. prefL], [.. areaL], [.. cityL]];
         }
 
 

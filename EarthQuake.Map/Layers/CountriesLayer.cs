@@ -2,7 +2,7 @@
 using EarthQuake.Core.GeoJson;
 using LibTessDotNet;
 using SkiaSharp;
-using static EarthQuake.Map.Layers.ShapeLayer;
+using static EarthQuake.Map.Layers.TopoLayer;
 
 namespace EarthQuake.Map.Layers
 {

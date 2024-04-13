@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(TopoJson json, string layerName = "info") : ShapeLayer(json, layerName) // ["eew", "info", "city"]
+    public class LandLayer(TopoJson json, string layerName = "info") : TopoLayer(json, layerName) // ["eew", "info", "city"]
     {
         public bool Draw { get; set; } = true;
         private protected SKColor[]? colors;

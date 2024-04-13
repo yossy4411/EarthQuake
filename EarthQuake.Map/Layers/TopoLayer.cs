@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public abstract class ShapeLayer(TopoJson? json, string? layerName) : MapLayer
+    public abstract class TopoLayer(TopoJson? json, string? layerName) : MapLayer
     {
         public MapData? Data = json is null ? null : layerName is null ? json.CreateLayer() : json.GetLayer(layerName);
         public override void Update(GeoTransform geo)
