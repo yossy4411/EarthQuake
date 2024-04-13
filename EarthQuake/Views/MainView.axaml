@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:EarthQuake.ViewModels"
+             xmlns:local="clr-namespace:EarthQuake;assembly=EarthQuake"
+             xmlns:ext="using:EarthQuake.Core.EarthQuakes.P2PQuake"
+             xmlns:converter="clr-namespace:EarthQuake.Converter"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="EarthQuake.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <Design.DataContext>
+    <vm:MainViewModel/>
+  </Design.DataContext>
+  <UserControl.Styles>
+    <Style Selector="Border">
+      <Setter Property="Background" Value="{Binding BGBrush}"/>
+      <Setter Property="Margin" Value="5"/>
+      <Setter Property="CornerRadius" Value="5"/>
+    </Style>
+  </UserControl.Styles>
+  <UserControl.Resources>
+    <converter:QuakeListConverter x:Key="QConvert"/>
+  </UserControl.Resources>
+  <Panel>
+
+    <TabControl Name="dummy" TabStripPlacement="Left">
+      <TabItem Header="Kmoni">
+        <DockPanel Name="kmoniPanel">
+          <local:MapCanvas Name="kmoni"
+                           Controller="{Binding Controller1}"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch"
+                           DockPanel.Dock="Top"
+                           Translation="{Binding SyncTranslation}"
+                           ClipToBounds="True"/>
+            
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="Info">
+        <Panel>
+          <local:MapCanvas Name="info"
+                            DockPanel.Dock="Top"
+                            Controller="{Binding Controller2}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            Translation="{Binding SyncTranslation}"
+                            ClipToBounds="True"/>
+          <local:OverlayCanvas
+                            DockPanel.Dock="Top"
+                            Controller="{Binding Controller2}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            Translation="{Binding SyncTranslation}"
+                            ClipToBounds="True"/>
+          <Grid VerticalAlignment="Stretch" RowDefinitions="Auto">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="0.7*"/>
+              <ColumnDefinition Width="0.3*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="0.6*"/>
+              <RowDefinition Height="0.2*"/>
+              
+            </Grid.RowDefinitions>
+            <Button Command="{Binding Update}" Grid.Column="1"
+                    Grid.Row="0">更新</Button>
+            <ScrollViewer Grid.Column="1" 
+                          Grid.Row="1"
+                          VerticalAlignment="Stretch">
+                <ListBox Name="quakes"
+                         VerticalAlignment="Stretch"
+                         HorizontalAlignment="Stretch" 
+                         Background="{Binding BGBrush}"
+                         ItemsSource="{Binding Data, Mode=TwoWay}"
+                         SelectionChanged="ListBox_SelectionChanged_1"
+                         CornerRadius="4">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <Decorator Child="{Binding Converter={StaticResource QConvert}}"/>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>  
+                
+              </ScrollViewer>
+            <Border Grid.Row="2"
+                    Grid.Column="1">
+              <CheckBox IsChecked="{Binding IsPoints}" Content="観測点を描画"/>
+            </Border>
+          </Grid>
+          <Border x:Name="Loading"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  Padding="5"
+                  IsVisible="False">
+            <TextBlock VerticalAlignment="Stretch"
+                       HorizontalAlignment="Stretch"
+                       Text="読み込み中です…"
+                       FontSize="18"
+                       FontWeight="Bold"/>
+          </Border>
+         
+        </Panel>
+      </TabItem>
+      <TabItem Header="Scope">
+        <Panel>
+          <local:RotationableMapCanvas Name="scope"
+                           Controller="{Binding Controller3}"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch"
+                           DockPanel.Dock="Top"
+                           Translation="{Binding SyncTranslation}"
+                           ClipToBounds="True"/>
+          <local:OverlayCanvas2
+                           Controller="{Binding Controller3}"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch"
+                           DockPanel.Dock="Top"
+                           Translation="{Binding SyncTranslation}"
+                           ClipToBounds="True"/>
+          <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="50*"/>
+              <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="25"/>
+              <RowDefinition Height="50"/>
+              <RowDefinition Height="25"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="1">開始日</TextBlock>
+            <TextBlock Grid.Column="1" Grid.Row="1">終了日</TextBlock>
+            <DatePicker Grid.Column="0" Grid.Row="2"/>
+            <DatePicker Grid.Column="1" Grid.Row="2"/>
+            <Slider Grid.Column="0" Grid.Row="3" Minimum="0" Maximum="90" Value="{Binding Rotation}" ValueChanged="Slider_ValueChanged" x:Name="slider"/>
+          </Grid>
+        </Panel>
+      </TabItem>
+    </TabControl>
+  </Panel>
+</UserControl>
