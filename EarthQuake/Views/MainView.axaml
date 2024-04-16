@@ -103,40 +103,54 @@
          
         </Panel>
       </TabItem>
-      <TabItem Header="Scope">
-        <Panel>
-          <local:RotationableMapCanvas Name="scope"
-                           Controller="{Binding Controller3}"
-                           VerticalAlignment="Stretch"
-                           HorizontalAlignment="Stretch"
-                           DockPanel.Dock="Top"
-                           Translation="{Binding SyncTranslation}"
-                           ClipToBounds="True"/>
-          <local:OverlayCanvas2
-                           Controller="{Binding Controller3}"
-                           VerticalAlignment="Stretch"
-                           HorizontalAlignment="Stretch"
-                           DockPanel.Dock="Top"
-                           Translation="{Binding SyncTranslation}"
-                           ClipToBounds="True"/>
-          <Grid HorizontalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="50*"/>
-              <ColumnDefinition Width="50*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-              <RowDefinition Height="*"/>
-              <RowDefinition Height="25"/>
-              <RowDefinition Height="50"/>
-              <RowDefinition Height="25"/>
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Column="0" Grid.Row="1">開始日</TextBlock>
-            <TextBlock Grid.Column="1" Grid.Row="1">終了日</TextBlock>
-            <DatePicker Grid.Column="0" Grid.Row="2"/>
-            <DatePicker Grid.Column="1" Grid.Row="2"/>
-            <Slider Grid.Column="0" Grid.Row="3" Minimum="0" Maximum="90" Value="{Binding Rotation}" ValueChanged="Slider_ValueChanged" x:Name="slider"/>
-          </Grid>
-        </Panel>
+      <TabItem Header="Epicenters">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right">
+            <Button x:Name="closePane"
+                    Click="Button_Click">Close</Button>
+          </StackPanel>
+          <Panel DockPanel.Dock="Left">
+            <local:RotationableMapCanvas Name="scope"
+                                         Controller="{Binding Controller3}"
+                                         VerticalAlignment="Stretch"
+                                         HorizontalAlignment="Stretch"
+                                         DockPanel.Dock="Top"
+                                         Translation="{Binding SyncTranslation}"
+                                         ClipToBounds="True"/>
+            <local:SelectableCanvas x:Name="Selection"
+                                    Controller="{Binding Controller3}"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalAlignment="Stretch"
+                                    DockPanel.Dock="Top"
+                                    Translation="{Binding SyncTranslation}"
+                                    Locked="{Binding Locked, Mode=TwoWay}"
+                                    ClipToBounds="True"/>
+            <Grid HorizontalAlignment="Stretch">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="35"/>
+              </Grid.RowDefinitions>
+              <TextBlock Grid.Column="0" Grid.Row="1">開始日</TextBlock>
+              <TextBlock Grid.Column="1" Grid.Row="1">終了日</TextBlock>
+              <CalendarDatePicker Grid.Column="0" Grid.Row="2"/>
+              <CalendarDatePicker Grid.Column="1" Grid.Row="2"/>
+              <Slider Grid.Column="0"
+                      Grid.Row="3"
+                      Minimum="0"
+                      Maximum="90"
+                      Value="{Binding Rotation}"
+                      VerticalAlignment="Stretch"
+                      ValueChanged="Slider_ValueChanged"
+                      x:Name="slider"/>
+            </Grid>
+          </Panel>
+        </DockPanel>
       </TabItem>
     </TabControl>
   </Panel>

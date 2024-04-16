@@ -167,14 +167,15 @@ namespace EarthQuake.Core.TopoJson
                     }
                 }
                 SKRect rect = new(minX, minY, maxX, maxY);
+                (SKPath, SKRect) value = (path, rect);
                 switch (type)
                 {
-                    case PolygonType.City: cityL.Add((path, rect)); break;
-                    case PolygonType.Coast: coastL.Add((path, rect)); break;
-                    case PolygonType.Area: areaL.Add((path, rect)); break;
-                    case PolygonType.Pref: prefL.Add((path, rect)); break;
+                    case PolygonType.City: cityL.Add(value); break;
+                    case PolygonType.Coast: coastL.Add(value); break;
+                    case PolygonType.Area: areaL.Add(value); break;
+                    case PolygonType.Pref: prefL.Add(value); break;
                 }
-
+                
             }
             return [[.. coastL], [.. prefL], [.. areaL], [.. cityL]];
         }

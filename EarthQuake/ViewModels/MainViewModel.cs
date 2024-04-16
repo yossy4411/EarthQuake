@@ -22,6 +22,8 @@ using EarthQuake.Core.GeoJson;
 using System.Linq.Expressions;
 using EarthQuake.Map.Layers.OverLays;
 using Avalonia.Controls;
+using EarthQuake.Core.Animation;
+using ZstdSharp.Unsafe;
 
 namespace EarthQuake.ViewModels;
 
@@ -38,7 +40,9 @@ public class MainViewModel : ViewModelBase
     private readonly GeoTransform transform;
     private readonly LandLayer _land;
     private readonly Hypo3DViewLayer _hypo;
+    private PSWave? wave;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
+    public bool Locked { get; set; } = true;
     public bool IsPoints
     {
         get => _foreg.DrawStations; 
@@ -58,7 +62,8 @@ public class MainViewModel : ViewModelBase
         TopoJson? json = serializer.Deserialize<TopoJson>(reader) ?? new TopoJson();
         using StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson")));
         using JsonReader reader2 = new JsonTextReader(streamReader2);
-         GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
+        GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
+        
         //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson(); 
         _land = new(json) { AutoFill = true };
         var world = new CountriesLayer(geojson);
@@ -66,10 +71,12 @@ public class MainViewModel : ViewModelBase
         var border = new BorderLayer(json);
         var grid = new GridLayer();
         _cities = new CitiesLayer(json);
-        _stations = Station.GetStations(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")));
+        using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
+        _stations = Station.GetStations(station);
         _hypo = new();
-        DateTime dateTime = new(2024, 4, 12);
-        var get = Task.Run(async () => _hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
+        DateTime dateTime = DateTime.Now;
+        // var get = Task.Run(async () => _hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
+        _hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
@@ -83,12 +90,17 @@ public class MainViewModel : ViewModelBase
         Controller3 = new(json, transform, typelist)
         {
             Geo = transform,
-            MapLayers = [world, _land, new BorderLayer(border) { DrawCity = false },_hypo, grid],
+            MapLayers = [world, _land, new BorderLayer(border) { DrawCity = false }, _hypo],
         };
         json = null; // TopoJsonを開放する
         geojson = null; // GeoJsonを開放する
         GC.Collect();
-        
+        InitializeAsync();
+    }
+    public async void InitializeAsync()
+    {
+        using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
+        wave = await InterpolatedWaveData.Load(parquet);
     }
     public async Task Update()
     {

@@ -8,6 +8,7 @@ using Avalonia.Skia;
 using EarthQuake.Map;
 using System;
 using SkiaSharp;
+using System.Runtime.Intrinsics.X86;
 
 namespace EarthQuake
 {
@@ -26,7 +27,6 @@ namespace EarthQuake
                 (o, value) => o.Controller = value,
                 null
                 );
-
         public virtual SKColor Background => SKColors.LightBlue;
         private Point offset;
         public SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
@@ -40,7 +40,7 @@ namespace EarthQuake
                 (o, value) => o.Translation = value
                 
                 );
-        private bool Pressed;
+        private protected bool pressed;
         public void Dispose() => GC.SuppressFinalize(this);
 
         public bool Equals(ICustomDrawOperation? other) => false;
@@ -51,7 +51,6 @@ namespace EarthQuake
         {
             context.Custom(this);
         }
-
         public virtual void Render(ImmediateDrawingContext context)
         {
             if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var feature)) { return; }
@@ -75,12 +74,12 @@ namespace EarthQuake
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             offset = e.GetPosition(this);
-            Pressed = true;
+            pressed = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
             base.OnPointerPressed(e);
         }
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (Pressed)
+            if (pressed)
             {
                 Point point = offset - e.GetPosition(this);
                 offset = e.GetPosition(this);
@@ -91,7 +90,7 @@ namespace EarthQuake
         }
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            Pressed = false;
+            pressed = false;
             base.OnPointerReleased(e);
         }
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)

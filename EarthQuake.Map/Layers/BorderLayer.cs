@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
+    /// <summary>
+    /// 境を表示するためのレイヤー
+    /// </summary>
+    /// <param name="json"></param>
     public class BorderLayer(TopoJson? json) : TopoLayer(json, null)
     {
         private readonly (SKPath, SKRect)[][][] buffer = [[],[],[],[],[],[]];
@@ -60,7 +64,7 @@ namespace EarthQuake.Map.Layers
             void draw((SKPath, SKRect) x)
             {
                 if (bounds.IntersectsWith(x.Item2))
-                    canvas.DrawPath(x.Item1, paint); // 単に描画するだけ
+                    canvas.DrawPath(x.Item1, paint);
 
             }
             if (DrawCity)

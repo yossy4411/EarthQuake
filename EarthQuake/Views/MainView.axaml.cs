@@ -32,4 +32,9 @@ public partial class MainView : UserControl
         scope.Rotation = (float)slider.Value;
         scope.InvalidateVisual();
     }
+
+    private void Button_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Selection.Locked = false;
+    }
 }

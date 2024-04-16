@@ -4,6 +4,7 @@ using EarthQuake.Core.GeoJson;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,41 +20,52 @@ namespace EarthQuake.Map.Layers.OverLays
         public float Rotation { get; set; } = 0;
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
+            throw new NotImplementedException();
+        }
+        internal void Render(SKCanvas canvas, SKRect selected)
+        {
             using SKPaint paint = new();
             
-            using var view = new SK3dView();
-            view.RotateXDegrees(Rotation);
             foreach (var point in points)
             {
-                using (new SKAutoCanvasRestore(canvas))
+                if (Rotation == 0)
                 {
-                    view.Save();
                     SKPoint3 p = point.Item1;
-                    view.Translate(p.X, -p.Y, p.Z);
-                    float radius = point.Item2 is null ? 0 : (float.Pow(2f, (float)point.Item2) / scale);
-                    view.ApplyToCanvas(canvas); // 3Dを適用する
-                    paint.Color = SKColor.FromHsv(p.Z, 100, 100, 100);
-                    paint.Style = SKPaintStyle.Fill;
-                    canvas.DrawCircle(0, 0, radius, paint);
+                    float radius = point.Item2 is null ? 0 : float.Pow(1.7f, (float)point.Item2);
                     paint.Color = SKColor.FromHsv(p.Z, 100, 100);
                     paint.Style = SKPaintStyle.Stroke;
-                    canvas.DrawCircle(0, 0, radius, paint);
-                    view.Restore();
+                    canvas.DrawCircle(p.X, p.Y, radius, paint);
+
+                    if (!selected.Contains(p.X, p.Y)) paint.Color = SKColor.FromHsv(p.Z, 100, 100, 100);
+                    paint.Style = SKPaintStyle.Fill;
+                    canvas.DrawCircle(p.X, p.Y, radius, paint);
                 }
+                else
+                {
+                    using var view = new SK3dView();
+                    view.RotateXDegrees(Rotation);
+                    using (new SKAutoCanvasRestore(canvas))
+                    {
+                        view.Save();
+                        SKPoint3 p = point.Item1;
+                        view.Translate(p.X, -p.Y, p.Z);
+                        float radius = point.Item2 is null ? 0 : float.Pow(1.7f, (float)point.Item2);
+                        view.ApplyToCanvas(canvas); // 3Dを適用する
+                        paint.Color = SKColor.FromHsv(p.Z, 100, 100);
+                        paint.Style = SKPaintStyle.Stroke;
+                        canvas.DrawCircle(0, 0, radius, paint);
+                    
+                        if (!selected.Contains(p.X, p.Y)) paint.Color = SKColor.FromHsv(p.Z, 100, 100, 100);
+                        paint.Style = SKPaintStyle.Fill;
+                        canvas.DrawCircle(0, 0, radius, paint);
+                    
+                        view.Restore();
+                    }
+                }
+                
             }
             paint.Style = SKPaintStyle.Stroke;
             paint.Color = SKColors.Gray;
-            for (var i = 0; i < 5; i++)
-            {
-                using (new SKAutoCanvasRestore(canvas))
-                {
-                    view.Save();
-                    view.Translate(0, 0, i * 50);
-                    view.ApplyToCanvas(canvas);
-                    canvas.DrawRect(-200, -200, 400, 400, paint);
-                    view.Restore();
-                }
-            }
         }
         public void AddFeature(Epicenters? centers, GeoTransform geo)
         {
@@ -67,7 +79,6 @@ namespace EarthQuake.Map.Layers.OverLays
         }
         private protected override void Initialize(GeoTransform geo)
         {
-
         }
     }
 }

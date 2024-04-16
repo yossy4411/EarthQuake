@@ -102,12 +102,18 @@ namespace EarthQuake.Map
             }
 
         }
-        public void RenderForeGround(SKCanvas canvas, float scale, SKRect bounds)
+        public void RenderForeGround(SKCanvas canvas, float scale, SKRect bounds, object? param = null)
         {
             foreach (var layer in MapLayers)
             {
                 if (layer is ForeGroundLayer fore)
-                    fore.Render(canvas, scale, bounds);
+                {
+                    if (fore is Hypo3DViewLayer hypo)
+                        hypo.Render(canvas, param as SKRect? ?? SKRect.Empty);
+                    else
+                        fore.Render(canvas, scale, bounds);
+                }
+                    
             }
             
         }

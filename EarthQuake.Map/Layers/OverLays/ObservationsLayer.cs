@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers.OverLays
 {
+    /// <summary>
+    /// 観測点データを表示するためのレイヤー
+    /// </summary>
     public class ObservationsLayer : ForeGroundLayer
     {
         private SKPoint hypo;
