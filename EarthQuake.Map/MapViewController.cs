@@ -109,7 +109,7 @@ namespace EarthQuake.Map
                 if (layer is ForeGroundLayer fore)
                 {
                     if (fore is Hypo3DViewLayer hypo)
-                        hypo.Render(canvas, param as SKRect? ?? SKRect.Empty);
+                        hypo.Render(canvas, scale, param as SKRect? ?? SKRect.Empty);
                     else
                         fore.Render(canvas, scale, bounds);
                 }

@@ -3,7 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:EarthQuake.ViewModels"
-             xmlns:local="clr-namespace:EarthQuake;assembly=EarthQuake"
+             xmlns:local="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
+             xmlns:views="clr-namespace:EarthQuake.Views"
              xmlns:ext="using:EarthQuake.Core.EarthQuakes.P2PQuake"
              xmlns:converter="clr-namespace:EarthQuake.Converter"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -105,25 +106,16 @@
       </TabItem>
       <TabItem Header="Epicenters">
         <DockPanel>
-          <StackPanel DockPanel.Dock="Right">
-            <Button x:Name="closePane"
-                    Click="Button_Click">Close</Button>
-          </StackPanel>
+          <views:StatisticsPanel x:Name="statistics"
+                                 DockPanel.Dock="Right"
+                                 Width="250"/>
           <Panel DockPanel.Dock="Left">
-            <local:RotationableMapCanvas Name="scope"
-                                         Controller="{Binding Controller3}"
-                                         VerticalAlignment="Stretch"
-                                         HorizontalAlignment="Stretch"
-                                         DockPanel.Dock="Top"
-                                         Translation="{Binding SyncTranslation}"
-                                         ClipToBounds="True"/>
             <local:SelectableCanvas x:Name="Selection"
                                     Controller="{Binding Controller3}"
                                     VerticalAlignment="Stretch"
                                     HorizontalAlignment="Stretch"
                                     DockPanel.Dock="Top"
                                     Translation="{Binding SyncTranslation}"
-                                    Locked="{Binding Locked, Mode=TwoWay}"
                                     ClipToBounds="True"/>
             <Grid HorizontalAlignment="Stretch">
               <Grid.ColumnDefinitions>

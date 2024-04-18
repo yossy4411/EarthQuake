@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:EarthQuake.ViewModels"
+             xmlns:cv="clr-namespace:EarthQuake.Converter.Statistics;assembly=EarthQuake"
+             xmlns:canvas="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="EarthQuake.Views.StatisticsPanel"
+             x:DataType="vm:StatisticsViewModel">
+  <UserControl.Resources>
+    <cv:RectangleConverter x:Key="RConverter"/>
+  </UserControl.Resources>
+  <Design.DataContext>
+    <vm:StatisticsViewModel/>
+  </Design.DataContext>
+  <StackPanel>
+    <TextBlock FontWeight="Bold"
+               Text="統計情報"
+               FontSize="20"/>
+    <TextBlock Text="{Binding Range, Converter={StaticResource RConverter}}"
+               Margin="0,0,0,10"/>
+    <TextBlock Text="震源の深さの分布"/>
+    <canvas:StatisticsCanvas x:Name="a"
+                             HorizontalAlignment="Stretch"
+                             Height="100"/>
+  </StackPanel>
+</UserControl>

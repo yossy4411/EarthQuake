@@ -24,6 +24,7 @@ using EarthQuake.Map.Layers.OverLays;
 using Avalonia.Controls;
 using EarthQuake.Core.Animation;
 using ZstdSharp.Unsafe;
+using EarthQuake.Canvas;
 
 namespace EarthQuake.ViewModels;
 
@@ -39,10 +40,12 @@ public class MainViewModel : ViewModelBase
     private readonly ObservationsLayer _foreg;
     private readonly GeoTransform transform;
     private readonly LandLayer _land;
-    private readonly Hypo3DViewLayer _hypo;
+    public readonly Hypo3DViewLayer Hypo;
     private PSWave? wave;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
-    public bool Locked { get; set; } = true;
+    private bool _locked = false;
+    public bool Locked { get => _locked; set=> _locked = value; }
+    
     public bool IsPoints
     {
         get => _foreg.DrawStations; 
@@ -52,7 +55,7 @@ public class MainViewModel : ViewModelBase
             _cities.Draw = !value;
         }
     }
-    public double Rotation { get => _hypo.Rotation; set => _hypo.Rotation = (float)value; }
+    public double Rotation { get => Hypo.Rotation; set => Hypo.Rotation = (float)value; }
     public MainViewModel() 
     {
         transform = new();
@@ -73,10 +76,10 @@ public class MainViewModel : ViewModelBase
         _cities = new CitiesLayer(json);
         using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
         _stations = Station.GetStations(station);
-        _hypo = new();
+        Hypo = new();
         DateTime dateTime = DateTime.Now;
-        // var get = Task.Run(async () => _hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
-        _hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
+        var get = Task.Run(async () => Hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
+        //_hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
@@ -90,7 +93,7 @@ public class MainViewModel : ViewModelBase
         Controller3 = new(json, transform, typelist)
         {
             Geo = transform,
-            MapLayers = [world, _land, new BorderLayer(border) { DrawCity = false }, _hypo],
+            MapLayers = [world, _land, new BorderLayer(border) { DrawCity = false }, Hypo],
         };
         json = null; // TopoJsonを開放する
         geojson = null; // GeoJsonを開放する

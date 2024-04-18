@@ -10,9 +10,9 @@ using System;
 using SkiaSharp;
 using System.Runtime.Intrinsics.X86;
 
-namespace EarthQuake
+namespace EarthQuake.Canvas
 {
-    public class MapCanvas : Control, IDisposable, ICustomDrawOperation
+    public class MapCanvas : SkiaCanvasView
     {
         public class MapCanvasTranslation
         {
@@ -28,33 +28,27 @@ namespace EarthQuake
                 null
                 );
         public virtual SKColor Background => SKColors.LightBlue;
-        private Point offset;
+        private Point _scrollOffset;
+        private protected SKPoint Offset => Translate + Center;
+
+
         public SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
         private protected SKPoint Translate { get => Translation.Translate; set => Translation.Translate = value; }
-        private protected float Scale { get=> Translation.Scale; set => Translation.Scale = value; }
+        private protected float Scale { get => Translation.Scale; set => Translation.Scale = value; }
         public MapCanvasTranslation Translation { get; set; } = new();
         public static readonly DirectProperty<MapCanvas, MapCanvasTranslation> TranslationProperty =
             AvaloniaProperty.RegisterDirect<MapCanvas, MapCanvasTranslation>(
                 nameof(Translation),
                 o => o.Translation,
                 (o, value) => o.Translation = value
-                
+
                 );
         private protected bool pressed;
-        public void Dispose() => GC.SuppressFinalize(this);
 
-        public bool Equals(ICustomDrawOperation? other) => false;
-
-        public bool HitTest(Point p) => true;
-
-        public override void Render(DrawingContext context)
+        public override void Render(ImmediateDrawingContext context)
         {
-            context.Custom(this);
-        }
-        public virtual void Render(ImmediateDrawingContext context)
-        {
-            if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var feature)) { return; }
-            using var lease = feature.Lease();
+            using var lease = GetSKCanvas(context);
+            if (lease is null) return;
             var canvas = lease.SkCanvas;
             SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
             canvas.ClipRect(clipRect);
@@ -73,7 +67,7 @@ namespace EarthQuake
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            offset = e.GetPosition(this);
+            _scrollOffset = e.GetPosition(this);
             pressed = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
             base.OnPointerPressed(e);
         }
@@ -81,9 +75,9 @@ namespace EarthQuake
         {
             if (pressed)
             {
-                Point point = offset - e.GetPosition(this);
-                offset = e.GetPosition(this);
-                Translate = new(Translate.X-(float)point.X, Translate.Y-(float)point.Y);
+                Point point = _scrollOffset - e.GetPosition(this);
+                _scrollOffset = e.GetPosition(this);
+                Translate = new(Translate.X - (float)point.X, Translate.Y - (float)point.Y);
                 InvalidateVisual();
             }
             base.OnPointerMoved(e);

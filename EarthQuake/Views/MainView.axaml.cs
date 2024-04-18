@@ -18,7 +18,14 @@ public partial class MainView : UserControl
         DockPanel.SetDock(graph, Dock.Bottom);
         kmoniPanel.Children.Insert(0, graph);
 #endif
+        Selection.OnSelected += Selection_OnSelected;
     }
+
+    private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)
+    {
+        statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected);
+    }
+
     private async void ListBox_SelectionChanged_1(object? sender, SelectionChangedEventArgs e)
     {
         Loading.IsVisible = true;
@@ -29,12 +36,8 @@ public partial class MainView : UserControl
 
     private void Slider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
-        scope.Rotation = (float)slider.Value;
-        scope.InvalidateVisual();
+        Selection.Rotation = (float)slider.Value;
+        Selection.InvalidateVisual();
     }
 
-    private void Button_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        Selection.Locked = false;
-    }
 }

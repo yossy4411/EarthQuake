@@ -3,7 +3,7 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace EarthQuake
+namespace EarthQuake.Canvas
 {
     public class OverlayCanvas : MapCanvas
     {

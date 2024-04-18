@@ -42,8 +42,8 @@ namespace EarthQuake.Core.GeoJson
                 return null;
             }
         }
-        public Feature[] Features { get; set; } = [];
-        public class Feature
+        public Epicenter[] Features { get; set; } = [];
+        public class Epicenter
         {
             public GeometryF Geometry { get; set; } = new();
             public Property? Properties { get; set; }
@@ -55,8 +55,9 @@ namespace EarthQuake.Core.GeoJson
             {
                 public float? Dep { get; set; }
                 public float? Mag { get; set; }
-                
+
             }
         }
     }
+    
 }
