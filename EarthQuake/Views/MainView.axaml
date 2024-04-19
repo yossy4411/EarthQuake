@@ -40,20 +40,24 @@
       </TabItem>
       <TabItem Header="Info">
         <Panel>
-          <local:MapCanvas Name="info"
-                            DockPanel.Dock="Top"
-                            Controller="{Binding Controller2}"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            Translation="{Binding SyncTranslation}"
-                            ClipToBounds="True"/>
-          <local:OverlayCanvas
-                            DockPanel.Dock="Top"
-                            Controller="{Binding Controller2}"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            Translation="{Binding SyncTranslation}"
-                            ClipToBounds="True"/>
+          <local:MapCanvasPair x:Name="info"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               Controller="{Binding Controller2}"
+                               Translation="{Binding SyncTranslation}"
+                               ClipToBounds="True">
+            <local:MapCanvasPair.BackgroundCanvas>
+              <local:MapCanvas VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               ClipToBounds="True"/>
+            </local:MapCanvasPair.BackgroundCanvas>
+            <local:MapCanvasPair.ForegroundCanvas>
+              <local:OverlayCanvas VerticalAlignment="Stretch"
+                                   HorizontalAlignment="Stretch"
+                                   ClipToBounds="True"/>
+            </local:MapCanvasPair.ForegroundCanvas>
+          </local:MapCanvasPair>
+          
           <Grid VerticalAlignment="Stretch" RowDefinitions="Auto">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="0.7*"/>
@@ -75,7 +79,7 @@
                          HorizontalAlignment="Stretch" 
                          Background="{Binding BGBrush}"
                          ItemsSource="{Binding Data, Mode=TwoWay}"
-                         SelectionChanged="ListBox_SelectionChanged_1"
+                         SelectionChanged="ListBox_SelectionChanged"
                          CornerRadius="4">
                   <ListBox.ItemTemplate>
                     <DataTemplate>

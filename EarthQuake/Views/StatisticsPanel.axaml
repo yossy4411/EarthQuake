@@ -23,6 +23,6 @@
     <TextBlock Text="震源の深さの分布"/>
     <canvas:StatisticsCanvas x:Name="a"
                              HorizontalAlignment="Stretch"
-                             Height="100"/>
+                             Height="200"/>
   </StackPanel>
 </UserControl>

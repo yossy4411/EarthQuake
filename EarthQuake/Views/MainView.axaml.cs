@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Threading;
 using System.Threading.Tasks;
 
 namespace EarthQuake.Views;
@@ -26,12 +27,17 @@ public partial class MainView : UserControl
         statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected);
     }
 
-    private async void ListBox_SelectionChanged_1(object? sender, SelectionChangedEventArgs e)
+    private async void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         Loading.IsVisible = true;
-        await Task.Run(() => App.ViewModel.SetQInfo(quakes.SelectedIndex));
-        Loading.IsVisible = false;
+        await Task.Run(() =>
+        {
+            App.ViewModel.SetQInfo(quakes.SelectedIndex);
+        });
         info.InvalidateVisual();
+        Loading.IsVisible = false;
+
+        
     }
 
     private void Slider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)

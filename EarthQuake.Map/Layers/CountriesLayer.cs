@@ -44,6 +44,7 @@ namespace EarthQuake.Map.Layers
                     }
                 }
             }
+            Data = null;
         }
     }
 }

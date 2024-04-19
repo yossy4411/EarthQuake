@@ -78,8 +78,8 @@ public class MainViewModel : ViewModelBase
         _stations = Station.GetStations(station);
         Hypo = new();
         DateTime dateTime = DateTime.Now;
-        var get = Task.Run(async () => Hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
-        //_hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
+        //var get = Task.Run(async () => Hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
+        Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
@@ -107,7 +107,7 @@ public class MainViewModel : ViewModelBase
     }
     public async Task Update()
     {
-        var data = await PBasicData.GetDatas<PQuakeData>("https://api.p2pquake.net/v2/history?codes=551&limit=50");
+        var data = await PBasicData.GetDatas<PQuakeData>("https://api.p2pquake.net/v2/history?codes=551&limit=100");
         if (data is not null)
         {
             Data.Clear();

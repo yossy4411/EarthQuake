@@ -9,6 +9,7 @@ using EarthQuake.Map;
 using System;
 using SkiaSharp;
 using System.Runtime.Intrinsics.X86;
+using System.Diagnostics;
 
 namespace EarthQuake.Canvas
 {
@@ -35,6 +36,7 @@ namespace EarthQuake.Canvas
         public SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
         private protected SKPoint Translate { get => Translation.Translate; set => Translation.Translate = value; }
         private protected float Scale { get => Translation.Scale; set => Translation.Scale = value; }
+
         public MapCanvasTranslation Translation { get; set; } = new();
         public static readonly DirectProperty<MapCanvas, MapCanvasTranslation> TranslationProperty =
             AvaloniaProperty.RegisterDirect<MapCanvas, MapCanvasTranslation>(
@@ -64,7 +66,6 @@ namespace EarthQuake.Canvas
             }
         }
 
-
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             _scrollOffset = e.GetPosition(this);
@@ -87,6 +88,7 @@ namespace EarthQuake.Canvas
             pressed = false;
             base.OnPointerReleased(e);
         }
+
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             Point point = e.GetPosition(this);
