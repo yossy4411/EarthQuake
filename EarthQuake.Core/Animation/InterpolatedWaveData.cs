@@ -16,7 +16,7 @@ namespace EarthQuake.Core.Animation
         {
             double?[] doubles = new double?[data.Length];
             data.CopyTo(doubles, 0);
-            double[] data2 = doubles.Where(d => d.HasValue).Select(d => d!.Value).ToArray();
+            double[] data2 = [..from d in doubles where d.HasValue select d!.Value];
             Start = data2[0];
             End = data2[1];
             Values = data2[2..];

@@ -67,10 +67,11 @@ namespace EarthQuake.Map.Layers.OverLays
             paint.Color = SKColors.Gray;
             
         }
-        public void AddFeature(Epicenters? centers, GeoTransform geo)
+        public void ClearFeature() => points.Clear();
+        public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers, GeoTransform geo)
         {
             if (centers == null) return;
-            foreach (var feature in centers.Features.OrderByDescending(x=>x.Properties?.Dep??0))
+            foreach (var feature in centers.OrderByDescending(x=>x.Properties?.Dep??0))
             {
                 var p = geo.Translate(feature.Geometry.Coordinates[0], feature.Geometry.Coordinates[1]);
                 points.Add(new Epicenter(feature, new SKPoint3(p.X, p.Y, feature.Properties?.Dep??0), feature.Properties?.Mag));

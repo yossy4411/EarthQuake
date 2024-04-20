@@ -1,5 +1,4 @@
-﻿using EarthQuake.Core.EarthQuakes.P2PQuake;
-using EarthQuake.Core.TopoJson;
+﻿using EarthQuake.Core.TopoJson;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using EarthQuake.Core.EarthQuakes;
 
 namespace EarthQuake.Core.GeoJson
 {
@@ -46,15 +46,46 @@ namespace EarthQuake.Core.GeoJson
         public class Epicenter
         {
             public GeometryF Geometry { get; set; } = new();
-            public Property? Properties { get; set; }
+            public Property Properties { get; set; } = new();
             public class GeometryF
             {
                 public float[] Coordinates { get; set; } = [];
             }
             public class Property
             {
+                /// <summary>
+                /// 発生時刻
+                /// </summary>
+                public DateTime Date { get; set; }
+                /// <summary>
+                /// 震源の深さ(nullの場合は未確定)
+                /// </summary>
                 public float? Dep { get; set; }
+                /// <summary>
+                /// マグニチュード(nullの場合は未確定)
+                /// </summary>
                 public float? Mag { get; set; }
+                /// <summary>
+                /// 最大震度(' 'の場合は震度情報なし、'A'～'D'は５弱～６強)
+                /// </summary>
+                public char Si { get; set; }
+                /// <summary>
+                /// 最大震度(SiをParseしたもの)
+                /// </summary>
+                [JsonIgnore]
+                public Scale Scale => Si switch
+                {
+                    '1' => Scale.Scale1,
+                    '2' => Scale.Scale2,
+                    '3' => Scale.Scale3,
+                    '4' => Scale.Scale4,
+                    'A' => Scale.Scale5L,
+                    'B' => Scale.Scale5H,
+                    'C' => Scale.Scale6L,
+                    'D' => Scale.Scale6H,
+                    '7' => Scale.Scale7,
+                    _ => Scale.Unknown,
+                };
 
             }
         }

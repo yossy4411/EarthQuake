@@ -77,9 +77,8 @@ public class MainViewModel : ViewModelBase
         using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
         _stations = Station.GetStations(station);
         Hypo = new();
-        DateTime dateTime = DateTime.Now;
-        //var get = Task.Run(async () => Hypo.AddFeature(await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson"), transform));
-        Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
+        var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4));
+        //Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
@@ -100,6 +99,22 @@ public class MainViewModel : ViewModelBase
         GC.Collect();
         InitializeAsync();
     }
+    public async void GetEpicenters(DateTime start, int days)
+    {
+        Hypo.ClearFeature();
+        List<Epicenters.Epicenter> epicenters = [];
+        for (int i = 0; i <= days; i++)
+        {
+            var dateTime = start.AddDays(i);
+            var data = await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson");
+            if (data is not null)
+            {
+                epicenters.Add(data.Features);
+            }
+        }
+        Hypo.AddFeature(epicenters, transform);
+    }
+
     public async void InitializeAsync()
     {
         using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));

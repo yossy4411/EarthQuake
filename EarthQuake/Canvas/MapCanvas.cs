@@ -21,6 +21,7 @@ namespace EarthQuake.Canvas
             public float Scale { get; set; } = 1f;
         }
         public MapViewController? Controller { get; set; }
+        public static readonly SKTypeface Font = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Fonts/NotoSansJP-Medium.ttf")));
         public static readonly DirectProperty<MapCanvas, MapViewController?> ControllerProperty =
             AvaloniaProperty.RegisterDirect<MapCanvas, MapViewController?>(
                 nameof(Controller),

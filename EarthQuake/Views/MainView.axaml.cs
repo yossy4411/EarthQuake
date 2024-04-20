@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
+using System;
 using System.Threading.Tasks;
 
 namespace EarthQuake.Views;
@@ -20,10 +21,14 @@ public partial class MainView : UserControl
         kmoniPanel.Children.Insert(0, graph);
 #endif
         Selection.OnSelected += Selection_OnSelected;
+        dateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
+        dateEnd.SelectedDate = DateTime.Now.Date;
+        updateEpic.Click += Update_Epicenters;
     }
 
     private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)
     {
+        statistics.Selected = e.Selected;
         statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected);
     }
 
@@ -46,4 +51,11 @@ public partial class MainView : UserControl
         Selection.InvalidateVisual();
     }
 
+    private void Update_Epicenters(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (dateStart.SelectedDate.HasValue && dateEnd.SelectedDate.HasValue)
+        {
+            App.ViewModel.GetEpicenters(((DateTime)dateStart.SelectedDate).Date, (int)(((DateTime)dateEnd.SelectedDate).Date - ((DateTime)dateStart.SelectedDate).Date).TotalDays);
+        }
+    }
 }

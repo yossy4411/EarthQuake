@@ -1,5 +1,4 @@
 ﻿using Avalonia.Data.Converters;
-using EarthQuake.Core.EarthQuakes.P2PQuake;
 using Avalonia.Media;
 using SkiaSharp;
 using System;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Shapes;
+using EarthQuake.Core.EarthQuakes;
 
 namespace EarthQuake.Map.Colors
 {

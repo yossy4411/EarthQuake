@@ -1,4 +1,4 @@
-﻿using EarthQuake.Core.EarthQuakes.P2PQuake;
+﻿using EarthQuake.Core.EarthQuakes;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

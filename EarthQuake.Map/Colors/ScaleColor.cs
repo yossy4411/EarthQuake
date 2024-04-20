@@ -1,11 +1,11 @@
-﻿using EarthQuake.Core.EarthQuakes.P2PQuake;
-using SkiaSharp;
+﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EarthQuake.Core.TopoJson;
+using EarthQuake.Core.EarthQuakes;
 
 namespace EarthQuake.Map.Colors
 {

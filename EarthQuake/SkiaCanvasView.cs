@@ -15,6 +15,9 @@ using System.Threading.Tasks;
 
 namespace EarthQuake
 {
+    /// <summary>
+    /// SKCanvas上に描画できるコントロールの抽象クラス
+    /// </summary>
     public abstract class SkiaCanvasView : Control, IDisposable, ICustomDrawOperation
     {
 

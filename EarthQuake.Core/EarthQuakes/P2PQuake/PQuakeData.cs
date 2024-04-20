@@ -125,19 +125,4 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake
             return $"{Pref} - {Addr}: {Scale.ToScreenString()}";
         }
     }
-    public enum Scale
-    {
-        Unknown = -1,
-        Scale1 = 10,
-        Scale2 = 20,
-        Scale3 = 30,
-        Scale4 = 40,
-        Scale5L = 45,
-        Scale5U = 46,
-        Scale5H = 50,
-        Scale6L = 55,
-        Scale6H = 60,
-        Scale7 = 70,
-        Scale8 = 80
-    }
 }
