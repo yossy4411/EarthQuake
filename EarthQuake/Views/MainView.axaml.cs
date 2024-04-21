@@ -1,12 +1,18 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EarthQuake.Views;
 
 public partial class MainView : UserControl
 {
+#pragma warning disable IDE0052 // 読み取られていないプライベート メンバーを削除
+    private readonly Timer timer;
+#pragma warning restore IDE0052 // 読み取られていないプライベート メンバーを削除
+
     public MainView()
     {
         InitializeComponent();
@@ -24,6 +30,20 @@ public partial class MainView : UserControl
         dateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
         dateEnd.SelectedDate = DateTime.Now.Date;
         updateEpic.Click += Update_Epicenters;
+        timer = new(Timer_Elapsed, null, 3000, 125);
+    }
+
+    private void Timer_Elapsed(object? state)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (kmoni.IsVisible)
+            {
+                kmoni.InvalidateVisual();
+            }
+        }
+        );
+
     }
 
     private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)

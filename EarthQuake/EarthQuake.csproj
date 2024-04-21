@@ -16,6 +16,7 @@
     <None Remove="Assets\Fonts\NotoSansJP-Light.ttf" />
     <None Remove="Assets\japan.topojson" />
     <None Remove="Assets\jma2001.parquet" />
+    <None Remove="Assets\jma2001.parquet.backup" />
     <None Remove="Assets\NotoSansJP-Medium.ttf" />
     <None Remove="Assets\Stations.csv" />
     <None Remove="Assets\world-original.json" />

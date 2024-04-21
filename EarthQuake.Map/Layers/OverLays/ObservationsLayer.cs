@@ -17,29 +17,40 @@ namespace EarthQuake.Map.Layers.OverLays
     public class ObservationsLayer : ForeGroundLayer
     {
         private SKPoint hypo;
-        private IEnumerable<SKPoint> points = [];
         private SKPoint[]? opoints;
         private Scale[]? ocolors;
         public IList<Station>? Stations { get; set; }
         private bool _drawStations = false;
         public bool DrawStations { get => _drawStations; set { _drawStations = value; } }
+        public static SKPath HypoPath 
+        { 
+            get
+            {
+                SKPoint[] points =
+                [
+                    ..new[]
+                    {
+                        new SKPoint(-4, 3),
+                        new SKPoint(-3, 4),
+                        new SKPoint(0, 1),
+                        new SKPoint(3, 4),
+                        new SKPoint(4, 3),
+                        new SKPoint(1, 0),
+                        new SKPoint(4, -3),
+                        new SKPoint(3, -4),
+                        new SKPoint(0, -1),
+                        new SKPoint(-3, -4),
+                        new SKPoint(-4, -3),
+                        new SKPoint(-1, 0)
+                    }.Select(x => new SKPoint(x.X * 3, x.Y * 3))
+                ];
+                SKPath path = new();
+                path.AddPoly(points);
+                return path;
+            } 
+        }
         private protected override void Initialize(GeoTransform geo)
         {
-            points =
-                new[]{
-                    new SKPoint(-4, 3),
-                    new SKPoint(-3, 4),
-                    new SKPoint(0, 1),
-                    new SKPoint(3, 4),
-                    new SKPoint(4, 3),
-                    new SKPoint(1, 0),
-                    new SKPoint(4, -3),
-                    new SKPoint(3, -4),
-                    new SKPoint(0, -1),
-                    new SKPoint(-3, -4),
-                    new SKPoint(-4, -3),
-                    new SKPoint(-1, 0)
-                }.Select(x => new SKPoint(x.X * 3, x.Y * 3));
         }
         public void SetData(PQuakeData quakeData, GeoTransform geo)
         {
@@ -58,14 +69,16 @@ namespace EarthQuake.Map.Layers.OverLays
         }
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            using SKPath path = new();
             SKPoint scale2 = new(hypo.X * scale, hypo.Y * scale);
-            path.AddPoly(points.Select(x => x + scale2).ToArray(), true);
             using SKPaint paint = new() { Color = SKColors.White, IsStroke = true, StrokeWidth = 5, IsAntialias = true };
-            canvas.DrawPath(path, paint);
-            paint.IsStroke = false;
-            paint.Color = SKColors.Red;
-            canvas.DrawPath(path, paint);
+            using (new SKAutoCanvasRestore(canvas))
+            {
+                canvas.Translate(scale2);
+                canvas.DrawPath(HypoPath, paint);
+                paint.IsStroke = false;
+                paint.Color = SKColors.Red;
+                canvas.DrawPath(HypoPath, paint);
+            }
             paint.StrokeWidth = 4;
             if (opoints is not null && ocolors is not null && _drawStations)
             {

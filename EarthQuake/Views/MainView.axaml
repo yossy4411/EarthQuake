@@ -28,13 +28,28 @@
     <TabControl Name="dummy" TabStripPlacement="Left">
       <TabItem Header="Kmoni">
         <DockPanel Name="kmoniPanel">
-          <local:MapCanvas Name="kmoni"
-                           Controller="{Binding Controller1}"
+          <local:MapCanvasPair 
+            x:Name="kmoni"
+            Controller="{Binding Controller1}"
+            Translation="{Binding SyncTranslation}"
+            ClipToBounds="True"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            DockPanel.Dock="Top">
+            <local:MapCanvasPair.BackgroundCanvas>
+              <local:MapCanvas Name="kmoniMap"
                            VerticalAlignment="Stretch"
                            HorizontalAlignment="Stretch"
-                           DockPanel.Dock="Top"
-                           Translation="{Binding SyncTranslation}"
                            ClipToBounds="True"/>
+            </local:MapCanvasPair.BackgroundCanvas>
+            <local:MapCanvasPair.ForegroundCanvas>
+              <local:OverlayCanvas x:Name="kmoniFg"
+                                   VerticalAlignment="Stretch"
+                                   HorizontalAlignment="Stretch"
+                                   ClipToBounds="True"/>
+            </local:MapCanvasPair.ForegroundCanvas>
+          </local:MapCanvasPair>
+          
             
         </DockPanel>
       </TabItem>

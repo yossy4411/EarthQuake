@@ -9,19 +9,52 @@ namespace EarthQuake.Core.Animation
 {
     public class InterpolatedWaveData
     {
-        public double Start { get; }
-        public double End { get; }
-        public double[] Values { get; }
+        public float Start { get; }
+        public int End { get; }
+        private readonly float last;
+        private readonly float[] values;
+        private readonly float lastInclination;
         public InterpolatedWaveData(Array data)
         {
+            Start = (float)((double?)data.GetValue(0) ?? 0);
             double?[] doubles = new double?[data.Length];
             data.CopyTo(doubles, 0);
-            double[] data2 = [..from d in doubles where d.HasValue select d!.Value];
-            Start = data2[0];
-            End = data2[1];
-            Values = data2[2..];
+            float[] data2 = [..from d in doubles where d.HasValue && d!.Value != 0 select (float)d!.Value];
+            values = data2[2..];
+            lastInclination =  (data2[^1] - data2[^2]) / 4;
+            last = data2[^1];
+            End = values.Length - 1;
         }
-        public static async Task<PSWave> Load(Stream stream)
+        public double GetRadius(double seconds)
+        {
+            double secondsPass = seconds - Start;
+            int index = (int)(secondsPass * 4);
+            double result;
+            if (index == -1)
+            {
+                result = values[0] * 4 * (secondsPass % 0.25f);
+            }
+            else if (seconds <= Start) return 0;
+            else if (index >= End)
+            {
+                double index2 = index - End;
+                result = last + index2 * lastInclination;
+            }
+            else
+            {
+                
+                float value = values[index];
+                float next = index == 0 ? 0 : values[index + 1];
+                result = value * (1 - 4 * (secondsPass % 0.25f)) + next * 4 * (secondsPass % 0.25f);
+
+            }
+            return result / Earth * 360;
+        }
+        public const int Earth = 40075;
+    }
+    public class PSWave : Dictionary<int, InterpolatedWaveData>
+    {
+        public static async Task<PSWave> LoadAsync(Stream stream)
         {
             PSWave values = [];
             using MemoryStream memoryStream = new();
@@ -39,9 +72,5 @@ namespace EarthQuake.Core.Animation
             }
             return values;
         }
-    }
-    public class PSWave : Dictionary<int, InterpolatedWaveData>
-    {
-        public const double EarthRadius = 6367;
     }
 }

@@ -40,6 +40,7 @@ public class MainViewModel : ViewModelBase
     private readonly ObservationsLayer _foreg;
     private readonly GeoTransform transform;
     private readonly LandLayer _land;
+    private readonly KmoniLayer _kmoni;
     public readonly Hypo3DViewLayer Hypo;
     private PSWave? wave;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
@@ -66,7 +67,7 @@ public class MainViewModel : ViewModelBase
         using StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson")));
         using JsonReader reader2 = new JsonTextReader(streamReader2);
         GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
-        
+        using Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
         //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson(); 
         _land = new(json) { AutoFill = true };
         var world = new CountriesLayer(geojson);
@@ -74,15 +75,17 @@ public class MainViewModel : ViewModelBase
         var border = new BorderLayer(json);
         var grid = new GridLayer();
         _cities = new CitiesLayer(json);
+        _kmoni = new KmoniLayer();
         using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
         _stations = Station.GetStations(station);
         Hypo = new();
-        var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4));
-        //Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson")), transform);
+        //var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4));
+        Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson"))?.Features, transform);
+        
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
-            MapLayers = [world, _land, border, grid],
+            MapLayers = [world, _land, border, grid, _kmoni],
         };
         Controller2 = new(json, transform, typelist)
         {
@@ -118,7 +121,8 @@ public class MainViewModel : ViewModelBase
     public async void InitializeAsync()
     {
         using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
-        wave = await InterpolatedWaveData.Load(parquet);
+        wave = await PSWave.LoadAsync(parquet);
+        _kmoni.Wave = wave;
     }
     public async Task Update()
     {
