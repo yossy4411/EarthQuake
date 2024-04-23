@@ -68,7 +68,7 @@ namespace EarthQuake.Map.Layers.OverLays
             
         }
         public void ClearFeature() => points.Clear();
-        public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers, GeoTransform geo)
+        public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers, GeomTransform geo)
         {
             if (centers == null) return;
             foreach (var feature in centers.OrderByDescending(x=>x.Properties?.Dep??0))
@@ -78,7 +78,7 @@ namespace EarthQuake.Map.Layers.OverLays
             }
             
         }
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
         }
 

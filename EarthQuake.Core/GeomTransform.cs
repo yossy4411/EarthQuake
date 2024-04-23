@@ -10,11 +10,13 @@ using static EarthQuake.Core.TopoJson.MapData;
 
 namespace EarthQuake.Core
 {
-    public class GeoTransform
+    public class GeomTransform
     {
         
-        internal float Zoom { get; set; } = 50;
+        public int Zoom { get; set; } = 50;
         internal SKPoint Offset { get; set; } = new(135, (float)Mercator(35));
+        public const int Height = 150;
+        private const double mercatorLimit = 85.05112877980659;
         public PolygonType[]? GeometryType { get; set; }
         public SKPoint Translate(double lon, double lat)
         {
@@ -22,7 +24,7 @@ namespace EarthQuake.Core
             float y = -(float)(Mercator(lat) - Offset.Y) * Zoom;
             return new(x, y);
         }
-        public static double Mercator(double latitude) => (latitude <= -89 ? -4 : latitude >= 89 ? 4 : Math.Log(Math.Tan((90 + latitude) * Math.PI / 360))) * 150 / Math.PI;
+        public static double Mercator(double latitude) => latitude <= -mercatorLimit ? -Height : latitude >= mercatorLimit ? Height : Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) * Height / Math.PI;
         public SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
         public SKPoint Translate(float lon, float lat)
         {

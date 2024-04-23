@@ -14,7 +14,7 @@ namespace EarthQuake.Map.Layers.OverLays
 {
     public class KmoniLayer : ForeGroundLayer
     {
-        private GeoTransform? transform;
+        private GeomTransform? transform;
         private readonly List<EewPoint> points = [];
         public PSWave? Wave { get; set; }
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
@@ -88,6 +88,15 @@ namespace EarthQuake.Map.Layers.OverLays
                             canvas.DrawPath(path, paint);
                         }
                     }
+                }
+            }
+            foreach (var point in points)
+            {
+                if (transform is not null)
+                {
+                    double elapsed = (DateTime.Now - point.Issued).TotalSeconds;
+                    SKPoint hypo = transform.Translate(point.Point);
+                    SKPoint center = new(hypo.X * scale, hypo.Y * scale);
                     if (elapsed > 0 && elapsed % 1 < 0.5)
                     {
                         using (new SKAutoCanvasRestore(canvas))
@@ -106,7 +115,7 @@ namespace EarthQuake.Map.Layers.OverLays
             }
         }
 
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
             transform = geo;
 /*            SetHypo((33.137551f, 135.050537f), DateTime.Now.AddSeconds(3), 30);
@@ -114,8 +123,8 @@ namespace EarthQuake.Map.Layers.OverLays
             SetHypo((37.485320f, 137.25f), DateTime.Now.AddSeconds(3), 0);*/
             SetHypo((33.317676f, 134.868164f), DateTime.Now.AddSeconds(3), 20);
             SetHypo((33.179859f, 133.567383f), DateTime.Now.AddSeconds(25), 30);
-            SetHypo((34.521041f, 137.304932f), DateTime.Now.AddSeconds(35), 20);
-            SetHypo((35.306608f, 138.509033f), DateTime.Now.AddSeconds(48), 20);
+            SetHypo((34.521041f, 137.304932f), DateTime.Now.AddSeconds(45), 20);
+            SetHypo((35.306608f, 138.509033f), DateTime.Now.AddSeconds(58), 20);
             SetHypo((32.674523f, 132.431395f), DateTime.Now.AddSeconds(47), 40);
             SetHypo((31.864496f, 131.886472f), DateTime.Now.AddSeconds(68), 30);
         }

@@ -7,9 +7,9 @@ namespace EarthQuake.Map.Layers
 {
     public class GridLayer : MapLayer
     {
-        private GeoTransform _geoTransform = new();
+        private GeomTransform _geoTransform = new();
 
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
             _geoTransform = geo;
         }

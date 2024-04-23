@@ -23,7 +23,7 @@ namespace EarthQuake.Map.Layers
         private string[]? names;
         public bool AutoFill = false;
 
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
             if (Data is not null && Data.Geometries is not null)
             {

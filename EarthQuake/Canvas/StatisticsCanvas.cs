@@ -2,6 +2,7 @@
 using Avalonia.Media;
 using EarthQuake.Core.EarthQuakes;
 using EarthQuake.Core.GeoJson;
+using EarthQuake.Map;
 using EarthQuake.Map.Colors;
 using SkiaSharp;
 using System;
@@ -24,7 +25,6 @@ namespace EarthQuake.Canvas
 
         private StatisticType _type;
         public StatisticType Type { get => _type; set => _type = value; }
-        private static readonly SKTypeface font = MapCanvas.Font;
 
         public IEnumerable<Epicenters.Epicenter> Epicenters { get => epicenters; set{ epicenters = value; buffer = null; } }
         private IEnumerable<Epicenters.Epicenter> epicenters = [];
@@ -36,7 +36,7 @@ namespace EarthQuake.Canvas
             using var lease = GetSKCanvas(context);
             if (lease is null) return;
             SKCanvas canvas = lease.SkCanvas;
-            using SKPaint paint = new() { Color = SKColors.Gray, Typeface = font, TextSize = 6 };
+            using SKPaint paint = new() { Color = SKColors.Gray, Typeface = MapLayer.Font, TextSize = 6 };
             canvas.ClipRect(new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height));
             canvas.Clear(SKColors.Black);
             float height = (float)Bounds.Height;
@@ -109,7 +109,7 @@ namespace EarthQuake.Canvas
                             paint.Color = SKColors.Pink;
                             int totalHour = (int)(rangeLong / TimeSpan.TicksPerHour) * 4;
                             int[] total = new int[totalHour];
-                            using SKPaint paint2 = new() { Color = SKColors.White, IsAntialias = true, Typeface = font, TextSize = 7 };
+                            using SKPaint paint2 = new() { Color = SKColors.White, IsAntialias = true, Typeface = MapLayer.Font, TextSize = 7 };
                             foreach (var item in data)
                             {       
                                 float x = (item.Properties.Date.Ticks - min) / range * width;

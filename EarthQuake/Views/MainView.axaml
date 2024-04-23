@@ -19,6 +19,31 @@
       <Setter Property="Margin" Value="5"/>
       <Setter Property="CornerRadius" Value="5"/>
     </Style>
+    <Style Selector="Border.license">
+      <Setter Property="Child">
+        <Setter.Value>
+          <Template>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="マップタイル:"
+                         Foreground="Black"
+                         FontSize="12"
+                         Margin="5"/>
+              <Button Command="{Binding OpenLicenseLink}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      Margin="5"
+                      Padding="0">
+                <TextBlock Text="{Binding MapTiles.Name}"
+                           Tag="license"
+                           Foreground="Blue"
+                           TextDecorations="Underline"
+                           FontSize="12"/>
+              </Button>
+            </StackPanel>
+          </Template>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </UserControl.Styles>
   <UserControl.Resources>
     <converter:QuakeListConverter x:Key="QConvert"/>
@@ -28,28 +53,32 @@
     <TabControl Name="dummy" TabStripPlacement="Left">
       <TabItem Header="Kmoni">
         <DockPanel Name="kmoniPanel">
-          <local:MapCanvasPair 
-            x:Name="kmoni"
-            Controller="{Binding Controller1}"
-            Translation="{Binding SyncTranslation}"
-            ClipToBounds="True"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Stretch"
-            DockPanel.Dock="Top">
-            <local:MapCanvasPair.BackgroundCanvas>
-              <local:MapCanvas Name="kmoniMap"
-                           VerticalAlignment="Stretch"
-                           HorizontalAlignment="Stretch"
-                           ClipToBounds="True"/>
-            </local:MapCanvasPair.BackgroundCanvas>
-            <local:MapCanvasPair.ForegroundCanvas>
-              <local:OverlayCanvas x:Name="kmoniFg"
-                                   VerticalAlignment="Stretch"
-                                   HorizontalAlignment="Stretch"
-                                   ClipToBounds="True"/>
-            </local:MapCanvasPair.ForegroundCanvas>
-          </local:MapCanvasPair>
-          
+          <Panel>
+            <local:MapCanvasPair 
+              x:Name="kmoni"
+              Controller="{Binding Controller1}"
+              Translation="{Binding SyncTranslation}"
+              ClipToBounds="True"
+              VerticalAlignment="Stretch"
+              HorizontalAlignment="Stretch"
+              DockPanel.Dock="Top">
+              <local:MapCanvasPair.BackgroundCanvas>
+                <local:MapCanvas Name="kmoniMap"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             ClipToBounds="True"/>
+              </local:MapCanvasPair.BackgroundCanvas>
+              <local:MapCanvasPair.ForegroundCanvas>
+                <local:OverlayCanvas x:Name="kmoniFg"
+                                     VerticalAlignment="Stretch"
+                                     HorizontalAlignment="Stretch"
+                                     ClipToBounds="True"/>
+              </local:MapCanvasPair.ForegroundCanvas>
+            </local:MapCanvasPair>
+            <Border Classes="license"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right"/>
+          </Panel>
             
         </DockPanel>
       </TabItem>

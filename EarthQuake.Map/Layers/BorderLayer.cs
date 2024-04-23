@@ -28,7 +28,7 @@ namespace EarthQuake.Map.Layers
             buffer = copySource.buffer;
         }
         
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
             
             if (!copy)

@@ -25,6 +25,7 @@ using Avalonia.Controls;
 using EarthQuake.Core.Animation;
 using ZstdSharp.Unsafe;
 using EarthQuake.Canvas;
+using EarthQuake.Models;
 
 namespace EarthQuake.ViewModels;
 
@@ -34,11 +35,12 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller2 { get; set; }
     public MapViewController Controller3 { get; set; }
     public Brush BGBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
+    internal MapSource MapTiles { get; } = MapSource.Gsi;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
     private readonly CitiesLayer _cities;
     private readonly ObservationsLayer _foreg;
-    private readonly GeoTransform transform;
+    private readonly GeomTransform transform;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
     public readonly Hypo3DViewLayer Hypo;
@@ -72,7 +74,7 @@ public class MainViewModel : ViewModelBase
         _land = new(json) { AutoFill = true };
         var world = new CountriesLayer(geojson);
         var typelist = MapViewController.CalculateTypes(json);
-        var border = new BorderLayer(json);
+        var border = new BorderLayer(json) { DrawCoast = true };
         var grid = new GridLayer();
         _cities = new CitiesLayer(json);
         _kmoni = new KmoniLayer();
@@ -85,7 +87,7 @@ public class MainViewModel : ViewModelBase
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
-            MapLayers = [world, _land, border, grid, _kmoni],
+            MapLayers = [world, new MapTilesLayer(MapTiles.TileUrl), border, grid, /*_kmoni*/],
         };
         Controller2 = new(json, transform, typelist)
         {
@@ -117,7 +119,16 @@ public class MainViewModel : ViewModelBase
         }
         Hypo.AddFeature(epicenters, transform);
     }
+    public void OpenLicenseLink()
+    {
+        ProcessStartInfo pi = new()
+        {
+            FileName = MapTiles.Link,
+            UseShellExecute = true,
+        };
 
+        Process.Start(pi);
+    }
     public async void InitializeAsync()
     {
         using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));

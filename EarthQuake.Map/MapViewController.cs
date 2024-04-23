@@ -21,7 +21,7 @@ namespace EarthQuake.Map
     }
     public class MapViewController
     {
-        public GeoTransform Geo { get; set; } = new();
+        public GeomTransform Geo { get; set; } = new();
         private MapLayer[] _mapLayers = [];
         public float Rotation { get; set; } = 0f;
         public MapLayer[] MapLayers
@@ -36,7 +36,7 @@ namespace EarthQuake.Map
                 }
             }
         }
-        public MapViewController(TopoJson json, GeoTransform geo, PolygonType[]? types = null)
+        public MapViewController(TopoJson json, GeomTransform geo, PolygonType[]? types = null)
         {
             Geo = geo;
             if (types == null)

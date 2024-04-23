@@ -12,7 +12,7 @@ namespace EarthQuake.Map.Layers
     public abstract class TopoLayer(TopoJson? json, string? layerName) : MapLayer
     {
         public MapData? Data = json is null ? null : layerName is null ? json.CreateLayer() : json.GetLayer(layerName);
-        public override void Update(GeoTransform geo)
+        public override void Update(GeomTransform geo)
         {
             base.Update(geo);
             Data = null; // "json"への参照を切っておく

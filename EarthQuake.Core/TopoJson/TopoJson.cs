@@ -50,7 +50,7 @@ namespace EarthQuake.Core.TopoJson
             _arcs = arcs;
             _transform = transform;
         }
-        public void AddVertex(Tess tess, int[] contours, GeoTransform geo, ref float minX, ref float minY, ref float maxX, ref float maxY)
+        public void AddVertex(Tess tess, int[] contours, GeomTransform geo, ref float minX, ref float minY, ref float maxX, ref float maxY)
         {
             List<ContourVertex> result = [];
             for (int j = 0; j < contours.Length; j++)
@@ -96,7 +96,7 @@ namespace EarthQuake.Core.TopoJson
             }
             tess.AddContour(result);
         }
-        public void AddLine(SKPath result, int[] contours, GeoTransform geo)
+        public void AddLine(SKPath result, int[] contours, GeomTransform geo)
         {
             foreach (var index in contours)
             {
@@ -124,7 +124,7 @@ namespace EarthQuake.Core.TopoJson
             }
 
         }
-        public (SKPath, SKRect)[][] AddAllLine(GeoTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
+        public (SKPath, SKRect)[][] AddAllLine(GeomTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
         {
             List<(SKPath, SKRect)> coastL = [];
             List<(SKPath, SKRect)> prefL = [];

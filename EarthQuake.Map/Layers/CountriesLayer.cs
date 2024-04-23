@@ -20,7 +20,7 @@ namespace EarthQuake.Map.Layers
             }
         }
         private readonly List<Polygon> polygons = [];
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
             if (Data is not null && Data.Features is not null)
             {

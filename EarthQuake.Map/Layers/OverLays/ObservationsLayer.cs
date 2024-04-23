@@ -49,10 +49,10 @@ namespace EarthQuake.Map.Layers.OverLays
                 return path;
             } 
         }
-        private protected override void Initialize(GeoTransform geo)
+        private protected override void Initialize(GeomTransform geo)
         {
         }
-        public void SetData(PQuakeData quakeData, GeoTransform geo)
+        public void SetData(PQuakeData quakeData, GeomTransform geo)
         {
             if (quakeData is PQuakeData data)
             {

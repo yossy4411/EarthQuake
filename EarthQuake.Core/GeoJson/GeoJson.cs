@@ -45,7 +45,7 @@ namespace EarthQuake.Core.GeoJson
                         throw new NotImplementedException();
                     }
                 }
-                public void AddVertex(Tess tess, GeoTransform geo, int vertex, ref float minX, ref float minY, ref float maxX, ref float maxY)
+                public void AddVertex(Tess tess, GeomTransform geo, int vertex, ref float minX, ref float minY, ref float maxX, ref float maxY)
                 {
 
                     var coordinates = Coordinates[vertex];
