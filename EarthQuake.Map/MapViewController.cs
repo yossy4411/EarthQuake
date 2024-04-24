@@ -1,6 +1,7 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
+using EarthQuake.Map.Layers;
 using EarthQuake.Map.Layers.OverLays;
 using SkiaSharp;
 using System;

@@ -119,11 +119,13 @@ public class MainViewModel : ViewModelBase
         }
         Hypo.AddFeature(epicenters, transform);
     }
-    public void OpenLicenseLink()
+    public void OpenLicenseLink() => OpenLink(MapTiles.Link);
+    public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
+    private static void OpenLink(string uri)
     {
         ProcessStartInfo pi = new()
         {
-            FileName = MapTiles.Link,
+            FileName = uri,
             UseShellExecute = true,
         };
 

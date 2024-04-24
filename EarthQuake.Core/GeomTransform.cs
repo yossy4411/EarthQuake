@@ -24,6 +24,7 @@ namespace EarthQuake.Core
             float y = -(float)(Mercator(lat) - Offset.Y) * Zoom;
             return new(x, y);
         }
+        public SKPoint TranslateToNonTransform(SKPoint translated) => new(translated.X / Zoom + Offset.X, translated.Y / Zoom + Offset.Y);
         public static double Mercator(double latitude) => latitude <= -mercatorLimit ? -Height : latitude >= mercatorLimit ? Height : Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) * Height / Math.PI;
         public SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
         public SKPoint Translate(float lon, float lat)

@@ -205,6 +205,26 @@
                         x:Name="slider"/>
               </DockPanel>
             </Grid>
+            <Border VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="データ取得元:"
+                           Foreground="Black"
+                           FontSize="12"
+                           Margin="5"/>
+                <Button Command="{Binding OpenJmaHypoLink}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Margin="5"
+                        Padding="0">
+                  <TextBlock Text="気象庁 震央分布図"
+                             Tag="license"
+                             Foreground="Blue"
+                             TextDecorations="Underline"
+                             FontSize="12"/>
+                </Button>
+              </StackPanel>
+            </Border>
           </Panel>
         </DockPanel>
       </TabItem>

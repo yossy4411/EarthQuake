@@ -12,78 +12,43 @@ namespace EarthQuake.Map.Layers
 {
     public class MapTilesLayer(string source) : MapLayer
     {
-        private readonly string _source = source;
-        private GeomTransform? _transform;
-        private readonly List<(SKBitmap, SKPoint, float)> images = [];
+        private readonly MapTilesController _controller = new(source);
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            if (_transform is null) return;
-            
-            
-            foreach ((SKBitmap bitmap, SKPoint point, float zoom) in images)
+            if (_controller.Transform is null) return;
+            MapTilesController.TilePoint point;
             {
-                using (new SKAutoCanvasRestore(canvas))
+                if (_controller.TryGetTile(135, 35, (int)Math.Log2(scale) + 5, out var tile, out var tilePoint))
                 {
-                    float resizeX = 360f * _transform.Zoom / 256 / zoom;
-                    float resizeY = (float)(GeomTransform.Height * 2) * _transform.Zoom / 256 / zoom;
-                    canvas.Scale(resizeX, resizeY);
-                    canvas.DrawBitmap(bitmap, point.X / (float)resizeX, point.Y / (float)resizeY);
+                    using (new SKAutoCanvasRestore(canvas))
+                    {
+                        float resizeX = 360f * _controller.Transform.Zoom / 256 / tile!.Zoom;
+                        float resizeY = (float)(GeomTransform.Height * 2) * _controller.Transform.Zoom / 256 / tile!.Zoom;
+                        canvas.Scale(resizeX, resizeY);
+                        canvas.DrawBitmap(tile.Image, tile.LeftTop.X / (float)resizeX, tile.LeftTop.Y / (float)resizeY);
+                    }
                 }
+                point = tilePoint;
             }
+            /*for(int i = 1; i < 5; i++)
+            {
+                if (_controller.TryGetTile(point.Add(i, 0), out var tile))
+                {
+                    using (new SKAutoCanvasRestore(canvas))
+                    {
+                        float resizeX = 360f * _controller.Transform.Zoom / 256 / tile!.Zoom;
+                        float resizeY = (float)(GeomTransform.Height * 2) * _controller.Transform.Zoom / 256 / tile.Zoom;
+                        canvas.Scale(resizeX, resizeY);
+                        canvas.DrawBitmap(tile.Image, tile.LeftTop.X / (float)resizeX, tile.LeftTop.Y / (float)resizeY);
+                    }
+                }
+            }*/
             
         }
 
         private protected override void Initialize(GeomTransform geo)
         {
-            _transform = geo;
-            Task.Run(async () => await LoadBitmapAsync(135, 35, 12));
-        }
-        public static async Task<SKBitmap> LoadBitmapFromUrlAsync(string url)
-        {
-            // URLから画像をダウンロード
-            using HttpClient webClient = new();
-            Debug.WriteLine(url + "にリクエストを送信します");
-            byte[] network = await webClient.GetByteArrayAsync(url);
-            SKBitmap bitmap = SKBitmap.Decode(network);
-            
-            return bitmap;
-        }
-        private async Task LoadBitmapAsync(double lon, double lat, int zoom) {
-            if (_transform is null) return;
-            GetTileLeftTop(lat, lon, zoom, out double left, out double top, out int x, out int y, out int z);
-            SKBitmap bitmap = await LoadBitmapFromUrlAsync(GenerateUrl(_source, x, y, z));
-            images.Add(
-                (
-                    bitmap,
-                    _transform.Translate(left, top),
-                    MathF.Pow(2, z)
-                )
-            );
-        }
-        public static string GenerateUrl(string source, int x, int y, int zoom)
-        {
-            return source.Replace("{x}", x.ToString()).Replace("{y}", y.ToString()).Replace("{z}", zoom.ToString());
-        }
-        public static void GetXYZTile(double latitude, double longitude, int zoom, out int x, out int y, out int z)
-        {
-            double n = Math.Pow(2, zoom);
-            double lat_rad = latitude * Math.PI / 180.0;
-
-            x = (int)Math.Floor((longitude + 180.0) / 360.0 * n);
-            y = (int)Math.Floor((1.0 - Math.Log(Math.Tan(lat_rad) + 1.0 / Math.Cos(lat_rad)) / Math.PI) / 2.0 * n);
-            z = zoom;
-        }
-        public static void GetTileLeftTop(double latitude, double longitude, int zoom, out double left, out double top, out int x, out int y, out int z)
-        {
-            GetXYZTile(latitude, longitude, zoom, out x, out y, out z);
-
-            double n = Math.Pow(2, z);
-            double lon_deg = x / n * 360.0 - 180.0;
-            double lat_rad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
-            double lat_deg = lat_rad * 180.0 / Math.PI;
-
-            left = lon_deg;
-            top = lat_deg;
+            _controller.Transform = geo;
         }
     }
 }
