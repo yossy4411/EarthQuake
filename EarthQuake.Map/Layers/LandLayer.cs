@@ -103,8 +103,9 @@ namespace EarthQuake.Map.Layers
                     if (!poly.Rect.IntersectsWith(bounds)) continue;
                     SKVertices? polygon = poly.Vertices;
                     
-                    paint.Color = colors?[i] ?? SKColors.DarkGreen;
-                    canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
+                    //paint.Color = colors?[i] ?? SKColors.DarkGreen;
+                    if (colors?[i] is not null)
+                        canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
                 }
             }
             

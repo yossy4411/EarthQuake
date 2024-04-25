@@ -2,14 +2,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Skia;
 using EarthQuake.Map;
 using System;
 using SkiaSharp;
-using System.Runtime.Intrinsics.X86;
-using System.Diagnostics;
 
 namespace EarthQuake.Canvas
 {
@@ -64,6 +59,7 @@ namespace EarthQuake.Canvas
 
                 Controller?.RenderBase(canvas, Scale, region);
             }
+            
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)

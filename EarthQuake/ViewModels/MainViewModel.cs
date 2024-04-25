@@ -87,7 +87,7 @@ public class MainViewModel : ViewModelBase
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
-            MapLayers = [world, new MapTilesLayer(MapTiles.TileUrl), border, grid, /*_kmoni*/],
+            MapLayers = [world, new MapTilesLayer(MapTiles.TileUrl), _land, border, grid, _kmoni],
         };
         Controller2 = new(json, transform, typelist)
         {

@@ -30,7 +30,7 @@ public partial class MainView : UserControl
         dateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
         dateEnd.SelectedDate = DateTime.Now.Date;
         updateEpic.Click += Update_Epicenters;
-        timer = new(Timer_Elapsed, null, 3000, 125);
+        timer = new(Timer_Elapsed, null, 0, 250);
     }
 
     private void Timer_Elapsed(object? state)
