@@ -5,6 +5,7 @@ using Avalonia.Media;
 using EarthQuake.Map;
 using System;
 using SkiaSharp;
+using Newtonsoft.Json.Bson;
 
 namespace EarthQuake.Canvas
 {
@@ -47,6 +48,7 @@ namespace EarthQuake.Canvas
             using var lease = GetSKCanvas(context);
             if (lease is null) return;
             var canvas = lease.SkCanvas;
+
             SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
             canvas.ClipRect(clipRect);
             canvas.Clear(Background);
@@ -59,6 +61,7 @@ namespace EarthQuake.Canvas
 
                 Controller?.RenderBase(canvas, Scale, region);
             }
+
             
         }
 

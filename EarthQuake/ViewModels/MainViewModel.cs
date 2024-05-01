@@ -71,7 +71,7 @@ public class MainViewModel : ViewModelBase
         GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
         using Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
         //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson(); 
-        _land = new(json) { AutoFill = true };
+        _land = new(json) { AutoFill = false };
         var world = new CountriesLayer(geojson);
         var typelist = MapViewController.CalculateTypes(json);
         var border = new BorderLayer(json) { DrawCoast = true };
@@ -83,21 +83,21 @@ public class MainViewModel : ViewModelBase
         Hypo = new();
         //var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4));
         Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson"))?.Features, transform);
-        
+        MapTilesLayer tile = new(MapTiles.TileUrl);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(json, transform, typelist)
         {
-            MapLayers = [world, new MapTilesLayer(MapTiles.TileUrl), _land, border, grid, _kmoni],
+            MapLayers = [tile,　world, _land, border, grid, _kmoni],
         };
         Controller2 = new(json, transform, typelist)
         {
             Geo = transform,
-            MapLayers = [world, _land, _cities, border, _foreg],
+            MapLayers = [tile, world, _land, _cities, border, _foreg],
         };
         Controller3 = new(json, transform, typelist)
         {
             Geo = transform,
-            MapLayers = [world, _land, new BorderLayer(border) { DrawCity = false }, Hypo],
+            MapLayers = [world, new LandLayer(_land) { AutoFill = true }, new BorderLayer(border) { DrawCity = false }, Hypo],
         };
         json = null; // TopoJsonを開放する
         geojson = null; // GeoJsonを開放する

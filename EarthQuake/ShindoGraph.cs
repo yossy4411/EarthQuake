@@ -1,11 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Skia;
 using System;
-using SkiaSharp;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
@@ -13,13 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System.Collections;
-using HarfBuzzSharp;
-using DynamicData;
-using System.Linq;
 using Avalonia.Threading;
-using System.Timers;
-using System.Globalization;
 
 namespace EarthQuake
 {
@@ -31,7 +21,7 @@ namespace EarthQuake
         private int count = 0;
         public ShindoGraph()
         {
-            Task.Run(async () => await ConnectToWebSocketAsync("ws://192.168.11.13:8000"));// 負荷がかかるため無効化 => ws://192.168.11.13:8000が本当のアドレス
+            Task.Run(async () => await ConnectToWebSocketAsync("ws://192.168.11.13:8000"));
             // タイマーの作成と設定
             timer = new()
             {

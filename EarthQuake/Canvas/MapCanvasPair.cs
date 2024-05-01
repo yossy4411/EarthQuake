@@ -100,7 +100,6 @@ namespace EarthQuake.Canvas
 
         public override void Render(DrawingContext context)
         {
-            
             BackgroundCanvas?.Render(context);
             ForegroundCanvas?.Render(context);
             base.Render(context);

@@ -15,16 +15,23 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(TopoJson json, string layerName = "info") : TopoLayer(json, layerName) // ["eew", "info", "city"]
+    public class LandLayer(TopoJson? json, string layerName = "info") : TopoLayer(json, layerName) // ["eew", "info", "city"]
     {
         public bool Draw { get; set; } = true;
         private protected SKColor[]? colors;
         private protected readonly Polygon[][] buffer = [[],[],[],[],[],[]];
         private string[]? names;
-        public bool AutoFill = false;
-
+        public bool AutoFill { get; set; } = false;
+        private readonly bool copy = false;
+        public LandLayer(LandLayer copySource) : this(json: null)
+        {
+            buffer = copySource.buffer;
+            names = copySource.names;
+            copy = true;
+        }
         private protected override void Initialize(GeomTransform geo)
         {
+            if (copy) return;
             if (Data is not null && Data.Geometries is not null)
             {
                 for (int i2 = 0; i2 < 6; i2++)
@@ -80,6 +87,7 @@ namespace EarthQuake.Map.Layers
                             .FirstOrDefault();
                         if (a is not null) colors[i] = Kiwi3Color.GetColor(a.Scale);
                         else if (AutoFill) colors[i] = SKColors.DarkGreen;
+                        else colors[i] = SKColors.Empty;
                     }
                 }
 
@@ -102,10 +110,20 @@ namespace EarthQuake.Map.Layers
                     Polygon poly = polygons[i];
                     if (!poly.Rect.IntersectsWith(bounds)) continue;
                     SKVertices? polygon = poly.Vertices;
-                    
-                    //paint.Color = colors?[i] ?? SKColors.DarkGreen;
-                    if (colors?[i] is not null)
+                    if (AutoFill)
+                    {
+                        paint.Color = colors?[i] ?? SKColors.DarkGreen;
                         canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
+                    }
+                    else
+                    {
+                        if (colors?[i] is not null)
+                        {
+                            paint.Color = colors[i];
+                            canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
+                        }
+                    }
+                    
                 }
             }
             

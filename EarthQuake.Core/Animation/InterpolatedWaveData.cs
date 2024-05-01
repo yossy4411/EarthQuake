@@ -44,7 +44,7 @@ namespace EarthQuake.Core.Animation
             {
                 
                 float value = values[index];
-                float next = index == 0 ? 0 : values[index + 1];
+                float next = values[index + 1];
                 result = value * (1 - 4 * (secondsPass % 0.25f)) + next * 4 * (secondsPass % 0.25f);
 
             }

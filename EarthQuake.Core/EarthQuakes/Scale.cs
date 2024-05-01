@@ -68,5 +68,19 @@
                 0 => Scale.Unknown,
                 _ => Scale.Unknown
             };
+        public static Scale FromString(string formatedText) =>
+            formatedText switch
+            {
+                "1" => Scale.Scale1,
+                "2" => Scale.Scale2,
+                "3" => Scale.Scale3,
+                "4" => Scale.Scale4,
+                "5弱" => Scale.Scale5L,
+                "5強" => Scale.Scale5H,
+                "6弱" => Scale.Scale6L,
+                "6強" => Scale.Scale6H,
+                "7" => Scale.Scale7,
+                _ => Scale.Unknown,
+            };
     }
 }

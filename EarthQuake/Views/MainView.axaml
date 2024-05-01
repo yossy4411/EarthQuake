@@ -167,6 +167,7 @@
                                     ClipToBounds="True"/>
             <Grid HorizontalAlignment="Stretch">
               <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="8*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
@@ -180,16 +181,38 @@
                   <RowDefinition Height="Auto"/>
                   <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Column="0" Grid.Row="0">開始日</TextBlock>
-                <TextBlock Grid.Column="1" Grid.Row="0">終了日</TextBlock>
+                <TextBlock Grid.Column="0" Grid.Row="1">開始日</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="1">終了日</TextBlock>
                 <CalendarDatePicker x:Name="dateStart" 
                                     Grid.Column="0" 
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     HorizontalAlignment="Stretch"/>
                 <CalendarDatePicker x:Name="dateEnd" 
                                     Grid.Column="1" 
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     HorizontalAlignment="Stretch"/>
+                <Border VerticalAlignment="Bottom"
+                        HorizontalAlignment="Right"
+                        Grid.Column="1"
+                        Grid.Row="0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="データ取得元:"
+                               Foreground="Black"
+                               FontSize="12"
+                               Margin="5"/>
+                    <Button Command="{Binding OpenJmaHypoLink}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Margin="5"
+                            Padding="0">
+                      <TextBlock Text="気象庁 震央分布図"
+                                 Tag="license"
+                                 Foreground="Blue"
+                                 TextDecorations="Underline"
+                                 FontSize="12"/>
+                    </Button>
+                  </StackPanel>
+                </Border>
               </Grid>
               <DockPanel Grid.Row="2">
                 <Button x:Name="updateEpic"
@@ -205,26 +228,6 @@
                         x:Name="slider"/>
               </DockPanel>
             </Grid>
-            <Border VerticalAlignment="Bottom"
-                    HorizontalAlignment="Right">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="データ取得元:"
-                           Foreground="Black"
-                           FontSize="12"
-                           Margin="5"/>
-                <Button Command="{Binding OpenJmaHypoLink}"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Margin="5"
-                        Padding="0">
-                  <TextBlock Text="気象庁 震央分布図"
-                             Tag="license"
-                             Foreground="Blue"
-                             TextDecorations="Underline"
-                             FontSize="12"/>
-                </Button>
-              </StackPanel>
-            </Border>
           </Panel>
         </DockPanel>
       </TabItem>

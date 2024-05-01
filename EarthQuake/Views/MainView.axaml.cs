@@ -9,9 +9,7 @@ namespace EarthQuake.Views;
 
 public partial class MainView : UserControl
 {
-#pragma warning disable IDE0052 // 読み取られていないプライベート メンバーを削除
-    private readonly Timer timer;
-#pragma warning restore IDE0052 // 読み取られていないプライベート メンバーを削除
+    private readonly DispatcherTimer timer;
 
     public MainView()
     {
@@ -30,19 +28,17 @@ public partial class MainView : UserControl
         dateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
         dateEnd.SelectedDate = DateTime.Now.Date;
         updateEpic.Click += Update_Epicenters;
-        timer = new(Timer_Elapsed, null, 0, 250);
+        timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
+        timer.Tick += Timer_Elapsed;
+        timer.Start();
     }
 
-    private void Timer_Elapsed(object? state)
+    private void Timer_Elapsed(object? sender, EventArgs args)
     {
-        Dispatcher.UIThread.Post(() =>
+        if (kmoni.IsVisible)
         {
-            if (kmoni.IsVisible)
-            {
-                kmoni.InvalidateVisual();
-            }
+            kmoni.InvalidateVisual();
         }
-        );
 
     }
 

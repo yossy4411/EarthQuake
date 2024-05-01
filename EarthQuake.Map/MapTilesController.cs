@@ -12,36 +12,78 @@ namespace EarthQuake.Map
 {
     internal class MapTilesController
     {
+        private class MapTileReciever { 
+        }
         private readonly string _url;
         public GeomTransform? Transform { get; set; }
         private readonly Dictionary<int, List<MapTile>> images = [];
         private readonly List<MapTileRequest> requests = [];
+        private readonly Task[] tasks = new Task[1];
         internal MapTilesController(string url)
         {
             _url = url;
-            Task task = Task.Run(Handle);
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                tasks[i] = Task.Run(Handle);
+            }
         }
         private async Task Handle()
         {
+            HttpClient client = new();
             while (true)
             {
                 if (requests.Count > 0)
                 {
                     try
                     {
-                        (SKPoint point, TilePoint point1) = requests[0];
-                        await GetBitmapAsync(point, point1);
+                        var req = requests[0];
+                        await GetBitmapAsync(client, 
+                            req.Point, 
+                            req.TilePoint);
+                        
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                       
+                        Debug.WriteLine(ex.StackTrace);
                     }
                     finally
                     {
-                        requests.RemoveAt(0);
+                         requests.RemoveAt(0);
                     }
                 }
             }
+        }
+        private async Task GetBitmapAsync(HttpClient client, SKPoint point, TilePoint point1)
+        {
+            SKBitmap? bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(_url, point1.X, point1.Y, point1.Z));
+            MapTile tile = new(point, MathF.Pow(2, point1.Z), bitmap, point1);
+            if (images.TryGetValue(point1.Z, out List<MapTile>? value))
+            {
+                value.Add(tile);
+                if (value.Count > 130)
+                {
+                    value.RemoveAt(0);
+                }
+            }
+            else
+            {
+                images.Add(point1.Z, [tile]);
+            }
+        }
+        private static async Task<SKBitmap?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
+        {
+            var response = await webClient.GetAsync(url);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                byte[] network = await response.Content.ReadAsByteArrayAsync();
+                return SKBitmap.Decode(network);
+            }
+            else
+            {
+                return null;
+            }
+
         }
         private static void GetXYZTile(double screenX, double screenY, int zoom, out int x, out int y, out int z)
         {
@@ -161,28 +203,6 @@ namespace EarthQuake.Map
             }
             return false;
         }
-        private async Task GetBitmapAsync(SKPoint point, TilePoint point1)
-        {
-            SKBitmap bitmap = await LoadBitmapFromUrlAsync(GenerateUrl(_url, point1.X, point1.Y, point1.Z));
-            MapTile tile = new(point, MathF.Pow(2, point1.Z), bitmap, point1);
-            if (images.TryGetValue(point1.Z, out List<MapTile>? value))
-            {
-                value.Add(tile);
-            }
-            else
-            {
-                images.Add(point1.Z, [tile]);
-            }
-        }
-        private static async Task<SKBitmap> LoadBitmapFromUrlAsync(string url)
-        {
-            // URLから画像をダウンロード
-            using HttpClient webClient = new();
-            byte[] network = await webClient.GetByteArrayAsync(url);
-            SKBitmap bitmap = SKBitmap.Decode(network);
-
-            return bitmap;
-        }
         private static string GenerateUrl(string source, int x, int y, int zoom)
         {
             return source.Replace("{x}", x.ToString()).Replace("{y}", y.ToString()).Replace("{z}", zoom.ToString());
@@ -195,7 +215,7 @@ namespace EarthQuake.Map
             public TilePoint Add(int x, int y) => new(X + x, Y + y, Z);
             public static TilePoint operator +(TilePoint point, (int x, int y)point1) => point.Add(point1.x, point1.y);
         }
-        public record MapTile(SKPoint LeftTop, float Zoom,  SKBitmap Image, TilePoint Point);
+        public record MapTile(SKPoint LeftTop, float Zoom,  SKBitmap? Image, TilePoint Point);
     }
     
 }
