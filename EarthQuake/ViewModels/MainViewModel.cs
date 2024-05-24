@@ -35,7 +35,7 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller2 { get; set; }
     public MapViewController Controller3 { get; set; }
     public Brush BGBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
-    internal MapSource MapTiles { get; } = MapSource.Gsi;
+    internal MapSource MapTiles { get; } = MapSource.Gsi2;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
     private readonly CitiesLayer _cities;
