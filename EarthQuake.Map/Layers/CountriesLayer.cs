@@ -2,6 +2,7 @@
 using EarthQuake.Core.GeoJson;
 using LibTessDotNet;
 using SkiaSharp;
+using System.Diagnostics;
 using static EarthQuake.Map.Layers.TopoLayer;
 
 namespace EarthQuake.Map.Layers
@@ -22,6 +23,7 @@ namespace EarthQuake.Map.Layers
         private readonly List<Polygon> polygons = [];
         private protected override void Initialize(GeomTransform geo)
         {
+            var sw = Stopwatch.StartNew();
             if (Data is not null && Data.Features is not null)
             {
                 foreach (GeoJson.Feature feature in Data.Features)
@@ -45,6 +47,8 @@ namespace EarthQuake.Map.Layers
                 }
             }
             Data = null;
+            sw.Stop();
+            Debug.WriteLine($"World: {sw.ElapsedMilliseconds}ms");
         }
     }
 }

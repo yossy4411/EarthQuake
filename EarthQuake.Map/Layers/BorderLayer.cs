@@ -17,7 +17,7 @@ namespace EarthQuake.Map.Layers
     /// <param name="json"></param>
     public class BorderLayer(TopoJson? json) : TopoLayer(json, null)
     {
-        private readonly (SKPath, SKRect)[][][] buffer = [[],[],[],[],[],[]];
+        private readonly IReadOnlyList<(SKPath, SKRect)>[][] buffer = [[],[],[],[],[],[]];
         private readonly bool copy = false;
         public bool DrawCoast { get; set; } = false;
         public bool DrawCity { get; set; } = true;
@@ -30,7 +30,7 @@ namespace EarthQuake.Map.Layers
         
         private protected override void Initialize(GeomTransform geo)
         {
-            
+            Stopwatch sw = Stopwatch.StartNew();
             if (!copy)
             {
                 if (Data is not null)
@@ -41,7 +41,7 @@ namespace EarthQuake.Map.Layers
                         {
                             0 => 0,
                             1 => 0.5,
-                            _ => (i - 1) * (i)
+                            _ => (i - 1) * i
                         };
                         
                         buffer[i] = Data.AddAllLine(geo, geo.GeometryType, i == 0);
@@ -49,6 +49,8 @@ namespace EarthQuake.Map.Layers
 
                 }
             }
+            sw.Stop();
+            Debug.WriteLine($"Border: {sw.ElapsedMilliseconds}ms");
             
         }
         private protected int GetIndex(float scale) => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1));
@@ -65,14 +67,12 @@ namespace EarthQuake.Map.Layers
             {
                 if (bounds.IntersectsWith(x.Item2))
                     canvas.DrawPath(x.Item1, paint);
-
             }
-            if (DrawCity)
-                Array.ForEach(paths[3], draw);
+            foreach (var e in paths[3]) draw(e);
             paint.Color = SKColors.DarkGray;
-            Array.ForEach(paths[2], draw);
-            Array.ForEach(paths[1], draw);
-            if (DrawCoast) Array.ForEach(paths[0], draw);
+            foreach (var e in paths[2]) draw(e);
+            foreach (var e in paths[1]) draw(e);
+            if (DrawCoast) foreach (var e in paths[0]) draw(e);
         }
     }
 }

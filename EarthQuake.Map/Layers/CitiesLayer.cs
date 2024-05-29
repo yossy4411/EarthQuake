@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class CitiesLayer(TopoJson json) : LandLayer(json, "city")
+    public class CitiesLayer(CalculatedPolygons json) : LandLayer(json)
     {
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {

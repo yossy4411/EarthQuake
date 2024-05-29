@@ -17,6 +17,11 @@ namespace EarthQuake.Map.Layers
             base.Update(geo);
             Data = null; // "json"への参照を切っておく
         }
-        internal protected record Polygon(SKVertices Vertices, SKRect Rect); // ポリゴンと表示範囲を保存するためのレコード
+        /// <summary>
+        /// ポリゴンとその表示範囲を保存するためのレコード
+        /// </summary>
+        /// <param name="Vertices">ポリゴン</param>
+        /// <param name="Rect">表示範囲</param>
+        internal protected record Polygon(SKVertices Vertices, SKRect Rect);
     }
 }

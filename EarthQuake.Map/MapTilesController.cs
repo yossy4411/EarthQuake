@@ -77,7 +77,7 @@ namespace EarthQuake.Map
             if (response.IsSuccessStatusCode)
             {
                 byte[] network = await response.Content.ReadAsByteArrayAsync();
-                return SKBitmap.Decode(network);
+                return SKBitmap.Decode(network)/*.Resize(new SKImageInfo(512, 512), SKFilterQuality.Medium)*/;
             }
             else
             {

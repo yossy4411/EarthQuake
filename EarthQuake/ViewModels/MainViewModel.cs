@@ -3,7 +3,6 @@ using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map;
 using Newtonsoft.Json;
-using SkiaSharp;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,21 +10,16 @@ using EarthQuake.Map.Layers;
 using EarthQuake.Core;
 using System;
 using Avalonia.Platform;
-using Avalonia;
-using Microsoft.VisualBasic.FileIO;
 using EarthQuake.Core.EarthQuakes;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using DynamicData;
-using System.Linq;
 using EarthQuake.Core.GeoJson;
-using System.Linq.Expressions;
 using EarthQuake.Map.Layers.OverLays;
-using Avalonia.Controls;
 using EarthQuake.Core.Animation;
-using ZstdSharp.Unsafe;
 using EarthQuake.Canvas;
 using EarthQuake.Models;
+using MessagePack;
 
 namespace EarthQuake.ViewModels;
 
@@ -58,6 +52,7 @@ public class MainViewModel : ViewModelBase
             _cities.Draw = !value;
         }
     }
+    
     public double Rotation { get => Hypo.Rotation; set => Hypo.Rotation = (float)value; }
     public MainViewModel() 
     {
@@ -65,41 +60,50 @@ public class MainViewModel : ViewModelBase
         using StreamReader streamReader = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.topojson")));
         using JsonReader reader = new JsonTextReader(streamReader);
         JsonSerializer serializer = new();
-        TopoJson? json = serializer.Deserialize<TopoJson>(reader) ?? new TopoJson();
+        TopoJson? topojson = serializer.Deserialize<TopoJson>(reader) ?? new TopoJson();
+
+        var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
+        using Stream stream1 = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/result.mpk.lz4", UriKind.Absolute));
+        var calculated = MessagePackSerializer.Deserialize<Dictionary<string, CalculatedPolygons>>(stream1, lz4Options);
+
         using StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson")));
         using JsonReader reader2 = new JsonTextReader(streamReader2);
         GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
         using Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
-        //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson(); 
-        _land = new(json) { AutoFill = false };
+        //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson();
+
+        _land = new(calculated["info"]) { AutoFill = false };
+        
         var world = new CountriesLayer(geojson);
-        var typelist = MapViewController.CalculateTypes(json);
-        var border = new BorderLayer(json) { DrawCoast = true };
+        Stopwatch sw = Stopwatch.StartNew();
+        var typelist = MapViewController.CalculateTypes(topojson);
+        Debug.WriteLine($"タイプの計算で{sw.ElapsedMilliseconds}msの時間がかかりました。");
+
+        var border = new BorderLayer(topojson) { DrawCoast = true };
         var grid = new GridLayer();
-        _cities = new CitiesLayer(json);
+        _cities = new CitiesLayer(calculated["city"]);
         _kmoni = new KmoniLayer();
         using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
         _stations = Station.GetStations(station);
         Hypo = new();
-        //var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4));
-        Hypo.AddFeature(JsonConvert.DeserializeObject<Epicenters?>(File.ReadAllText(@"E:\地震科学\テストデータ\hypo20240101.geojson"))?.Features, transform);
+        var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得する
         MapTilesLayer tile = new(MapTiles.TileUrl);
         _foreg = new ObservationsLayer() { Stations = _stations };
-        Controller1 = new(json, transform, typelist)
+        Controller1 = new(topojson, transform, typelist)
         {
             MapLayers = [tile,　world, _land, border, grid, _kmoni],
         };
-        Controller2 = new(json, transform, typelist)
+        Controller2 = new(topojson, transform, typelist)
         {
             Geo = transform,
             MapLayers = [tile, world, _land, _cities, border, _foreg],
         };
-        Controller3 = new(json, transform, typelist)
+        Controller3 = new(topojson, transform, typelist)
         {
             Geo = transform,
             MapLayers = [world, new LandLayer(_land) { AutoFill = true }, new BorderLayer(border) { DrawCity = false }, Hypo],
         };
-        json = null; // TopoJsonを開放する
+        topojson = null; // TopoJsonを開放する
         geojson = null; // GeoJsonを開放する
         GC.Collect();
         InitializeAsync();

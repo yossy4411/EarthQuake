@@ -61,7 +61,7 @@ namespace EarthQuake.Core.TopoJson
 
                 int[][] coords = _arcs[_index];
                 int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
+                var _point = _transform.ToPoint(x, y);
                 minX = Math.Min(minX, _point.X);
                 maxX = Math.Max(maxX, _point.X);
                 minY = Math.Min(minY, _point.Y);
@@ -72,12 +72,12 @@ namespace EarthQuake.Core.TopoJson
                     x += coords[i][0];
                     y += coords[i][1];
                     
-                    var point = geo.Translate(_transform.ToPoint(x, y));
+                    var point = _transform.ToPoint(x, y);
                     minX = Math.Min(minX, point.X);
                     maxX = Math.Max(maxX, point.X);
                     minY = Math.Min(minY, point.Y);
                     maxY = Math.Max(maxY, point.Y);
-                    if (Simplify == 0 || (_point - point).Length >= Simplify | i == coords.Length - 1)
+                    if (Simplify == 0 || SKPoint.Distance(_point, point) * 50 >= Simplify | i == coords.Length - 1)
                     {
                         vertices.Add(new ContourVertex() { Position = new Vec3(point.X, point.Y, 0) });
                         _point = point;
@@ -103,19 +103,21 @@ namespace EarthQuake.Core.TopoJson
                 int _index = index >= 0 ? index : -index - 1;
                 int[][] coords = _arcs[_index];
                 int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
+                var _lp = _transform.ToPoint(x, y);
 
-                result.MoveTo(_point);
+                result.MoveTo(geo.Translate(_lp));
 
                 for (int i = 1; i < coords.Length; i++)
                 {
                     x += coords[i][0];
                     y += coords[i][1];
-                    var point = geo.Translate(_transform.ToPoint(x, y));
-                    if ((_point - point).Length >= Simplify | i == coords.Length - 1)
+                    var lp = _transform.ToPoint(x, y);
+                    var point = geo.Translate(lp);
+                    if (SKPoint.Distance(_lp, lp) * 50 >= Simplify | i == coords.Length - 1)
                     {
                         result.LineTo(point);
-                        _point = point;
+                        _lp = lp;
+
                     }
                 }
 
@@ -124,7 +126,7 @@ namespace EarthQuake.Core.TopoJson
             }
 
         }
-        public (SKPath, SKRect)[][] AddAllLine(GeomTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
+        public List<(SKPath, SKRect)>[] AddAllLine(GeomTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
         {
             List<(SKPath, SKRect)> coastL = [];
             List<(SKPath, SKRect)> prefL = [];
@@ -177,7 +179,7 @@ namespace EarthQuake.Core.TopoJson
                 }
                 
             }
-            return [[.. coastL], [.. prefL], [.. areaL], [.. cityL]];
+            return [coastL, prefL, areaL, cityL];
         }
 
 

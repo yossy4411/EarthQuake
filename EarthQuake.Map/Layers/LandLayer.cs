@@ -2,76 +2,59 @@
 using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map.Colors;
-using LibTessDotNet;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(TopoJson? json, string layerName = "info") : TopoLayer(json, layerName) // ["eew", "info", "city"]
+    public class LandLayer(CalculatedPolygons? polygons) : MapLayer
     {
         public bool Draw { get; set; } = true;
         private protected SKColor[]? colors;
-        private protected readonly Polygon[][] buffer = [[],[],[],[],[],[]];
-        private string[]? names;
+        private Polygon[][]? data = polygons?.Points;
+        private protected TopoLayer.Polygon[][] buffer = [];
+        private readonly string[]? names = polygons?.Names;
         public bool AutoFill { get; set; } = false;
         private readonly bool copy = false;
-        public LandLayer(LandLayer copySource) : this(json: null)
+        public LandLayer(LandLayer copySource) : this(polygons: null)
         {
-            buffer = copySource.buffer;
             names = copySource.names;
+            buffer = copySource.buffer;
             copy = true;
         }
         private protected override void Initialize(GeomTransform geo)
         {
-            if (copy) return;
-            if (Data is not null && Data.Geometries is not null)
+            Stopwatch sw = Stopwatch.StartNew();
+
+            if (copy || data is null) return;
+            buffer = new TopoLayer.Polygon[data.Length][];
+            for (int i = 0; i < data.Length; i++)
             {
-                for (int i2 = 0; i2 < 6; i2++)
+                var innerArray = new TopoLayer.Polygon[data[i].Length];
+                buffer[i] = innerArray;
+                for (int j = 0; j < data[i].Length; j++)
                 {
-                    Data.Simplify = i2 switch
+                    Polygon p = data[i][j];
+                    Core.TopoJson.Point[] points = p.Points;
+                    SKPoint[] skpoints = new SKPoint[points.Length];
+                    for (int k = 0; k < points.Length; k++)
                     {
-                        0 => 0,
-                        1 => 0.5,
-                        _ => (i2 - 1) * (i2)
-                    };
-                    List<Polygon> polygons = [];
-                    for (int i = 0; i < Data.Geometries.Length; i++)
-                    {
-                        float minX = float.MaxValue;
-                        float maxX = float.MinValue;
-                        float minY = float.MaxValue;
-                        float maxY = float.MinValue;
-                        Feature? feature = Data.Geometries[i];
-                        Tess tess = new();
-                        if (feature.Arcs is not null)
-                        {
-
-                            foreach (var polygon in feature.Arcs)
-                            {
-
-                                Data.AddVertex(tess, polygon[0], geo, ref minX, ref minY, ref maxX, ref maxY);
-                            }
-                        }
-                        tess.Tessellate(WindingRule.Positive);
-                        SKPoint[] points = new SKPoint[tess.ElementCount * 3];
-                        for (int j = 0; j < points.Length; j++)
-                        {
-                            points[j] = new(tess.Vertices[tess.Elements[j]].Position.X, tess.Vertices[tess.Elements[j]].Position.Y);
-                        }
-                        polygons.Add(new(SKVertices.CreateCopy(SKVertexMode.Triangles, points, null), new(minX, minY, maxX, maxY)));
+                        skpoints[k] = geo.Translate(points[k]);
                     }
-                    buffer[i2] = [..polygons];
+
+                    // Translate min/max points outside the loop to reduce repeated calls
+                    SKPoint p1 = geo.Translate(p.MinX, p.MaxY);
+                    SKPoint p2 = geo.Translate(p.MaxX, p.MinY);
+
+                    innerArray[j] = new TopoLayer.Polygon(
+                        SKVertices.CreateCopy(SKVertexMode.Triangles, skpoints, null),
+                        new SKRect(p1.X, p2.Y, p2.X, p1.Y)
+                    );
                 }
             }
-            names = [..Data?.Geometries?.Select(x=>x.Properties?.Name)];
+            data = null;
+            sw.Stop();
+            Debug.WriteLine($"{GetType().Name}: {sw.ElapsedMilliseconds}ms");
         }
         public void SetInfo(PQuakeData data)
         {
@@ -97,7 +80,9 @@ namespace EarthQuake.Map.Layers
         {
             colors = null;
         }
-        private protected int GetIndex(float scale) => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1)); 
+        private protected int GetIndex(float scale)
+        => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1));
+
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             
@@ -107,8 +92,8 @@ namespace EarthQuake.Map.Layers
                 using SKPaint paint = new();
                 for (int i = 0; i < polygons.Length; i++)
                 {
-                    Polygon poly = polygons[i];
-                    if (!poly.Rect.IntersectsWith(bounds)) continue;
+                    var poly = polygons[i];
+                    if (!poly.Rect.IntersectsWith(bounds) && false) continue;
                     SKVertices? polygon = poly.Vertices;
                     if (AutoFill)
                     {
