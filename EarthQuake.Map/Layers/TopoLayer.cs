@@ -22,6 +22,6 @@ namespace EarthQuake.Map.Layers
         /// </summary>
         /// <param name="Vertices">ポリゴン</param>
         /// <param name="Rect">表示範囲</param>
-        internal protected record Polygon(SKVertices Vertices, SKRect Rect);
+        internal protected record Polygon(SKVertices[] Vertices, SKRect Rect);
     }
 }

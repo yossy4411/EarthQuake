@@ -15,13 +15,19 @@ namespace EarthQuake.Map.Layers
     /// 境を表示するためのレイヤー
     /// </summary>
     /// <param name="json"></param>
-    public class BorderLayer(TopoJson? json) : TopoLayer(json, null)
+    public class BorderLayer(CalculatedBorders? polygons) : MapLayer
     {
-        private readonly IReadOnlyList<(SKPath, SKRect)>[][] buffer = [[],[],[],[],[],[]];
+        private record Path(SKPath[] Paths, Core.TopoJson.Index[] Indices)
+        {
+            public readonly bool IsCoast = Indices.Length <= 3;
+            public readonly bool IsCity = Indices.Length <= 2;
+        }
+        private Path[] buffer = [];
+        private readonly Border[]? Data = polygons?.Points;
         private readonly bool copy = false;
         public bool DrawCoast { get; set; } = false;
         public bool DrawCity { get; set; } = true;
-        public BorderLayer(BorderLayer copySource) : this(json: null)
+        public BorderLayer(BorderLayer copySource) : this(polygons: null)
         {
             
             copy = true;
@@ -35,16 +41,20 @@ namespace EarthQuake.Map.Layers
             {
                 if (Data is not null)
                 {
-                    for (int i = 0; i < 5; i++)
+                    buffer = new Path[Data.Length];
+                    for (int i1 = 0; i1 < Data.Length; i1++)
                     {
-                        Data.Simplify = i switch
+                        Border p = Data[i1]!;
+                        SKPath[] paths = new SKPath[p.Points.Length];
+                        for (int i = 0; i < paths.Length; i++)
                         {
-                            0 => 0,
-                            1 => 0.5,
-                            _ => (i - 1) * i
-                        };
-                        
-                        buffer[i] = Data.AddAllLine(geo, geo.GeometryType, i == 0);
+                            SKPath path = new();
+                            Point[] points = p.Points[i];
+                            path.MoveTo(geo.Translate(points[0]));
+                            for (int j = 1; j < points.Length; j++) path.LineTo(geo.Translate(points[j]));
+                            paths[i] = path;
+                        }
+                        buffer[i1] = new(paths, p.ContainedIndice);
                     }
 
                 }
@@ -53,26 +63,24 @@ namespace EarthQuake.Map.Layers
             Debug.WriteLine($"Border: {sw.ElapsedMilliseconds}ms");
             
         }
-        private protected int GetIndex(float scale) => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1));
+        public static int GetIndex(float scale) => LandLayer.GetIndex(scale);
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            var paths = buffer[GetIndex(scale)];
-            if (paths.Length == 0) return;
+            int index = GetIndex(scale);
             using var paint = new SKPaint()
             {
                 Color = SKColors.Gray,
                 Style = SKPaintStyle.Stroke,
             };
-            void draw((SKPath, SKRect) x)
+            void draw(Path x)
             {
-                if (bounds.IntersectsWith(x.Item2))
-                    canvas.DrawPath(x.Item1, paint);
+                if (bounds.IntersectsWith(x.Paths[index].Bounds))
+                    canvas.DrawPath(x.Paths[index], paint);
             }
-            foreach (var e in paths[3]) draw(e);
-            paint.Color = SKColors.DarkGray;
-            foreach (var e in paths[2]) draw(e);
-            foreach (var e in paths[1]) draw(e);
-            if (DrawCoast) foreach (var e in paths[0]) draw(e);
+            foreach (var e in buffer) { 
+                if (!e.IsCity || index == 0)
+                    draw(e); 
+            }
         }
     }
 }

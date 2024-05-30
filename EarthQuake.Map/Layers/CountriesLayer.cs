@@ -9,6 +9,7 @@ namespace EarthQuake.Map.Layers
 {
     public class CountriesLayer(GeoJson geojson) : MapLayer
     {
+        private record Polygon(SKVertices Vertices, SKRect Rect);
         public GeoJson? Data = geojson;
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {

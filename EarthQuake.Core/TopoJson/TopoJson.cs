@@ -61,7 +61,7 @@ namespace EarthQuake.Core.TopoJson
 
                 int[][] coords = _arcs[_index];
                 int x = coords[0][0], y = coords[0][1];
-                var _point = _transform.ToPoint(x, y);
+                var _point = _transform.ToSKPoint(x, y);
                 minX = Math.Min(minX, _point.X);
                 maxX = Math.Max(maxX, _point.X);
                 minY = Math.Min(minY, _point.Y);
@@ -72,7 +72,7 @@ namespace EarthQuake.Core.TopoJson
                     x += coords[i][0];
                     y += coords[i][1];
                     
-                    var point = _transform.ToPoint(x, y);
+                    var point = _transform.ToSKPoint(x, y);
                     minX = Math.Min(minX, point.X);
                     maxX = Math.Max(maxX, point.X);
                     minY = Math.Min(minY, point.Y);
@@ -96,91 +96,6 @@ namespace EarthQuake.Core.TopoJson
             }
             tess.AddContour(result);
         }
-        public void AddLine(SKPath result, int[] contours, GeomTransform geo)
-        {
-            foreach (var index in contours)
-            {
-                int _index = index >= 0 ? index : -index - 1;
-                int[][] coords = _arcs[_index];
-                int x = coords[0][0], y = coords[0][1];
-                var _lp = _transform.ToPoint(x, y);
-
-                result.MoveTo(geo.Translate(_lp));
-
-                for (int i = 1; i < coords.Length; i++)
-                {
-                    x += coords[i][0];
-                    y += coords[i][1];
-                    var lp = _transform.ToPoint(x, y);
-                    var point = geo.Translate(lp);
-                    if (SKPoint.Distance(_lp, lp) * 50 >= Simplify | i == coords.Length - 1)
-                    {
-                        result.LineTo(point);
-                        _lp = lp;
-
-                    }
-                }
-
-
-
-            }
-
-        }
-        public List<(SKPath, SKRect)>[] AddAllLine(GeomTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
-        {
-            List<(SKPath, SKRect)> coastL = [];
-            List<(SKPath, SKRect)> prefL = [];
-            List<(SKPath, SKRect)> areaL = [];
-            List<(SKPath, SKRect)> cityL = [];
-
-            for (int j = 0; j < _arcs.Length; j++)
-            {
-                var type = ocean?[j];
-                if (type is PolygonType.None || (type is PolygonType.City && !requireCity))
-                {
-                    continue;
-                }
-                var coords = _arcs[j];
-                int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
-                float maxX = float.MinValue;
-                float maxY = float.MinValue;
-                float minX = float.MaxValue;
-                float minY = float.MaxValue;
-                SKPath path = new();
-                path.MoveTo(_point);
-                maxX = Math.Max(maxX, _point.X);
-                maxY = Math.Max(maxY, _point.Y);
-                minX = Math.Min(minX, _point.X);
-                minY = Math.Min(minY, _point.Y);
-                for (int i = 1; i < coords.Length; i++)
-                {
-                    x += coords[i][0];
-                    y += coords[i][1];
-                    var point = geo.Translate(_transform.ToPoint(x, y));
-                    if (Simplify == 0 || (_point - point).Length >= Simplify || i == coords.Length - 1)
-                    {
-                        path.LineTo(point);
-                        maxX = Math.Max(maxX, point.X);
-                        maxY = Math.Max(maxY, point.Y);
-                        minX = Math.Min(minX, point.X);
-                        minY = Math.Min(minY, point.Y);
-                        _point = point;
-                    }
-                }
-                SKRect rect = new(minX, minY, maxX, maxY);
-                (SKPath, SKRect) value = (path, rect);
-                switch (type)
-                {
-                    case PolygonType.City: cityL.Add(value); break;
-                    case PolygonType.Coast: coastL.Add(value); break;
-                    case PolygonType.Area: areaL.Add(value); break;
-                    case PolygonType.Pref: prefL.Add(value); break;
-                }
-                
-            }
-            return [coastL, prefL, areaL, cityL];
-        }
 
 
         public string LayerName => _layer?.Name ?? string.Empty;
@@ -190,9 +105,13 @@ namespace EarthQuake.Core.TopoJson
     {
         public double[] Scale { get; set; } = [0, 0];
         public double[] Translate { get; set; } = [0, 0];
-        public SKPoint ToPoint(int x, int y)
+        public SKPoint ToSKPoint(int x, int y)
         {
             return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
+        }
+        public Point ToPoint(int x, int y)
+        {
+            return new Point((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
         }
 
     }

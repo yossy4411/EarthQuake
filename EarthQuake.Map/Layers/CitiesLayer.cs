@@ -16,13 +16,13 @@ namespace EarthQuake.Map.Layers
     {
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            var polygons = buffer[GetIndex(scale)];
+            int index = GetIndex(scale);
             if (Draw)
             {
                 using SKPaint paint = new();
-                for (int i = 0; i < polygons.Length; i++)
+                for (int i = 0; i < buffer.Length; i++)
                 {
-                    SKVertices? polygon = polygons[i].Vertices;
+                    SKVertices? polygon = buffer[i].Vertices[index];
                     if (colors?[i] is not null)
                     {
                         paint.Color = colors[i];

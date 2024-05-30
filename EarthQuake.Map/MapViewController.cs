@@ -20,9 +20,9 @@ namespace EarthQuake.Map
     {
         PrefOnly
     }
-    public class MapViewController
+    public class MapViewController(GeomTransform geo)
     {
-        public GeomTransform Geo { get; set; } = new();
+        public GeomTransform Geo { get; set; } = geo;
         private MapLayer[] _mapLayers = [];
         public float Rotation { get; set; } = 0f;
         public MapLayer[] MapLayers
@@ -36,21 +36,6 @@ namespace EarthQuake.Map
                     item.Update(Geo);
                 }
             }
-        }
-        public MapViewController(TopoJson json, GeomTransform geo, PolygonType[]? types = null)
-        {
-            Geo = geo;
-            if (types == null)
-            {
-                PolygonType[] geom = CalculateTypes(json);
-                Geo.GeometryType = geom;
-            }
-            else
-            {
-                Geo.GeometryType = types;
-            }
-
-            
         }
 
         public static PolygonType[] CalculateTypes(TopoJson json)

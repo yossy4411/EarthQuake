@@ -11,8 +11,8 @@ namespace EarthQuake.Map.Layers
     {
         public bool Draw { get; set; } = true;
         private protected SKColor[]? colors;
-        private Polygon[][]? data = polygons?.Points;
-        private protected TopoLayer.Polygon[][] buffer = [];
+        private Polygon[]? data = polygons?.Points;
+        private protected TopoLayer.Polygon[] buffer = [];
         private readonly string[]? names = polygons?.Names;
         public bool AutoFill { get; set; } = false;
         private readonly bool copy = false;
@@ -27,30 +27,31 @@ namespace EarthQuake.Map.Layers
             Stopwatch sw = Stopwatch.StartNew();
 
             if (copy || data is null) return;
-            buffer = new TopoLayer.Polygon[data.Length][];
+            buffer = new TopoLayer.Polygon[data.Length];
             for (int i = 0; i < data.Length; i++)
             {
-                var innerArray = new TopoLayer.Polygon[data[i].Length];
-                buffer[i] = innerArray;
-                for (int j = 0; j < data[i].Length; j++)
+                Polygon p = data[i];
+                Point[][] innerPoints = p.Points;
+                SKVertices[] vertices = new SKVertices[innerPoints.Length];
+                for (int j = 0; j < innerPoints.Length; j++)
                 {
-                    Polygon p = data[i][j];
-                    Core.TopoJson.Point[] points = p.Points;
+                    
+                    Point[] points = innerPoints[j];
                     SKPoint[] skpoints = new SKPoint[points.Length];
                     for (int k = 0; k < points.Length; k++)
                     {
                         skpoints[k] = geo.Translate(points[k]);
                     }
 
-                    // Translate min/max points outside the loop to reduce repeated calls
-                    SKPoint p1 = geo.Translate(p.MinX, p.MaxY);
-                    SKPoint p2 = geo.Translate(p.MaxX, p.MinY);
 
-                    innerArray[j] = new TopoLayer.Polygon(
-                        SKVertices.CreateCopy(SKVertexMode.Triangles, skpoints, null),
+                    vertices[j] = SKVertices.CreateCopy(SKVertexMode.Triangles, skpoints, null);
+                }
+                SKPoint p1 = geo.Translate(p.MinX, p.MaxY);
+                SKPoint p2 = geo.Translate(p.MaxX, p.MinY);
+                buffer[i] = new TopoLayer.Polygon(
+                        vertices,
                         new SKRect(p1.X, p2.Y, p2.X, p1.Y)
                     );
-                }
             }
             data = null;
             sw.Stop();
@@ -80,21 +81,21 @@ namespace EarthQuake.Map.Layers
         {
             colors = null;
         }
-        private protected int GetIndex(float scale)
-        => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1));
+        public static int GetIndex(float scale)
+        => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), 5));
 
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            
-            var polygons = buffer[GetIndex(scale)];
+
+            int index = GetIndex(scale);
             if (Draw)
             {
                 using SKPaint paint = new();
-                for (int i = 0; i < polygons.Length; i++)
+                for (int i = 0; i < buffer.Length; i++)
                 {
-                    var poly = polygons[i];
+                    var poly = buffer[i];
                     if (!poly.Rect.IntersectsWith(bounds) && false) continue;
-                    SKVertices? polygon = poly.Vertices;
+                    SKVertices? polygon = poly.Vertices[index];
                     if (AutoFill)
                     {
                         paint.Color = colors?[i] ?? SKColors.DarkGreen;

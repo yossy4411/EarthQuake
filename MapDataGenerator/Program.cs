@@ -3,36 +3,53 @@ using EarthQuake.Core.TopoJson;
 using LibTessDotNet;
 using MessagePack;
 using Newtonsoft.Json;
+using SkiaSharp;
 using System.Diagnostics;
+using TIndex = EarthQuake.Core.TopoJson.Index;
 
-
+static bool contains(Feature feature, int v)
+{
+    foreach (int[][] a1 in feature.Arcs)
+    {
+        foreach (int[] a2 in a1)
+        {
+            foreach (int a3 in a2)
+            {
+                if ((a3 < 0 ? -a3 - 1 : a3) == v) return true;
+            }
+        }
+    }
+    return false;
+}
 
 TopoJson? topo = JsonConvert.DeserializeObject<TopoJson>(File.ReadAllText("japan.json"));
-
-void load(string layerName, out string[]? names, out Polygon[][] dict)
+if (topo == null) return;
+CalculatedPolygons? load(string layerName)
 {
-    var Data = topo?.GetLayer(layerName);
+    var Data = topo.GetLayer(layerName);
     var geo = new GeomTransform();
 
-    dict = new Polygon[6][];
+
     if (Data is not null && Data.Geometries is not null)
     {
-        for (int i2 = 0; i2 < 6; i2++)
+        Polygon[] parent = new Polygon[Data.Geometries.Length];
+        for (int i = 0; i < Data.Geometries.Length; i++)
         {
-            Data.Simplify = i2 switch
+            Feature? feature = Data.Geometries[i];
+            float minX = float.MaxValue;
+            float maxX = float.MinValue;
+            float minY = float.MaxValue;
+            float maxY = float.MinValue;
+            Point[][] points1 = new Point[6][];
+            for (int i2 = 0; i2 < 6; i2++)
             {
-                0 => 0,
-                1 => 0.5,
-                _ => (i2 - 1) * i2
-            };
-            Polygon[] parent = new Polygon[Data.Geometries.Length];
-            for (int i = 0; i < Data.Geometries.Length; i++)
-            {
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
-                float minY = float.MaxValue;
-                float maxY = float.MinValue;
-                Feature? feature = Data.Geometries[i];
+                Data.Simplify = i2 switch
+                {
+                    0 => 0,
+                    1 => 0.5,
+                    _ => (i2 - 1) * i2
+                };
+
                 Tess tess = new();
                 if (feature.Arcs is not null)
                 {
@@ -42,41 +59,110 @@ void load(string layerName, out string[]? names, out Polygon[][] dict)
                         Data.AddVertex(tess, polygon[0], geo, ref minX, ref minY, ref maxX, ref maxY);
                     }
                 }
-                tess.Tessellate(WindingRule.Positive);
+                tess.Tessellate(WindingRule.Positive); // テッセレーションを通す。
                 Point[] points = new Point[tess.ElementCount * 3];
                 for (int j = 0; j < points.Length; j++)
                 {
                     points[j] = new(tess.Vertices[tess.Elements[j]].Position.X, tess.Vertices[tess.Elements[j]].Position.Y);
                 }
-                parent[i] = new Polygon(points, minX, maxX, minY, maxY);
+                points1[i2] = points;
+                
             }
-            dict[i2] =  parent;
+            parent[i] = new Polygon(points1, minX, maxX, minY, maxY);
         }
-        names = new string[Data.Geometries.Length];
+        string[] names = new string[Data.Geometries.Length];
         for (int i = 0; i < Data.Geometries.Length; i++) names[i] = Data.Geometries[i].Properties!.Name!;
+
+        return new CalculatedPolygons(names, parent);
     } 
     else
     {
-        names = null;
+        return null;
     }
 }
-load("info", out var namea, out var dicta);
-load("city", out var nameb, out var dictb);
 
-if (namea is null || nameb is null)
+CalculatedBorders generateBorders() {
+    string[] layerNames = new string[topo.Objects.Count];
+    float maxX = float.MinValue;
+    float maxY = float.MinValue;
+    float minX = float.MaxValue;
+    float minY = float.MaxValue;
+    var arcs = topo.Arcs;
+    Border[] borders = new Border[arcs.Length];
+    
+    for (int e = 0; e < arcs.Length; e++)
+    {
+        List<TIndex> indice = [];
+        int ij = 0;
+        foreach ((string layerName, Layer layer) in topo.Objects.ToList().OrderByDescending(x => x.Key == "city"))
+        {
+            layerNames[ij] = layerName;
+
+            for (int j = 0; j < layer.Geometries.Length; j++)
+            {
+                Feature feature = layer.Geometries[j];
+                if (contains(feature, e))
+                    indice.Add(new TIndex(ij, j));
+            }
+            ij++;
+        }
+        
+        var _transform = topo.Transform;
+
+        var coords = arcs[e];
+        Point[][] points1 = new Point[6][];
+        for (int s = 0; s < 6; s++)
+        {
+            double Simplify = s switch
+            {
+                0 => 0,
+                1 => 0.5,
+                _ => (s - 1) * s
+            };
+            List<Point> points = [];
+            int x = coords[0][0], y = coords[0][1];
+            var _point = _transform.ToPoint(x, y);
+
+            points.Add(_point);
+            maxX = Math.Max(maxX, _point.X);
+            maxY = Math.Max(maxY, _point.Y);
+            minX = Math.Min(minX, _point.X);
+            minY = Math.Min(minY, _point.Y);
+            for (int i = 1; i < coords.Length; i++)
+            {
+                x += coords[i][0];
+                y += coords[i][1];
+                var point = _transform.ToPoint(x, y);
+                if (Simplify == 0 || SKPoint.Distance(_point, point) * 50 >= Simplify || i == coords.Length - 1)
+                {
+                    points.Add(point);
+                    maxX = Math.Max(maxX, point.X);
+                    maxY = Math.Max(maxY, point.Y);
+                    minX = Math.Min(minX, point.X);
+                    minY = Math.Min(minY, point.Y);
+                    _point = point;
+                }
+            }
+            points1[s] = [.. points];
+        }
+        borders[e] = new Border([.. indice], points1, maxX, minX, minY, maxY);
+    }
+    return new CalculatedBorders(layerNames, borders);
+}
+
+var a = load("info");
+var b = load("city");
+
+var border = generateBorders();
+
+if (a is null || b is null)
 {
     Console.WriteLine("名前がnullのためシリアライズ出来ませんでした。");
     return;
 }
 
 MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
-CalculatedPolygons a = new(namea, dicta);
-CalculatedPolygons b = new(nameb, dictb);
-Dictionary<string, CalculatedPolygons> result = new()
-{
-    { "info", a },
-    { "city", b }
-};
+PolygonsSet result = new(a, b, border);
 Stopwatch sw = Stopwatch.StartNew();
 byte[] bytes = MessagePackSerializer.Serialize(result, lz4Options);
 long serialize, deserialize;
@@ -84,8 +170,8 @@ sw.Stop();
 Console.WriteLine($"シリアライズには{serialize = sw.ElapsedMilliseconds}msかかり、{bytes.LongLength / 1024}KBのデータになりました。（圧縮済み）");
 Console.WriteLine("デシリアライズのテストをします。");
 sw.Restart();
-_ = MessagePackSerializer.Deserialize<Dictionary<string, CalculatedPolygons>>(bytes, lz4Options);
+_ = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
 sw.Stop();
 Console.WriteLine($"デシリアライズには{deserialize = sw.ElapsedMilliseconds}msかかりました。({deserialize * 100.0 / serialize:0.00}%)");
 
-File.WriteAllBytes(@"result.mpk.lz4", bytes);
+File.WriteAllBytes(@"japan.mpk.lz4", bytes);
