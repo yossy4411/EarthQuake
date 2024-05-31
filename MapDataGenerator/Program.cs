@@ -83,10 +83,6 @@ CalculatedPolygons? load(string layerName)
 
 CalculatedBorders generateBorders() {
     string[] layerNames = new string[topo.Objects.Count];
-    float maxX = float.MinValue;
-    float maxY = float.MinValue;
-    float minX = float.MaxValue;
-    float minY = float.MaxValue;
     var arcs = topo.Arcs;
     Border[] borders = new Border[arcs.Length];
     
@@ -124,10 +120,7 @@ CalculatedBorders generateBorders() {
             var _point = _transform.ToPoint(x, y);
 
             points.Add(_point);
-            maxX = Math.Max(maxX, _point.X);
-            maxY = Math.Max(maxY, _point.Y);
-            minX = Math.Min(minX, _point.X);
-            minY = Math.Min(minY, _point.Y);
+            
             for (int i = 1; i < coords.Length; i++)
             {
                 x += coords[i][0];
@@ -136,16 +129,12 @@ CalculatedBorders generateBorders() {
                 if (Simplify == 0 || SKPoint.Distance(_point, point) * 50 >= Simplify || i == coords.Length - 1)
                 {
                     points.Add(point);
-                    maxX = Math.Max(maxX, point.X);
-                    maxY = Math.Max(maxY, point.Y);
-                    minX = Math.Min(minX, point.X);
-                    minY = Math.Min(minY, point.Y);
                     _point = point;
                 }
             }
             points1[s] = [.. points];
         }
-        borders[e] = new Border([.. indice], points1, maxX, minX, minY, maxY);
+        borders[e] = new Border([.. indice], points1);
     }
     return new CalculatedBorders(layerNames, borders);
 }

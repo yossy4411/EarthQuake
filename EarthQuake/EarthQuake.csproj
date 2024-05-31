@@ -19,7 +19,6 @@
     <None Remove="Assets\NotoSansJP-Medium.ttf" />
     <None Remove="Assets\Stations.csv" />
     <None Remove="Assets\world-original.json" />
-    <None Remove="Assets\world.geojson" />
   </ItemGroup>
 
   

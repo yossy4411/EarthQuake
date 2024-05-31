@@ -23,7 +23,7 @@ namespace EarthQuake.Map.Layers
             public readonly bool IsCity = Indices.Length <= 2;
         }
         private Path[] buffer = [];
-        private readonly Border[]? Data = polygons?.Points;
+        private Border[]? data = polygons?.Points;
         private readonly bool copy = false;
         public bool DrawCoast { get; set; } = false;
         public bool DrawCity { get; set; } = true;
@@ -39,12 +39,12 @@ namespace EarthQuake.Map.Layers
             Stopwatch sw = Stopwatch.StartNew();
             if (!copy)
             {
-                if (Data is not null)
+                if (data is not null)
                 {
-                    buffer = new Path[Data.Length];
-                    for (int i1 = 0; i1 < Data.Length; i1++)
+                    buffer = new Path[data.Length];
+                    for (int i1 = 0; i1 < data.Length; i1++)
                     {
-                        Border p = Data[i1]!;
+                        Border p = data[i1]!;
                         SKPath[] paths = new SKPath[p.Points.Length];
                         for (int i = 0; i < paths.Length; i++)
                         {
@@ -61,6 +61,7 @@ namespace EarthQuake.Map.Layers
             }
             sw.Stop();
             Debug.WriteLine($"Border: {sw.ElapsedMilliseconds}ms");
+            data = null; // データを解放
             
         }
         public static int GetIndex(float scale) => LandLayer.GetIndex(scale);
@@ -77,8 +78,8 @@ namespace EarthQuake.Map.Layers
                 if (bounds.IntersectsWith(x.Paths[index].Bounds))
                     canvas.DrawPath(x.Paths[index], paint);
             }
-            foreach (var e in buffer) { 
-                if (!e.IsCity || index == 0)
+            foreach (var e in buffer) {
+                if (e.IsCity && index != 0 && DrawCity) continue;
                     draw(e); 
             }
         }

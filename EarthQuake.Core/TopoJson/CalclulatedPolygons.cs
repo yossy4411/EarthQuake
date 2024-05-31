@@ -60,23 +60,15 @@ namespace EarthQuake.Core.TopoJson
         public CalculatedBorders Border { get; init; } = border;
     }
     [MessagePackObject]
-    public class Border(Index[] containedIndice, Point[][] points, float mix, float max, float miy, float may)
+    public class Border(Index[] containedIndice, Point[][] points)
     {
-        public Border() : this([], [], 0, 0, 0, 0)
+        public Border() : this([], [])
         {
 
         }
         [Key(0)]
         public Point[][] Points { get; init; } = points;
         [Key(1)]
-        public float MinX { get; init; } = mix;
-        [Key(2)]
-        public float MaxX { get; init; } = max;
-        [Key(3)]
-        public float MinY { get; init; } = miy;
-        [Key(4)]
-        public float MaxY { get; init; } = may;
-        [Key(5)]
         public Index[] ContainedIndice { get; init; } = containedIndice;
     }
     [MessagePackObject]

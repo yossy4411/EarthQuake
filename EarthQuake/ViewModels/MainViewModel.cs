@@ -29,7 +29,8 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller2 { get; set; }
     public MapViewController Controller3 { get; set; }
     public Brush BGBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
-    internal MapSource MapTiles { get; } = MapSource.Gsi2;
+    internal MapSource MapTiles { get; } = MapSource.GsiLight;
+    internal MapSource MapTiles2 { get; } = MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
     private readonly CitiesLayer _cities;
@@ -60,28 +61,25 @@ public class MainViewModel : ViewModelBase
         JsonSerializer serializer = new();
 
         var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
-        using Stream stream1 = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute));
-        var calculated = MessagePackSerializer.Deserialize<PolygonsSet>(stream1, lz4Options);
-
-        using StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson")));
-        using JsonReader reader2 = new JsonTextReader(streamReader2);
-        GeoJson? geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
-        using Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
-        //TopoJson geojson = serializer.Deserialize<TopoJson>(reader2) ?? new TopoJson();
-
+        PolygonsSet? calculated;
+        using (Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
+        {
+            calculated = MessagePackSerializer.Deserialize<PolygonsSet>(stream, lz4Options);
+        }
         _land = new(calculated.Info) { AutoFill = false };
-        
-        var world = new CountriesLayer(geojson);
 
         var border = new BorderLayer(calculated.Border) { DrawCoast = true };
         var grid = new GridLayer();
         _cities = new CitiesLayer(calculated.City);
         _kmoni = new KmoniLayer();
-        using Stream station = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv"));
-        _stations = Station.GetStations(station);
+        using (Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
+        {
+            _stations = Station.GetStations(stream);
+        }
         Hypo = new();
         var get = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得する
         MapTilesLayer tile = new(MapTiles.TileUrl);
+        MapTilesLayer tile2 = new(MapTiles2.TileUrl);
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(transform)
         {
@@ -90,17 +88,18 @@ public class MainViewModel : ViewModelBase
         Controller2 = new(transform)
         {
             Geo = transform,
-            MapLayers = [tile, world, _land, _cities, border, _foreg],
+            MapLayers = [tile, _land, _cities, border, _foreg],
         };
         Controller3 = new(transform)
         {
             Geo = transform,
-            MapLayers = [world, new LandLayer(_land) { AutoFill = true }, new BorderLayer(border) { DrawCity = false }, Hypo],
+            MapLayers = [tile2, new BorderLayer(border) { DrawCity = false }, Hypo],
         };
-        geojson = null; // GeoJsonを開放する
+        calculated = null;
         GC.Collect();
         InitializeAsync();
     }
+    
     public async void GetEpicenters(DateTime start, int days)
     {
         Hypo.ClearFeature();
