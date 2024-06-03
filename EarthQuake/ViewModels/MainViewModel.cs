@@ -68,7 +68,7 @@ public class MainViewModel : ViewModelBase
         }
         _land = new(calculated.Info) { AutoFill = false };
 
-        var border = new BorderLayer(calculated.Border) { DrawCoast = true };
+        var border = new BorderLayer(calculated.Border);
         var grid = new GridLayer();
         _cities = new CitiesLayer(calculated.City);
         _kmoni = new KmoniLayer();
@@ -93,7 +93,7 @@ public class MainViewModel : ViewModelBase
         Controller3 = new(transform)
         {
             Geo = transform,
-            MapLayers = [tile2, new BorderLayer(border) { DrawCity = false }, Hypo],
+            MapLayers = [tile2, new BorderLayer(border) { DrawCity = false, DrawCoast = true }, Hypo],
         };
         calculated = null;
         GC.Collect();

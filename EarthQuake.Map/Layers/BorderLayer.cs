@@ -79,8 +79,20 @@ namespace EarthQuake.Map.Layers
                     canvas.DrawPath(x.Paths[index], paint);
             }
             foreach (var e in buffer) {
-                if (e.IsCity && index != 0 && DrawCity) continue;
-                    draw(e); 
+                if (e.IsCity)
+                {
+                    if (index == 0 && DrawCity)
+                        draw(e);
+                    continue;
+                }
+                if (e.IsCoast)
+                {
+                    if (DrawCoast)
+                        draw(e);
+                    continue;
+                }
+                draw(e);
+                     
             }
         }
     }

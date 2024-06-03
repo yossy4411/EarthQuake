@@ -1,22 +1,69 @@
 ﻿using EarthQuake.Core;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarthQuake.Map
 {
+    /// <summary>
+    /// LRU (Least Recently Used) を使用したキャッシュの保存
+    /// </summary>
+    /// <typeparam name="K">Key</typeparam>
+    /// <typeparam name="V">Value</typeparam>
+    /// <param name="capacity"></param>
+    public class LRUCache<K, V>(int capacity) where K : IEquatable<K>
+    {
+        private readonly int capacity = capacity;
+        private readonly Dictionary<K, LinkedListNode<(K key, V value)>> cache = [];
+        private readonly LinkedList<(K key, V value)> lruList = new();
+
+        public bool TryGet(K key, out V? value)
+        {
+            if (cache.TryGetValue(key, out var node))
+            {
+                // キャッシュヒット: データをリストの先頭に移動
+                lruList.Remove(node);
+                lruList.AddFirst(node);
+                value = node.Value.value;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+        public void Put(K key, V value)
+        {
+            if (cache.TryGetValue(key, out var node))
+            {
+                // キャッシュヒット: データを更新し、リストの先頭に移動
+                lruList.Remove(node);
+                node.Value = (key, value);
+                lruList.AddFirst(node);
+            }
+            else
+            {
+                if (cache.Count >= capacity)
+                {
+                    // キャッシュが満杯: 最後の要素（LRU）を削除
+                    var lru = lruList.Last;
+                    if (lru != null)
+                    {
+                        cache.Remove(lru.Value.key);
+                        lruList.RemoveLast();
+                    }
+                }
+                // 新しいデータを追加
+                var newNode = new LinkedListNode<(K key, V value)>((key, value));
+                lruList.AddFirst(newNode);
+                cache[key] = newNode;
+            }
+        }
+    }
     internal class MapTilesController
     {
         private class MapTileReciever { 
         }
         private readonly string _url;
         public GeomTransform? Transform { get; set; }
-        private readonly Dictionary<int, List<MapTile>> images = [];
+        private readonly LRUCache<TilePoint, MapTile> images = new(100);
         private readonly List<MapTileRequest> requests = [];
         private readonly Task[] tasks = new Task[1];
         internal MapTilesController(string url)
@@ -57,18 +104,7 @@ namespace EarthQuake.Map
         {
             SKBitmap? bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(_url, point1.X, point1.Y, point1.Z));
             MapTile tile = new(point, MathF.Pow(2, point1.Z), bitmap, point1);
-            if (images.TryGetValue(point1.Z, out List<MapTile>? value))
-            {
-                value.Add(tile);
-                if (value.Count > 130)
-                {
-                    value.RemoveAt(0);
-                }
-            }
-            else
-            {
-                images.Add(point1.Z, [tile]);
-            }
+            images.Put(point1, tile);
         }
         private static async Task<SKBitmap?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
         {
@@ -184,16 +220,10 @@ namespace EarthQuake.Map
         {
             SKPoint leftTop = Transform!.Translate(left, top);
 
-            if (images.TryGetValue(point.Z, out List<MapTile>? value))
+            if (images.TryGet(point, out MapTile? value))
             {
-                var pos = from v in value
-                          where v.Point.Equals(point)
-                          select v;
-                if (pos.Any())
-                {
-                    tile = pos.First();
-                    return true;
-                }
+                tile = value;
+                return true;
             }
             if (!requests.Any(x => x.TilePoint == point))
             {

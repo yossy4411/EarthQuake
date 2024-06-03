@@ -224,7 +224,7 @@
                               BorderThickness="0"
                               Margin="5"
                               Padding="0">
-                        <TextBlock Text="地理院地図（淡色地図+陰影起伏図）"
+                        <TextBlock Text="地理院地図（陰影起伏図）"
                                    Tag="license"
                                    Foreground="Blue"
                                    TextDecorations="Underline"
