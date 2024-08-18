@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace EarthQuake.Map.Layers.OverLays
 {
     /// <summary>
-    /// 3次元で視覚的に震央の分布を表示するためのレイヤー。
+    /// 3次元的に震央の分布を表示するためのレイヤー。
     /// </summary>
     public class Hypo3DViewLayer : ForeGroundLayer
     {
@@ -28,8 +28,8 @@ namespace EarthQuake.Map.Layers.OverLays
                 
                 if (Rotation == 0)
                 {
-                    SKPoint3 p = point.Point;
-                    float radius = point.Magnitude is null ? 0 : float.Pow(1.7f, (float)point.Magnitude);
+                    var p = point.Point;
+                    var radius = point.Magnitude is null ? 0 : float.Pow(1.7f, (float)point.Magnitude);
                     paint.Color = SKColor.FromHsv(p.Z, 100, 100);
                     paint.Style = SKPaintStyle.Stroke;
                     canvas.DrawCircle(p.X, p.Y, radius, paint);
@@ -46,9 +46,9 @@ namespace EarthQuake.Map.Layers.OverLays
                     using (new SKAutoCanvasRestore(canvas))
                     {
                         view.Save();
-                        SKPoint3 p = point.Point;
+                        var p = point.Point;
                         view.Translate(p.X, -p.Y, p.Z);
-                        float radius = point.Magnitude is null ? 0 : float.Pow(1.7f, (float)point.Magnitude);
+                        var radius = point.Magnitude is null ? 0 : float.Pow(1.7f, (float)point.Magnitude);
                         view.ApplyToCanvas(canvas); // 3Dを適用する
                         paint.Color = SKColor.FromHsv(p.Z, 100, 100);
                         paint.Style = SKPaintStyle.Stroke;

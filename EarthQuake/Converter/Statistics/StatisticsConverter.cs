@@ -14,7 +14,7 @@ namespace EarthQuake.Converter.Statistics
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            SKRect rect = value as SKRect? ?? SKRect.Empty;
+            var rect = value as SKRect? ?? SKRect.Empty;
             return $"範囲: ({rect.Left}, {rect.Top}) - ({rect.Right}, {rect.Bottom})";
         }
 

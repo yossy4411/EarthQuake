@@ -19,7 +19,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         public P2PClient Parent { get; set; } = parent;
         public bool Connect()
         {
-            bool connected = Connect(host, port);
+            var connected = Connect(host, port);
             if (connected)
             {
                 echo = new Timer(async x => await Send("611 1"), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(3)); // ピアエコーのタイマー
@@ -39,7 +39,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         {
             while (ClientConnected)
             {
-                string recieved = await Read();
+                var recieved = await Read();
                 P2PServer.SendP2PConnection(this, new(recieved), Parent);
             }
         }

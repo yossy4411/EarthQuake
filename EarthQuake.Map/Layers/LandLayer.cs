@@ -10,35 +10,35 @@ namespace EarthQuake.Map.Layers
     public class LandLayer(CalculatedPolygons? polygons) : MapLayer
     {
         public bool Draw { get; set; } = true;
-        private protected SKColor[]? colors;
+        private protected SKColor[]? Colors;
         private Polygon[]? data = polygons?.Points;
-        private protected TopoLayer.Polygon[] buffer = [];
+        private protected TopoLayer.Polygon[] Buffer = [];
         private readonly string[]? names = polygons?.Names;
-        public bool AutoFill { get; set; } = false;
+        public bool AutoFill { get; init; } = false;
         private readonly bool copy = false;
         public LandLayer(LandLayer copySource) : this(polygons: null)
         {
-            names = copySource.names;
-            buffer = copySource.buffer;
             copy = true;
+            names = copySource.names;
+            Buffer = copySource.Buffer;
         }
         private protected override void Initialize(GeomTransform geo)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
             if (copy || data is null) return;
-            buffer = new TopoLayer.Polygon[data.Length];
-            for (int i = 0; i < data.Length; i++)
+            Buffer = new TopoLayer.Polygon[data.Length];
+            for (var i = 0; i < data.Length; i++)
             {
-                Polygon p = data[i];
+                var p = data[i];
                 Point[][] innerPoints = p.Points;
                 SKVertices[] vertices = new SKVertices[innerPoints.Length];
-                for (int j = 0; j < innerPoints.Length; j++)
+                for (var j = 0; j < innerPoints.Length; j++)
                 {
                     
-                    Point[] points = innerPoints[j];
-                    SKPoint[] skpoints = new SKPoint[points.Length];
-                    for (int k = 0; k < points.Length; k++)
+                    var points = innerPoints[j];
+                    var skpoints = new SKPoint[points.Length];
+                    for (var k = 0; k < points.Length; k++)
                     {
                         skpoints[k] = geo.Translate(points[k]);
                     }
@@ -46,9 +46,9 @@ namespace EarthQuake.Map.Layers
 
                     vertices[j] = SKVertices.CreateCopy(SKVertexMode.Triangles, skpoints, null);
                 }
-                SKPoint p1 = geo.Translate(p.MinX, p.MaxY);
-                SKPoint p2 = geo.Translate(p.MaxX, p.MinY);
-                buffer[i] = new TopoLayer.Polygon(
+                var p1 = geo.Translate(p.MinX, p.MaxY);
+                var p2 = geo.Translate(p.MaxX, p.MinY);
+                Buffer[i] = new TopoLayer.Polygon(
                         vertices,
                         new SKRect(p1.X, p2.Y, p2.X, p1.Y)
                     );
@@ -61,17 +61,17 @@ namespace EarthQuake.Map.Layers
         {
             if (names is not null && data?.Points is not null)
             {
-                colors = new SKColor[names.Length];
-                for (int i = 0; i < names.Length; i++)
+                Colors = new SKColor[names.Length];
+                for (var i = 0; i < names.Length; i++)
                 {
                     var name = names[i];
                     if (name is not null)
                     {
                         var a = data.Points.Where(x => x.Addr.StartsWith(name))
                             .FirstOrDefault();
-                        if (a is not null) colors[i] = Kiwi3Color.GetColor(a.Scale);
-                        else if (AutoFill) colors[i] = SKColors.DarkGreen;
-                        else colors[i] = SKColors.Empty;
+                        if (a is not null) Colors[i] = Kiwi3Color.GetColor(a.Scale);
+                        else if (AutoFill) Colors[i] = SKColors.DarkGreen;
+                        else Colors[i] = SKColors.Empty;
                     }
                 }
 
@@ -79,7 +79,7 @@ namespace EarthQuake.Map.Layers
         }
         public void Reset()
         {
-            colors = null;
+            Colors = null;
         }
         public static int GetIndex(float scale)
         => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), 5));
@@ -87,25 +87,25 @@ namespace EarthQuake.Map.Layers
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
 
-            int index = GetIndex(scale);
+            var index = GetIndex(scale);
             if (Draw)
             {
                 using SKPaint paint = new();
-                for (int i = 0; i < buffer.Length; i++)
+                for (var i = 0; i < Buffer.Length; i++)
                 {
-                    var poly = buffer[i];
+                    var poly = Buffer[i];
                     if (!poly.Rect.IntersectsWith(bounds) && false) continue;
-                    SKVertices? polygon = poly.Vertices[index];
+                    var polygon = poly.Vertices[index];
                     if (AutoFill)
                     {
-                        paint.Color = colors?[i] ?? SKColors.DarkGreen;
+                        paint.Color = Colors?[i] ?? SKColors.DarkGreen;
                         canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
                     }
                     else
                     {
-                        if (colors?[i] is not null)
+                        if (Colors?[i] is not null)
                         {
-                            paint.Color = colors[i];
+                            paint.Color = Colors[i];
                             canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
                         }
                     }

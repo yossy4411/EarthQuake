@@ -49,9 +49,9 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         protected private bool Connect(string url, ushort port, int timeout = 2000)
         {
             client = new();
-            IAsyncResult result = client.BeginConnect(url, port, null, null);
+            var result = client.BeginConnect(url, port, null, null);
 
-            bool success = result.AsyncWaitHandle.WaitOne(timeout, true);
+            var success = result.AsyncWaitHandle.WaitOne(timeout, true);
             if (!success) return false;
             // 送受信タイムアウト設定
             client.SendTimeout = 1000;
@@ -64,7 +64,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         public async Task<string> Read()
         {
             if (_stream is null) return string.Empty;
-            string message = await _stream.Read()??string.Empty;
+            var message = await _stream.Read()??string.Empty;
             OnRecieved(message);
             return message;
         }

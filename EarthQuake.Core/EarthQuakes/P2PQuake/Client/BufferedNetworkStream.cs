@@ -28,7 +28,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
             {
                 Closed?.Invoke(this, EventArgs.Empty);
             }
-            byte[] buffer = SJIS.GetBytes(request + "\r\n");
+            var buffer = SJIS.GetBytes(request + "\r\n");
             await _stream.WriteAsync(buffer);
         }
         public async Task<string> Read()
@@ -49,7 +49,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
             }
             while (_stream.DataAvailable); // 残りのデータを読み取るためのループ
 
-            string response = responseData.ToString();
+            var response = responseData.ToString();
             return response;
         }
 

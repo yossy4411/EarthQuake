@@ -48,13 +48,13 @@ namespace EarthQuake
         }
         private async Task ReceiveMessageAsync(ClientWebSocket clientWebSocket)
         {
-            byte[] receiveBuffer = new byte[1024]; // 受信バッファのサイズ
-            string message = string.Empty;
+            var receiveBuffer = new byte[1024]; // 受信バッファのサイズ
+            var message = string.Empty;
             while (clientWebSocket.State == WebSocketState.Open)
             {
                 try
                 {
-                    WebSocketReceiveResult result = await clientWebSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+                    var result = await clientWebSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
 
@@ -84,7 +84,7 @@ namespace EarthQuake
         {
             if (points[0] != null)
             {
-                for (int i = 0; i < points[0].Length / 4; i++)
+                for (var i = 0; i < points[0].Length / 4; i++)
                 {
                     if (points[0].Length <= i + count)
                     {
@@ -120,7 +120,7 @@ namespace EarthQuake
             if (shindo[0].Count > 0)
             {
                 Point point = new(0, shindo[0][0]);
-                for (int i = 1; i < shindo[0].Count; i++)
+                for (var i = 1; i < shindo[0].Count; i++)
                 {
                     var point1 = new Point(i, shindo[0][i]);
                     context.DrawLine(pen, offset + point, offset + point1);

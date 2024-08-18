@@ -1,13 +1,7 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Core.TopoJson;
-using HarfBuzzSharp;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
@@ -36,22 +30,22 @@ namespace EarthQuake.Map.Layers
         
         private protected override void Initialize(GeomTransform geo)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             if (!copy)
             {
                 if (data is not null)
                 {
                     buffer = new Path[data.Length];
-                    for (int i1 = 0; i1 < data.Length; i1++)
+                    for (var i1 = 0; i1 < data.Length; i1++)
                     {
-                        Border p = data[i1]!;
+                        var p = data[i1]!;
                         SKPath[] paths = new SKPath[p.Points.Length];
-                        for (int i = 0; i < paths.Length; i++)
+                        for (var i = 0; i < paths.Length; i++)
                         {
                             SKPath path = new();
-                            Point[] points = p.Points[i];
+                            var points = p.Points[i];
                             path.MoveTo(geo.Translate(points[0]));
-                            for (int j = 1; j < points.Length; j++) path.LineTo(geo.Translate(points[j]));
+                            for (var j = 1; j < points.Length; j++) path.LineTo(geo.Translate(points[j]));
                             paths[i] = path;
                         }
                         buffer[i1] = new(paths, p.ContainedIndice);
@@ -67,11 +61,12 @@ namespace EarthQuake.Map.Layers
         public static int GetIndex(float scale) => LandLayer.GetIndex(scale);
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            int index = GetIndex(scale);
+            var index = GetIndex(scale);
             using var paint = new SKPaint()
             {
                 Color = SKColors.Gray,
                 Style = SKPaintStyle.Stroke,
+                IsAntialias = true,
             };
             void draw(Path x)
             {

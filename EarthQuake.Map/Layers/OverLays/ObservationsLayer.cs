@@ -82,10 +82,10 @@ namespace EarthQuake.Map.Layers.OverLays
             paint.StrokeWidth = 4;
             if (opoints is not null && ocolors is not null && _drawStations)
             {
-                for (int i = opoints.Length - 1; i >= 0; i--)
+                for (var i = opoints.Length - 1; i >= 0; i--)
                 {
-                    SKPoint item = opoints[i];
-                    SKColor color = Kiwi3Color.GetColor(ocolors[i]);
+                    var item = opoints[i];
+                    var color = Kiwi3Color.GetColor(ocolors[i]);
                     paint.Color = color.IncreaseBrightness(-30);
                     paint.Style = SKPaintStyle.Stroke;
                     canvas.DrawCircle(item.X * scale, item.Y * scale, 9, paint);

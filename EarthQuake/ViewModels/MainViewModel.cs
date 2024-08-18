@@ -62,17 +62,25 @@ public class MainViewModel : ViewModelBase
 
         var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
         PolygonsSet? calculated;
-        using (Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
+        using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
         {
             calculated = MessagePackSerializer.Deserialize<PolygonsSet>(stream, lz4Options);
         }
-        _land = new(calculated.Info) { AutoFill = false };
+        _land = new(calculated.Info) { AutoFill = true };
+        CountriesLayer world;
+        using (StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson"))))
+        {
+            using JsonReader reader2 = new JsonTextReader(streamReader2);
+            var geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
+            world = new CountriesLayer(geojson);
+        }
+
 
         var border = new BorderLayer(calculated.Border);
         var grid = new GridLayer();
         _cities = new CitiesLayer(calculated.City);
         _kmoni = new KmoniLayer();
-        using (Stream stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
+        using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
         {
             _stations = Station.GetStations(stream);
         }
@@ -83,7 +91,7 @@ public class MainViewModel : ViewModelBase
         _foreg = new ObservationsLayer() { Stations = _stations };
         Controller1 = new(transform)
         {
-            MapLayers = [tile, _land, border, grid, _kmoni],
+            MapLayers = [_land, world, border, grid],
         };
         Controller2 = new(transform)
         {
@@ -104,7 +112,7 @@ public class MainViewModel : ViewModelBase
     {
         Hypo.ClearFeature();
         List<Epicenters.Epicenter> epicenters = [];
-        for (int i = 0; i <= days; i++)
+        for (var i = 0; i <= days; i++)
         {
             var dateTime = start.AddDays(i);
             var data = await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson");

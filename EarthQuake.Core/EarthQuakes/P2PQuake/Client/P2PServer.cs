@@ -21,7 +21,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
             TcpListener? server = null;
             try
             {
-                IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+                var ipAddress = IPAddress.Parse("127.0.0.1");
                 server = new TcpListener(ipAddress, port);
 
                 // サーバーを起動
@@ -33,7 +33,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                     if (_connectedPeers < MaxConnection)
                     {
                         // クライアントからの接続を受け入れる
-                        TcpClient client = await server.AcceptTcpClientAsync();
+                        var client = await server.AcceptTcpClientAsync();
 
                         // クライアントとの通信を非同期で処理
                         _ = Task.Run(async () =>
@@ -56,7 +56,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         }
         public void Close()
         {
-            foreach (ConnectedPeer peer in _connectedPeersList) // ピアサーバーに接続された外部ピアの接続を切る
+            foreach (var peer in _connectedPeersList) // ピアサーバーに接続された外部ピアの接続を切る
             {
                 peer.Close();
             }
@@ -119,7 +119,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 // クライアントとのネットワークストリームを取得
                 BufferedNetworkStream stream = new(client.GetStream());
                 
-                byte[] buffer = new byte[1024];
+                var buffer = new byte[1024];
                 await stream.WriteLine($"614 1 {ClientVersion}");
                 var peer = new ConnectedPeer(stream);
                 stream.Closed += (s, e) =>

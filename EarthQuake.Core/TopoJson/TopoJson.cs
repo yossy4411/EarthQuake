@@ -20,9 +20,10 @@ namespace EarthQuake.Core.TopoJson
         }
         public Transform Transform { get; set; } = new();
         public Dictionary<string, Layer> Objects { get; set; } = [];
-        public MapData GetLayer(string layerName)
+        public MapData? GetLayer(string layerName)
         {
-            return new MapData(Arcs, Objects[layerName], Transform);
+            var layer = Objects.GetValueOrDefault(layerName);
+            return layer is null ? null : new MapData(Arcs, layer, Transform);
         }
         public MapData CreateLayer()
         {
@@ -53,11 +54,11 @@ namespace EarthQuake.Core.TopoJson
         public void AddVertex(Tess tess, int[] contours, GeomTransform geo, ref float minX, ref float minY, ref float maxX, ref float maxY)
         {
             List<ContourVertex> result = [];
-            for (int j = 0; j < contours.Length; j++)
+            for (var j = 0; j < contours.Length; j++)
             {
 
                 var index = contours[j];
-                int _index = index >= 0 ? index : -index - 1;
+                var _index = index >= 0 ? index : -index - 1;
 
                 int[][] coords = _arcs[_index];
                 int x = coords[0][0], y = coords[0][1];
@@ -67,7 +68,7 @@ namespace EarthQuake.Core.TopoJson
                 minY = Math.Min(minY, _point.Y);
                 maxY = Math.Max(maxY, _point.Y);
                 List<ContourVertex> vertices = [new ContourVertex() { Position = new Vec3(_point.X, _point.Y, 0) }];
-                for (int i = 1; i < coords.Length; i++)
+                for (var i = 1; i < coords.Length; i++)
                 {
                     x += coords[i][0];
                     y += coords[i][1];
@@ -135,7 +136,7 @@ namespace EarthQuake.Core.TopoJson
 
             public override int[][][]? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
             {
-                JArray array = JArray.Load(reader);
+                var array = JArray.Load(reader);
                 if (array.First?.First?.Type == JTokenType.Array)
                 {
                     return array.ToObject<int[][][]>();

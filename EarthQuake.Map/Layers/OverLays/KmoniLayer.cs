@@ -20,34 +20,34 @@ namespace EarthQuake.Map.Layers.OverLays
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             using SKPaint paint = new() { IsAntialias = true };
-            foreach (EewPoint point in points)
+            foreach (var point in points)
             {
                 
-                double elapsed = (DateTime.Now - point.Issued).TotalSeconds;
+                var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
                 if (transform is not null)
                 {
-                    SKPoint hypo = transform.Translate(point.Point);
+                    var hypo = transform.Translate(point.Point);
                     SKPoint center = new(hypo.X * scale, hypo.Y * scale);
                     using (new SKAutoCanvasRestore(canvas))
                     {
                         {
                             // P波を描画する
-                            float radius = (float)Wave![point.Depth].GetRadius(elapsed);
+                            var radius = (float)Wave![point.Depth].GetRadius(elapsed);
                             paint.Color = SKColors.SkyBlue;
                             paint.IsStroke = true;
                             paint.StrokeWidth = 2;
                             using SKPath path = new();
-                            for (int i = 0; i < 360; i += 10)
+                            for (var i = 0; i < 360; i += 10)
                             {
                                 if (i == 0)
                                 {
-                                    SKPoint point2 = transform.Translate(point.Point + new SKPoint(0, radius));
+                                    var point2 = transform.Translate(point.Point + new SKPoint(0, radius));
                                     path.MoveTo(point2.X * scale, point2.Y * scale);
                                 }
                                 else
                                 {
-                                    (double sin, double cos) = Math.SinCos(i * double.Pi / 180);
-                                    SKPoint point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
+                                    (var sin, var cos) = Math.SinCos(i * double.Pi / 180);
+                                    var point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
                                     path.LineTo(point2.X * scale, point2.Y * scale);
                                 }
                             }
@@ -55,9 +55,9 @@ namespace EarthQuake.Map.Layers.OverLays
                             canvas.DrawPath(path, paint);
                         }
                         {
-                            SKColor color = SKColors.Red.WithAlpha(120);
+                            var color = SKColors.Red.WithAlpha(120);
                             // S波を描画する
-                            float radius = (float)Wave![1000 + point.Depth].GetRadius(elapsed);
+                            var radius = (float)Wave![1000 + point.Depth].GetRadius(elapsed);
                             paint.Shader = SKShader.CreateRadialGradient(
                                 center,       // 中心座標
                                 radius * scale * 50,  // 円の半径
@@ -66,17 +66,17 @@ namespace EarthQuake.Map.Layers.OverLays
                                 SKShaderTileMode.Clamp); // タイルモード
                             paint.IsStroke = false;
                             using SKPath path = new();
-                            for (int i = 0; i < 360; i += 10)
+                            for (var i = 0; i < 360; i += 10)
                             {
                                 if (i == 0)
                                 {
-                                    SKPoint point2 = transform.Translate(point.Point + new SKPoint(0, radius));
+                                    var point2 = transform.Translate(point.Point + new SKPoint(0, radius));
                                     path.MoveTo(point2.X * scale, point2.Y * scale);
                                 }
                                 else
                                 {
-                                    (double sin, double cos) = Math.SinCos(i * double.Pi / 180);
-                                    SKPoint point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
+                                    (var sin, var cos) = Math.SinCos(i * double.Pi / 180);
+                                    var point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
                                     path.LineTo(point2.X * scale, point2.Y * scale);
                                 }
                             }
@@ -94,8 +94,8 @@ namespace EarthQuake.Map.Layers.OverLays
             {
                 if (transform is not null)
                 {
-                    double elapsed = (DateTime.Now - point.Issued).TotalSeconds;
-                    SKPoint hypo = transform.Translate(point.Point);
+                    var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
+                    var hypo = transform.Translate(point.Point);
                     SKPoint center = new(hypo.X * scale, hypo.Y * scale);
                     if (elapsed > 0 && elapsed % 1 < 0.5)
                     {

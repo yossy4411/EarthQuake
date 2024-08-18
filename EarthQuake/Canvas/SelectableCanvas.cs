@@ -32,7 +32,7 @@ namespace EarthQuake.Canvas
             if (selecting = e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
                 var point = e.GetPosition(this);
-                TranslateBack((float)point.X, (float)point.Y, out float x, out float y);
+                TranslateBack((float)point.X, (float)point.Y, out var x, out var y);
                 _endX = _startX = x;
                 _endY = _startY = y;
                 Selected = SKRect.Empty;
@@ -45,13 +45,13 @@ namespace EarthQuake.Canvas
             if (selecting)
             {
                 var point = e.GetPosition(this);
-                TranslateBack((float)point.X, (float)point.Y, out float x, out float y);
+                TranslateBack((float)point.X, (float)point.Y, out var x, out var y);
                 _endX = x;
                 _endY = y;
-                float left = _startX;
-                float top = _startY;
-                float right = _endX;
-                float bottom = _endY;
+                var left = _startX;
+                var top = _startY;
+                var right = _endX;
+                var bottom = _endY;
                 Selected = new(Math.Min(left, right), Math.Min(top, bottom), Math.Max(right, left), Math.Max(bottom, top));
                 if (!pressed) InvalidateVisual();
             }
@@ -79,14 +79,21 @@ namespace EarthQuake.Canvas
             canvas.ClipRect(clipRect);
             canvas.Clear(SKColors.LightBlue);
             var region = new SKRect(-Offset.X / Scale, -Offset.Y / Scale, (float)(-Offset.X + Bounds.Width) / Scale, (float)(-Offset.Y + Bounds.Height) / Scale);
-            using (new SKAutoCanvasRestore(canvas))
+            if (Rotation < 89)
             {
-                using var view = new SK3dView();
-                view.RotateXDegrees(Rotation);
-                canvas.Translate(Offset);
-                canvas.Scale(Scale);
-                view.ApplyToCanvas(canvas);
-                Controller?.RenderBase(canvas, Scale, region);
+                using (new SKAutoCanvasRestore(canvas))
+                {
+
+                    canvas.Translate(Offset);
+                    canvas.Scale(Scale);
+                    if (Rotation != 0)
+                    {
+                        using var view = new SK3dView();
+                        view.RotateXDegrees(Rotation);
+                        view.ApplyToCanvas(canvas);
+                    }
+                    Controller?.RenderBase(canvas, Scale, region);
+                }
             }
             using (new SKAutoCanvasRestore(canvas))
             {

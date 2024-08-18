@@ -21,13 +21,13 @@ namespace EarthQuake.Core.GeoJson
             try
             {
                 using var httpClient = new HttpClient();
-                HttpResponseMessage response = await httpClient.GetAsync(url);
+                var response = await httpClient.GetAsync(url);
 
                 // ステータスコードが成功(200 OK)の場合のみ処理を続行します。
                 if (response.IsSuccessStatusCode)
                 {
                     // JSONデータを文字列として取得します。
-                    string json = await response.Content.ReadAsStringAsync();
+                    var json = await response.Content.ReadAsStringAsync();
 
                     return JsonConvert.DeserializeObject<Epicenters?>(json);
                 }

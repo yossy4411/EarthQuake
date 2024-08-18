@@ -20,11 +20,11 @@ namespace EarthQuake.Map.Layers
             {
                 Color = SKColors.Gray
             };
-            for (int i = -180; i <= 180; i += 15)
+            for (var i = -180; i <= 180; i += 15)
             {
                 canvas.DrawLine(_geoTransform.Translate(i, 90), _geoTransform.Translate(i, -90), paint);
             }
-            for (int i = -90; i <= 90; i += 15)
+            for (var i = -90; i <= 90; i += 15)
             {
                 canvas.DrawLine(_geoTransform.Translate(-180, i), _geoTransform.Translate(180, i), paint);
             }

@@ -59,6 +59,7 @@ namespace EarthQuake.Map
     }
     internal class MapTilesController
     {
+        public const int ImageSize = 256;
         private class MapTileReciever { 
         }
         private readonly string _url;
@@ -69,7 +70,7 @@ namespace EarthQuake.Map
         internal MapTilesController(string url)
         {
             _url = url;
-            for (int i = 0; i < tasks.Length; i++)
+            for (var i = 0; i < tasks.Length; i++)
             {
                 tasks[i] = Task.Run(Handle);
             }
@@ -102,7 +103,7 @@ namespace EarthQuake.Map
         }
         private async Task GetBitmapAsync(HttpClient client, SKPoint point, TilePoint point1)
         {
-            SKBitmap? bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(_url, point1.X, point1.Y, point1.Z));
+            var bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(_url, point1.X, point1.Y, point1.Z));
             MapTile tile = new(point, MathF.Pow(2, point1.Z), bitmap, point1);
             images.Put(point1, tile);
         }
@@ -112,8 +113,8 @@ namespace EarthQuake.Map
             
             if (response.IsSuccessStatusCode)
             {
-                byte[] network = await response.Content.ReadAsByteArrayAsync();
-                return SKBitmap.Decode(network)/*.Resize(new SKImageInfo(512, 512), SKFilterQuality.Medium)*/;
+                var network = await response.Content.ReadAsByteArrayAsync();
+                return SKBitmap.Decode(network)/*.Resize(new SKImageInfo(ImageSize, ImageSize), SKFilterQuality.Medium)*/;
             }
             else
             {
@@ -124,34 +125,34 @@ namespace EarthQuake.Map
         private static void GetXYZTile(double screenX, double screenY, int zoom, out int x, out int y, out int z)
         {
             z = Math.Min(18, Math.Max(0, zoom));
-            double n = Math.Pow(2, z);
+            var n = Math.Pow(2, z);
 
             x = (int)Math.Floor((screenX + 180.0) / 360.0 * n);
             y = (int)Math.Floor((1.0 - screenY / GeomTransform.Height) / 2.0 * n);
         }
         public static void GetXYZTile(SKPoint screen, int zoom, out TilePoint point)
         {
-            GetXYZTile(screen.X, screen.Y, zoom, out int x, out int y, out int z);
+            GetXYZTile(screen.X, screen.Y, zoom, out var x, out var y, out var z);
             point = new(Math.Max(0, x), Math.Max(0, y), z);
         }
         private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
         {
             GetXYZTile(screenX, screenY, zoom, out x, out y, out z);
 
-            double n = Math.Pow(2, z);
-            double lon_deg = x / n * 360.0 - 180.0;
-            double lat_rad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
-            double lat_deg = lat_rad * 180.0 / Math.PI;
+            var n = Math.Pow(2, z);
+            var lon_deg = x / n * 360.0 - 180.0;
+            var lat_rad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
+            var lat_deg = lat_rad * 180.0 / Math.PI;
 
             left = lon_deg;
             top = lat_deg;
         }
         private static void GetTileLeftTop(int x, int y, int z, out double left, out double top)
         {
-            double n = Math.Pow(2, z);
-            double lon_deg = x / n * 360.0 - 180.0;
-            double lat_rad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
-            double lat_deg = lat_rad * 180.0 / Math.PI;
+            var n = Math.Pow(2, z);
+            var lon_deg = x / n * 360.0 - 180.0;
+            var lat_rad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
+            var lat_deg = lat_rad * 180.0 / Math.PI;
 
             left = lon_deg;
             top = lat_deg;
@@ -174,7 +175,7 @@ namespace EarthQuake.Map
                 tilePoint = TilePoint.Empty;
                 return false;
             }
-            GetTileLeftTop(lon, GeomTransform.Mercator(lat), zoom, out double left, out double top, out int x, out int y, out int z);
+            GetTileLeftTop(lon, GeomTransform.TranslateFromLat(lat), zoom, out var left, out var top, out var x, out var y, out var z);
             tilePoint = new(x, y, z);
             return GetTile(ref tile, tilePoint, left, top);
         }
@@ -196,7 +197,7 @@ namespace EarthQuake.Map
                 tilePoint = TilePoint.Empty;
                 return false;
             }
-            GetTileLeftTop(translated.X, translated.Y, zoom, out double left, out double top, out int x, out int y, out int z);
+            GetTileLeftTop(translated.X, translated.Y, zoom, out var left, out var top, out var x, out var y, out var z);
             tilePoint = new(x, y, z);
             return GetTile(ref tile, tilePoint, left, top);
         }
@@ -213,25 +214,31 @@ namespace EarthQuake.Map
             {
                 return false;
             }
-            GetTileLeftTop(tilePoint.X, tilePoint.Y, tilePoint.Z, out double left, out double top);
+            GetTileLeftTop(tilePoint.X, tilePoint.Y, tilePoint.Z, out var left, out var top);
             return GetTile(ref tile, tilePoint, left, top);
         }
         private bool GetTile(ref MapTile? tile, TilePoint point, double left, double top)
         {
-            SKPoint leftTop = Transform!.Translate(left, top);
-
-            if (images.TryGet(point, out MapTile? value))
+            try
             {
-                tile = value;
-                return true;
-            }
-            if (!requests.Any(x => x.TilePoint == point))
-            {
-                requests.RemoveAll(x => x.TilePoint.Z != point.Z);
-                requests.Add(new(leftTop, point));
+                var leftTop = Transform!.Translate(left, top);
 
+                if (images.TryGet(point, out var value))
+                {
+                    if ((tile = value) is null) return false;
+                    return true;
+                }
+                if (!requests.Any(x => x.TilePoint == point))
+                {
+                    requests.RemoveAll(x => x.TilePoint.Z != point.Z);
+                    requests.Add(new(leftTop, point));
+
+                }
+                return false;
+            } catch
+            {
+                return false;
             }
-            return false;
         }
         private static string GenerateUrl(string source, int x, int y, int zoom)
         {

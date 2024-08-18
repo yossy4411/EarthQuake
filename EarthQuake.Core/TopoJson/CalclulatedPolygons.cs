@@ -13,9 +13,9 @@ namespace EarthQuake.Core.TopoJson
     public readonly struct Point(float x, float y)
     {
         [Key(0)]
-        public float X { get; init; } = x;
+        private float X { get; init; } = x;
         [Key(1)]
-        public float Y { get; init; } = y;
+        private float Y { get; init; } = y;
 
         public static implicit operator SKPoint(Point p) => new(p.X, p.Y);
     }
