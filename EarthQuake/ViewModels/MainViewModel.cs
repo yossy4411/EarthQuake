@@ -41,9 +41,7 @@ public class MainViewModel : ViewModelBase
     public readonly Hypo3DViewLayer Hypo;
     private PSWave? wave;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
-    private bool _locked = false;
-    public bool Locked { get => _locked; set=> _locked = value; }
-    
+
     public bool IsPoints
     {
         get => _foreg.DrawStations; 
@@ -57,7 +55,7 @@ public class MainViewModel : ViewModelBase
     public double Rotation { get => Hypo.Rotation; set => Hypo.Rotation = (float)value; }
     public MainViewModel() 
     {
-        transform = new();
+        transform = new GeomTransform();
         JsonSerializer serializer = new();
 
         var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
@@ -78,7 +76,7 @@ public class MainViewModel : ViewModelBase
 
         var border = new BorderLayer(calculated.Border);
         var grid = new GridLayer();
-        _cities = new CitiesLayer(calculated.City);
+        _cities = new CitiesLayer(calculated.Filling);
         _kmoni = new KmoniLayer();
         using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
         {

@@ -48,7 +48,7 @@ namespace EarthQuake.Map.Layers
                             for (var j = 1; j < points.Length; j++) path.LineTo(geo.Translate(points[j]));
                             paths[i] = path;
                         }
-                        buffer[i1] = new(paths, p.ContainedIndice);
+                        buffer[i1] = new(paths, p.ContainedIndices);
                     }
 
                 }

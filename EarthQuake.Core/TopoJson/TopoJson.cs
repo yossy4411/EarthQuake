@@ -1,12 +1,8 @@
 ﻿using LibTessDotNet;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
+
 
 namespace EarthQuake.Core.TopoJson
 {
@@ -51,53 +47,100 @@ namespace EarthQuake.Core.TopoJson
             _arcs = arcs;
             _transform = transform;
         }
-        public void AddVertex(Tess tess, int[] contours, GeomTransform geo, ref float minX, ref float minY, ref float maxX, ref float maxY)
+        public void AddVertex(Tess tess, int[] contours)
         {
             List<ContourVertex> result = [];
-            for (var j = 0; j < contours.Length; j++)
+            foreach (var index in contours)
             {
+                var index1 = index >= 0 ? index : -index - 1;
 
-                var index = contours[j];
-                var _index = index >= 0 ? index : -index - 1;
-
-                int[][] coords = _arcs[_index];
+                var coords = _arcs[index1];
                 int x = coords[0][0], y = coords[0][1];
-                var _point = _transform.ToSKPoint(x, y);
-                minX = Math.Min(minX, _point.X);
-                maxX = Math.Max(maxX, _point.X);
-                minY = Math.Min(minY, _point.Y);
-                maxY = Math.Max(maxY, _point.Y);
-                List<ContourVertex> vertices = [new ContourVertex() { Position = new Vec3(_point.X, _point.Y, 0) }];
+                var skPoint = _transform.ToSkPoint(x, y);
+                List<ContourVertex> vertices = [new ContourVertex { Position = new Vec3(skPoint.X, skPoint.Y, 0) }];
                 for (var i = 1; i < coords.Length; i++)
                 {
                     x += coords[i][0];
                     y += coords[i][1];
                     
-                    var point = _transform.ToSKPoint(x, y);
-                    minX = Math.Min(minX, point.X);
-                    maxX = Math.Max(maxX, point.X);
-                    minY = Math.Min(minY, point.Y);
-                    maxY = Math.Max(maxY, point.Y);
-                    if (Simplify == 0 || SKPoint.Distance(_point, point) * 50 >= Simplify | i == coords.Length - 1)
-                    {
-                        vertices.Add(new ContourVertex() { Position = new Vec3(point.X, point.Y, 0) });
-                        _point = point;
-                    }
-                }
-                if (index >= 0)
-                {
-                    result.AddRange(vertices);
-                }
-                else
-                {
-                    vertices.Reverse();
-                    result.AddRange(vertices);
+                    var point = _transform.ToSkPoint(x, y);
+                    if (Simplify != 0 && !(SKPoint.Distance(skPoint, point) * 50 >= Simplify | i == coords.Length - 1))
+                        continue;
+                    vertices.Add(new ContourVertex { Position = new Vec3(point.X, point.Y, 0) });
+                    skPoint = point;
                 }
 
+                if (index < 0)
+                {
+                    vertices.Reverse();
+                }
+                result.AddRange(vertices);
             }
             tess.AddContour(result);
         }
+        
+        public Point[] GenerateBorder(int index)
+        {
+            
+            List<Point> child = [];
+            var index1 = index >= 0 ? index : -index - 1;
 
+            var coords = _arcs[index1];
+            int x = coords[0][0], y = coords[0][1];
+            var sPoint = _transform.ToPoint(x, y);
+            child.Add(sPoint);
+            for (var i = 1; i < coords.Length; i++)
+            {
+                x += coords[i][0];
+                y += coords[i][1];
+
+                var point = _transform.ToPoint(x, y);
+                if (Simplify != 0 && !(Point.Distance(sPoint, point) * 50 >= Simplify | i == coords.Length - 1))
+                    continue;
+                child.Add(point);
+                sPoint = point;
+            }
+
+            if (index < 0)
+            {
+                child.Reverse();
+            } 
+            return [..child];
+        }
+
+        public SKPath ToPath(int[][] contours)
+        {
+            SKPath path = new();
+            foreach (var contour in contours)
+            {
+                foreach (var index in contour)
+                {
+                    List<SKPoint> vertices = [];
+                    var index1 = index >= 0 ? index : -index - 1;
+
+                    var coords = _arcs[index1];
+                    int x = coords[0][0], y = coords[0][1];
+                    var skPoint = _transform.ToSkPoint(x, y);
+                    vertices.Add(skPoint);
+                    for (var i = 1; i < coords.Length; i++)
+                    {
+                        x += coords[i][0];
+                        y += coords[i][1];
+
+                        var point = _transform.ToSkPoint(x, y);
+                        vertices.Add(point);
+                    }
+
+                    if (index < 0)
+                    {
+                        vertices.Reverse();
+                    }
+                    path.AddPoly(vertices.ToArray());
+                }
+            }
+
+            return path;
+        }
 
         public string LayerName => _layer?.Name ?? string.Empty;
         public Feature[]? Geometries => _layer?.Geometries;
@@ -106,7 +149,7 @@ namespace EarthQuake.Core.TopoJson
     {
         public double[] Scale { get; set; } = [0, 0];
         public double[] Translate { get; set; } = [0, 0];
-        public SKPoint ToSKPoint(int x, int y)
+        public SKPoint ToSkPoint(int x, int y)
         {
             return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
         }

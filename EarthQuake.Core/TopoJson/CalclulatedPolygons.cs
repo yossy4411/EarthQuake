@@ -1,11 +1,5 @@
 ﻿using MessagePack;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarthQuake.Core.TopoJson
 {
@@ -18,49 +12,52 @@ namespace EarthQuake.Core.TopoJson
         private float Y { get; init; } = y;
 
         public static implicit operator SKPoint(Point p) => new(p.X, p.Y);
+
+        public static float Distance(Point p1, Point p2)
+        {
+            var dx = p1.X - p2.X;
+            var dy = p1.Y - p2.Y;
+            return MathF.Sqrt(dx * dx + dy * dy);
+        }
     }
     [MessagePackObject]
-    public class Polygon(Point[][] points, float mix, float max, float miy, float may)
+    public class Polygons(Point[][] points)
     {
         [Key(0)]
         public Point[][] Points { get; init; } = points;
+    }
+    [MessagePackObject]
+    public class CalculatedPolygons(string[] names, Polygons[] points)
+    {
+        [Key(0)]
+        public string[] Names { get; init; } = names;
         [Key(1)]
-        public float MinX { get; init; } = mix;
+        public Polygons[] Points { get; init; } = points;
+    }
+    [MessagePackObject]
+    public class CalculatedBorders(string[] names, Polygons[] points, int[][][] indices)
+    {
+        [Key(0)]
+        public string[] Names { get; init; } = names;
+
+        [Key(1)]
+        public Polygons[] Points { get; init; } = points;
+        
         [Key(2)]
-        public float MaxX { get; init; } = max;
-        [Key(3)]
-        public float MinY { get; init; } = miy;
-        [Key(4)]
-        public float MaxY { get; init; } = may;
+        public int[][][] Indices { get; init; } = indices;
     }
     [MessagePackObject]
-    public class CalculatedPolygons(string[] names, Polygon[] points)
+    public class PolygonsSet(CalculatedPolygons filling, SubPolygon[] subPolygons, CalculatedBorders border)
     {
-        [Key(0)]
-        public string[] Names { get; init; } = names;
-        [Key(1)]
-        public Polygon[] Points { get; init; } = points;
-    }
-    [MessagePackObject]
-    public class CalculatedBorders(string[] names, Border[] points)
-    {
-        [Key(0)]
-        public string[] Names { get; init; } = names;
-        [Key(1)]
-        public Border[] Points { get; init; } = points;
-    }
-    [MessagePackObject]
-    public class PolygonsSet(CalculatedPolygons info, CalculatedPolygons city, CalculatedBorders border)
-    {
-        [Key("info")]
-        public CalculatedPolygons Info {  get; init; } = info;
-        [Key("city")]
-        public CalculatedPolygons City { get; init; } = city;
+        [Key("fill")]
+        public CalculatedPolygons Filling { get; init; } = filling;
+        [Key("subPolygons")]
+        public SubPolygon[] SubPolygons { get; init; } = subPolygons;
         [Key("Border")]
         public CalculatedBorders Border { get; init; } = border;
     }
     [MessagePackObject]
-    public class Border(Index[] containedIndice, Point[][] points)
+    public class Border(Index[] containedIndices, Point[][] points)
     {
         public Border() : this([], [])
         {
@@ -69,7 +66,15 @@ namespace EarthQuake.Core.TopoJson
         [Key(0)]
         public Point[][] Points { get; init; } = points;
         [Key(1)]
-        public Index[] ContainedIndice { get; init; } = containedIndice;
+        public Index[] ContainedIndices { get; init; } = containedIndices;
+    }
+    [MessagePackObject] 
+    public class SubPolygon(string[] names, int[] indices)
+    {
+        [Key(0)]
+        public string[] Names { get; init; } = names;
+        [Key(1)]
+        public int[] Indices { get; init; } = indices;
     }
     [MessagePackObject]
     public struct Index(int parentIndex, int childIndex)
@@ -78,5 +83,19 @@ namespace EarthQuake.Core.TopoJson
         public int ParentIndex = parentIndex;
         [Key(1)]
         public int ChildIndex = childIndex;
+    }
+    [MessagePackObject]
+    public class Property(string name, string? nameKana)
+    {
+        /// <summary>
+        /// 地物の名前
+        /// </summary>
+        [Key(0)]
+        public string Name { get; init; } = name;
+        /// <summary>
+        /// 地物のひらがな名
+        /// </summary>
+        [Key(1)]
+        public string? NameKana { get; init; } = nameKana;
     }
 }

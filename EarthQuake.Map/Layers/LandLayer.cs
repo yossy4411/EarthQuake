@@ -11,7 +11,7 @@ namespace EarthQuake.Map.Layers
     {
         public bool Draw { get; set; } = true;
         private protected SKColor[]? Colors;
-        private Polygon[]? data = polygons?.Points;
+        private Polygons[]? data = polygons?.Points;
         private protected TopoLayer.Polygon[] Buffer = [];
         private readonly string[]? names = polygons?.Names;
         public bool AutoFill { get; init; } = false;

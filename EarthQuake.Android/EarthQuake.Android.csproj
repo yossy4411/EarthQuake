@@ -25,4 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\EarthQuake\EarthQuake.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="obj\Release\net8.0-android34.0\" />
+  </ItemGroup>
 </Project>
