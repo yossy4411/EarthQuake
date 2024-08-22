@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using SkiaSharp;
 
 
-Console.WriteLine("Welcome to the Map Data Generator v1.0");
+Console.WriteLine("----Map Data Generator v1.0----");
 Console.WriteLine("(c) 2024 Okayu Group All Rights Reserved. [MIT License]");
 Console.WriteLine("This program is a part of the OGSP (OkayuGroup Seismometer Project) / EarthQuake Project.");
 Console.WriteLine("Contact: https://github.com/OkayuGroup");
@@ -39,13 +39,14 @@ switch (b)
         return;
     default:
         Console.WriteLine("Invalid input.");
-        break;    
+        break;
 }
 
 return;
 
 void Generate()
 {
+    
     Console.WriteLine("Please enter the name of the topojson file you want to load.");
     Console.Write("File full-path: ");
     TopoJson? topo;
@@ -86,9 +87,21 @@ void Generate()
 
     Console.WriteLine("Contents loaded");
     
-    var layers = $"[{string.Join(", ", topo.Objects.Keys)}]";
 
-    Console.WriteLine("1. Generate a filling layer");
+    
+    var layers = $"[{string.Join(", ", topo.Objects.Keys)}]";
+    Console.WriteLine("1. Calculate all arcs every detail levels.");
+    Console.WriteLine("This may take a while.");
+    Console.WriteLine("Using detail levels: 0-5 (0: detailed, 5: rough)");
+    Console.WriteLine("Calculating...");
+    
+    topo.ParseArcs(Enumerable.Range(0, 6).Select(x => x switch { 0 => 0.0f, 1 => 0.5f, _ => (x - 1) * x }).ToArray());
+    
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("Done.");
+    Console.ResetColor();
+    
+    Console.WriteLine("2. Generate a filling layer");
     Console.WriteLine("Please enter the name of the layer that becomes the base of filling.");
     Console.Write($"Layer name {layers}: ");
     string? key;
@@ -119,10 +132,12 @@ void Generate()
         Console.WriteLine("[Error] Failed to calculate the layer.");
         return;
     }
+    Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine("Done.");
+    Console.ResetColor();
+    GC.Collect();
     
-    Console.WriteLine("2. Calculate other layers based on the filling layer.");
-    Console.WriteLine("Would you like to calculate other layers? [Y/n]: ");
+    Console.WriteLine("3. Calculate other layers based on the filling layer.");
     var baseLayer = topo.GetLayer(original);
     if (baseLayer == null)
     {
@@ -132,71 +147,86 @@ void Generate()
         return;
     }
 
-    SubPolygon[] subPolygons = [];
-    if (Console.ReadLine() is "y" or "Y" or "")
+    Dictionary<string, SubPolygon> subPolygons = [];
+    foreach (var k in topo.Objects.Keys.Where(k => k != original))
     {
-        subPolygons = new SubPolygon[topo.Objects.Count];
-        var basePaths = baseLayer.Geometries?.Select(x =>baseLayer.ToPath(x.Arcs.Select(y => y[0x0]).ToArray())).ToList();
-        if (basePaths == null)
-        {
-            // レイヤーの計算が間違っている
-            Console.WriteLine("[Error] Failed to load the base layer's polygon data.");
-            return;
-        }
-        foreach (var k in topo.Objects.Keys.Where(k => k != original))
-        {
-            Console.WriteLine($"Calculating \"{k}\" layer...");
-            var layer = topo.GetLayer(k);
-            if (layer == null)
-            {
-                // レイヤー内から参照しているのにそれが存在しないというのはおかしい。
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine("[Fatal] The layer was not found. This error is completely unexpected. Please report this error to the developer.");
-                continue;
-            }
-            var indices = topo.CalculateOthers(basePaths, layer);
-            SubPolygon subPolygon = new(a.Names, indices);
-            subPolygons[topo.Objects.Keys.ToList().IndexOf(k)] = subPolygon;
-            Console.WriteLine("Done.");
-        }
-    }
-    else
-    {
-        Console.WriteLine("Skipping...");
+        Console.WriteLine($"Calculating \"{k}\" layer...");
+        var indices = topo.CalculateOthers(k, baseLayer);
+        SubPolygon subPolygon = new(a.Names, indices);
+        subPolygons.Add(k, subPolygon);
+        Console.WriteLine("Done.");
     }
     
-    Console.WriteLine("3. Generate border data.");
     
-    var border = topo.GenerateBorders("cityw");
+    Console.WriteLine("4. Generate border data.");
+    
+    var border = topo.GenerateBorders("area");
     if (border is null)
     {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("[Error] Failed to generate border data.");
+        Console.WriteLine("[Error] Failed to generate border data. The border data was null.");
+        Console.WriteLine("Probably the layer name is incorrect. Please report this error to the developer.");
         return;
     }
     PolygonsSet result = new(a, subPolygons, border);
     Console.WriteLine("Data generated.");
-    Console.WriteLine("4. Serialize the data.");
+    GC.Collect();
+    
+    Console.WriteLine("5. Serialize the data.");
     Console.WriteLine("This may take a while.");
     Console.WriteLine("PolygonsSet => MessagePack => .mpk.lz4");
     var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
     var sw = Stopwatch.StartNew();
-    var bytes = MessagePackSerializer.Serialize(result, lz4Options);
-    long serialize, deserialize;
+    byte[] bytes;
+    try
+    {
+        bytes = MessagePackSerializer.Serialize(result, lz4Options);
+    }
+    catch (Exception e)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Failed to serialize the data.");
+        Console.WriteLine("The data may be too large or the data structure may be incorrect.");
+        Console.WriteLine(e);
+        return;
+    }
     sw.Stop();
-    Console.WriteLine($"Took {serialize = sw.ElapsedMilliseconds}ms to serialize the data, and the data size is {bytes.LongLength / 1024}KB. (Compressed)");
-    Console.WriteLine("5. Deserialize the data to check the data integrity.");
+    Console.WriteLine($"Took {sw.ElapsedMilliseconds}ms to serialize the data, and the data size is {bytes.LongLength / 1024}KB. (Compressed)");
+    Console.WriteLine("6. Deserialize the data to check the data integrity.");
+    // デシリアライズしてデータの整合性を確認
     sw.Restart();
-    _ = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
-    sw.Stop();
-    Console.WriteLine(
-        $"デシリアライズには{deserialize = sw.ElapsedMilliseconds}msかかりました。({deserialize * 100.0 / serialize:0.00}%)");
-    Console.WriteLine("6. Save the data to a file.");
+    try
+    {
+        _ = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
+        sw.Stop();
+        Console.WriteLine(
+            $"Took {sw.ElapsedMilliseconds}ms to deserialize the data.");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Data integrity check passed.");
+        Console.ResetColor();
+    }
+    catch (Exception e)
+    {
+        // デシリアライズに失敗するのはおかしい
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine("[Fatal] Failed to deserialize the generated data.");
+        Console.WriteLine("If you often encounter this error, please report it to the developer."); 
+        Console.WriteLine(e.Message);
+        Console.WriteLine(e.StackTrace);
+        Console.ResetColor();
+        return;
+    }
+
+    Console.WriteLine("7. Save the data to a file.");
+    Console.WriteLine("Using default file path.");
     
     File.WriteAllBytes("japan.mpk.lz4", bytes);
 
     // 保存したファイルの完全パスを表示
     Console.WriteLine($"The data was saved to: {Path.GetFullPath("japan.mpk.lz4")}");
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("All done successfully! The program will exit.");
+    Console.ResetColor();
 }
 
 void Display()
@@ -244,143 +274,183 @@ void Display()
 
 internal static class TopoJsonGenerator
 {
-/// <summary>
-/// Calculate the polygon data from the TopoJson data.
-/// </summary>
-/// <param name="topo">Original data</param>
-/// <param name="layerName">Layer name to load</param>
-/// <returns>Calculated polygon</returns>
+    private static int _windowWidth = -1;
+    private static string _windowResetString = "";
+    /// <summary>
+    /// Parse the arcs data from the TopoJson data.
+    /// </summary>
+    /// <param name="topo"></param>
+    /// <param name="detailLevels"></param>
+    internal static void ParseArcs(this TopoJson topo, float[] detailLevels)
+    {
+        var detailer = new Point[detailLevels.Length][][];
+        Console.WriteLine("Counting the number of arcs to calculate...");
+        var total = topo.Arcs.Length * detailLevels.Length;
+        var count = 0;
+        for (var i3 = 0; i3 < detailLevels.Length; i3++)
+        {
+            var detailLevel = detailLevels[i3];
+            Console.WriteLine($"Calculating detail level: {detailLevel}");
+            var detail = new Point[topo.Arcs.Length][];
+            for (var i2 = 0; i2 < topo.Arcs.Length; i2++)
+            {
+                var arc = topo.Arcs[i2];
+                List<Point> points = [];
+                int x = arc[0][0], y = arc[0][1];
+                var sPoint = topo.ToPoint(x, y);
+                points.Add(sPoint);
+                for (var i = 1; i < arc.Length; i++)
+                {
+                    var coord = arc[i];
+                    x += coord[0];
+                    y += coord[1];
+                    var point = topo.ToPoint(x, y);
+
+                    if (detailLevel != 0 &&
+                        !(Point.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
+                        continue;
+                    sPoint = point;
+                    points.Add(point);
+                }
+
+                detail[i2] = points.ToArray();
+                count++;
+                if (count % 1000 == 0) ProgressBar(count, total, $"Calculating detail level: {detailLevel})");
+            }
+
+            Console.WriteLine();
+            detailer[i3] = detail;
+        }
+
+        topo.Detailer = detailer;
+    }
+        
+    /// <summary>
+    /// Calculate the polygon data from the TopoJson data.
+    /// </summary>
+    /// <param name="topo">Original data</param>
+    /// <param name="layerName">Layer name to load</param>
+    /// <returns>Calculated polygon</returns>
     internal static CalculatedPolygons? CalculateBase(this TopoJson topo, string layerName)
     {
         var data = topo.GetLayer(layerName);
-
         if (data?.Geometries is null) return null;
-        var parent = new Polygons[data.Geometries.Length];
-        Console.WriteLine("Using simplify levels: 1-6");
+
+        var parent = new Point[6][][];
+        Console.WriteLine("Using calculate levels: 1-6");
         Console.WriteLine("Counting the number of polygons to calculate...");
-        var total = data.Geometries.Sum(x => x.Arcs.Length) * 6;
+        var total = data.Geometries.Length * 6;
         Console.WriteLine($"{data.Geometries.Length} features and {total / 6} polygons found. (Total: {total} polygons)");
-        var finished = 0;
-        for (var i = 0; i < data.Geometries.Length; i++)
+
+        for (var i2 = 0; i2 < 6; i2++)
         {
-            var feature = data.Geometries[i];
-            var points1 = new Point[6][];
-            for (var i2 = 0; i2 < 6; i2++)
+            data.Simplify = i2;
+            var child = new Point[data.Geometries.Length][];
+            for (var i = 0; i < data.Geometries.Length; i++)
             {
-                ProgressBar(finished, total, $"Generating a feature #{i + 1} Simplify: {i2 + 1} (Name: {feature.Properties?.Name}) <Add vertex>");
-                data.Simplify = i2 switch
-                {
-                    0 => 0,
-                    1 => 0.5,
-                    _ => (i2 - 1) * i2
-                };
-
+                var feature = data.Geometries[i];
                 Tess tess = new();
-                // ポリゴンの塗り側
-                if (feature.Arcs is not null)
+                foreach (var polygon in feature.Arcs)
                 {
-                    foreach (var polygon in feature.Arcs)
-                    {
-                        data.AddVertex(tess, polygon[0]);
-                        finished++;
-                        
-                    }
+                    data.AddVertex(tess, polygon[0]);
                 }
-                ProgressBar(finished, total, $"Generating a feature #{i + 1} Simplify: {i2 + 1} (Name: {feature.Properties?.Name}) <Tessellate>");
 
+                ProgressBar(i2 * data.Geometries.Length + i, total, $"Generating feature #{i + 1} Simplify: {i2 + 1} (Name: {feature.Properties?.Name})");
                 tess.Tessellate(WindingRule.Positive);
+
                 var points = new Point[tess.ElementCount * 3];
-                
+
                 for (var j = 0; j < points.Length; j++)
                 {
-                    points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X, tess.Vertices[tess.Elements[j]].Position.Y);
+                    points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X,
+                        tess.Vertices[tess.Elements[j]].Position.Y);
                 }
-
-                points1[i2] = points;
-
+                child[i] = points;
             }
-
-            parent[i] = new Polygons(points1);
+            parent[i2] = child;
         }
 
-        var names = new string[data.Geometries.Length];
-        for (var i = 0; i < data.Geometries.Length; i++) names[i] = data.Geometries[i].Properties!.Name!;
-
+        var names = data.Geometries.Select(g => g.Properties!.Name!).ToArray();
         return new CalculatedPolygons(names, parent);
     }
 
-    internal static int[] CalculateOthers(this TopoJson _, List<SKPath> basePaths, MapData fillingLayer)
+    internal static int[][] CalculateOthers(this TopoJson topo, string layerName, MapData origin)
     {
-        if (fillingLayer.Geometries is null) return [];
-        var indices = new int[fillingLayer.Geometries.Length];
-        var total = fillingLayer.Geometries.Length;
-        for (var index = 0; index < fillingLayer.Geometries.Length; index++)
+        var layer = topo.GetLayer(layerName);
+        if (layer?.Geometries is null || origin.Geometries is null) return [];
+
+        var originIndices = origin.Geometries
+            .Select(x => x.Arcs.SelectMany(y => y[0]).Select(MapData.RealIndex).ToArray())
+            .ToArray();
+
+        var total = layer.Geometries.Length;
+        var result = new int[total][];
+
+        for (var progress = 0; progress < layer.Geometries.Length; progress++)
         {
-            var geom = fillingLayer.Geometries[index];
-            ProgressBar(index, total, $"Calculating a feature #{index} (Name: {geom.Properties?.Name})");
-            
-            var p = fillingLayer.ToPath(geom.Arcs.Select(y => y[0]).ToArray());
-            if (basePaths == null) continue;
-            for (var i = 0; i < basePaths.Count; i++)
-            {
-                if (!p.Bounds.IntersectsWith(basePaths[i].Bounds)) continue;
-                using var intersection = new SKPath();
-                if (!basePaths[i].Op(p, SKPathOp.Intersect, intersection)) continue;
-                if (!intersection.IsEmpty) {
-                    indices[index] = i;
-                }
-            }
+            var geometry = layer.Geometries[progress];
+            ProgressBar(progress, total, $"Calculating a feature #{progress + 1} (Name: {geometry.Properties?.Name})");
+            using var path = layer.ToPath(geometry);
+            result[progress] = originIndices
+                .Select((x, i) => new { x, i })
+                .Where(x => Contains(origin, geometry, x.x, path))
+                .Select(x => x.i)
+                .ToArray();
         }
-        return indices;
+
+        return result;
+    }
+
+    private static bool Contains(MapData layer, Feature geometry, int[] originIndex, SKPath path)
+    {
+        var notContained = geometry.Arcs.SelectMany(x => x[0]).Select(x => MapData.RealIndex(x) + 1).FirstOrDefault(x => !originIndex.Contains(x)) - 1;
+        if (notContained == -1) return true;
+        var (px, py) = layer.GetLine(notContained)[0];
+        return path.Bounds.Contains(px, py) && path.Contains(px, py);
     }
     
     internal static CalculatedBorders? GenerateBorders(this TopoJson topo, string layerName)
     {
+        HashSet<int> usedIndices = []; // 使用されているインデックスを抽出 (HashSetを使うことで高速化)
         var layer = topo.GetLayer(layerName);
-        if (layer?.Geometries is null) return null;
-        var indices = layer.Geometries.SelectMany(x => x.Arcs.SelectMany(y => y[0])).Distinct().ToArray();
-        var points1 = new Polygons[6];
-        Console.WriteLine("Using simplify levels: 1-6");
-        var total = indices.Length * 6;
-        Console.WriteLine($"There are {total} lines to calculate.");
-        for (var s = 0; s < 6; s++)
+        if (layer?.Geometries is null || topo.Detailer is null) return null;
+        foreach (var layerGeometry in layer.Geometries)
         {
-            layer.Simplify = s switch
+            foreach (var arc in layerGeometry.Arcs)
             {
-                0 => 0,
-                1 => 0.5,
-                _ => (s - 1) * s
-            };
-            var points = new Point[indices.Length][];
-            for (var i = 0; i < indices.Length; i++)
-            {
-                ProgressBar(s * 6 + i, total, $"Generating a border Simplify: {s + 1}");
-                var index = indices[i];
-                points[i] = layer.GenerateBorder(index);
+                foreach (var index in arc[0])
+                {
+                    usedIndices.Add(MapData.RealIndex(index));
+                }
             }
-
-            points1[s] = new Polygons(points);
         }
         Console.WriteLine("Done.");
+              
+        Console.WriteLine("Generating points...");
+        // 使用されているものだけを抽出して軽量化
+        var points1 = topo.Detailer.Select(x => x.Select((v, i) => usedIndices.Contains(i) ? v : []).ToArray()).ToArray();
+        Console.WriteLine("Done.");
         Console.WriteLine("Generating indices...");
-
-        var a = layer.Geometries.Select(x => x.Arcs.Select(y => y[0].Select(z => Array.IndexOf(indices, z)).ToArray()).ToArray()).ToArray();
+        var a = layer.Geometries.Select(x => x.Arcs.Select(v => v[0]).ToArray()).ToArray();
         Console.WriteLine("Done.");
         
         return new CalculatedBorders(layer.Geometries.Select(x=>x.Properties!.Name!).ToArray(), points1, a);
     }
+    
     private static void ProgressBar(int current, int total, string message)
     {
-        Console.CursorVisible = false;
+        if (Console.WindowWidth != _windowWidth)
+        {
+            _windowWidth = Console.WindowWidth;
+            _windowResetString = new string(' ', _windowWidth);
+        }
         string[] bar = ["|", "/", "-", "\\"];
         Console.SetCursorPosition(0, Console.CursorTop);
-        Console.Write(bar[current % 4]);
+        Console.Write(_windowResetString);
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.Write(bar[current / 23 % 4]);
         Console.Write($" {current}/{total} ({current * 100.0 / total:0.00}%) ");
         Console.Write(message);
-        Console.Write("     ");
-        if (current != total) return;
-        
-        Console.WriteLine();
         Console.CursorVisible = true;
     }
 

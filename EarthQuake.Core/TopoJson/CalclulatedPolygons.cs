@@ -3,15 +3,26 @@ using SkiaSharp;
 
 namespace EarthQuake.Core.TopoJson
 {
+    /// <summary>
+    /// 2Dの位置を表す構造体 絶対位置を表す
+    /// </summary>
+    /// <param name="x">x座標</param>
+    /// <param name="y">y座標</param>
     [MessagePackObject]
     public readonly struct Point(float x, float y)
     {
         [Key(0)]
-        private float X { get; init; } = x;
+        internal float X { get; init; } = x;
         [Key(1)]
-        private float Y { get; init; } = y;
+        internal float Y { get; init; } = y;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Point() : this(0, 0) { } 
+        
         public static implicit operator SKPoint(Point p) => new(p.X, p.Y);
+        
 
         public static float Distance(Point p1, Point p2)
         {
@@ -19,41 +30,41 @@ namespace EarthQuake.Core.TopoJson
             var dy = p1.Y - p2.Y;
             return MathF.Sqrt(dx * dx + dy * dy);
         }
+        public void Deconstruct(out float x, out float y)
+        {
+            x = X;
+            y = Y;
+        }
     }
+    
     [MessagePackObject]
-    public class Polygons(Point[][] points)
-    {
-        [Key(0)]
-        public Point[][] Points { get; init; } = points;
-    }
-    [MessagePackObject]
-    public class CalculatedPolygons(string[] names, Polygons[] points)
+    public class CalculatedPolygons(string[] names, Point[][][] points)
     {
         [Key(0)]
         public string[] Names { get; init; } = names;
         [Key(1)]
-        public Polygons[] Points { get; init; } = points;
+        public Point[][][] Points { get; init; } = points;
     }
     [MessagePackObject]
-    public class CalculatedBorders(string[] names, Polygons[] points, int[][][] indices)
+    public class CalculatedBorders(string[] names, Point[][][] points, int[][][] indices)
     {
         [Key(0)]
         public string[] Names { get; init; } = names;
 
         [Key(1)]
-        public Polygons[] Points { get; init; } = points;
+        public Point[][][] Points { get; init; } = points;
         
         [Key(2)]
         public int[][][] Indices { get; init; } = indices;
     }
     [MessagePackObject]
-    public class PolygonsSet(CalculatedPolygons filling, SubPolygon[] subPolygons, CalculatedBorders border)
+    public class PolygonsSet(CalculatedPolygons filling, Dictionary<string, SubPolygon> subPolygons, CalculatedBorders border)
     {
-        [Key("fill")]
+        [Key(0)]
         public CalculatedPolygons Filling { get; init; } = filling;
-        [Key("subPolygons")]
-        public SubPolygon[] SubPolygons { get; init; } = subPolygons;
-        [Key("Border")]
+        [Key(1)]
+        public Dictionary<string, SubPolygon> SubPolygons { get; init; } = subPolygons;
+		[Key(2)]
         public CalculatedBorders Border { get; init; } = border;
     }
     [MessagePackObject]
@@ -69,12 +80,12 @@ namespace EarthQuake.Core.TopoJson
         public Index[] ContainedIndices { get; init; } = containedIndices;
     }
     [MessagePackObject] 
-    public class SubPolygon(string[] names, int[] indices)
+    public class SubPolygon(string[] names, int[][] indices)
     {
         [Key(0)]
         public string[] Names { get; init; } = names;
         [Key(1)]
-        public int[] Indices { get; init; } = indices;
+        public int[][] Indices { get; init; } = indices;
     }
     [MessagePackObject]
     public struct Index(int parentIndex, int childIndex)
