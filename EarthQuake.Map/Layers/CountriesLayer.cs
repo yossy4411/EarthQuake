@@ -3,7 +3,6 @@ using EarthQuake.Core.GeoJson;
 using LibTessDotNet;
 using SkiaSharp;
 using System.Diagnostics;
-using static EarthQuake.Map.Layers.TopoLayer;
 
 namespace EarthQuake.Map.Layers
 {

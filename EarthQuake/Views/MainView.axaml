@@ -14,7 +14,7 @@
   </Design.DataContext>
   <UserControl.Styles>
     <Style Selector="Border">
-      <Setter Property="Background" Value="{Binding BGBrush}"/>
+      <Setter Property="Background" Value="{Binding BgBrush}"/>
       <Setter Property="Margin" Value="5"/>
       <Setter Property="CornerRadius" Value="5"/>
     </Style>
@@ -32,7 +32,7 @@
                       BorderThickness="0"
                       Margin="5"
                       Padding="0">
-                <TextBlock Text="{Binding MapTiles.Name}"
+                <TextBlock Text="OpenStreetMap"
                            Tag="license"
                            Foreground="Blue"
                            TextDecorations="Underline"
@@ -110,7 +110,7 @@
                 <ListBox x:Name="Quakes"
                          VerticalAlignment="Stretch"
                          HorizontalAlignment="Stretch" 
-                         Background="{Binding BGBrush}"
+                         Background="{Binding BgBrush}"
                          ItemsSource="{Binding Data, Mode=TwoWay}"
                          SelectionChanged="ListBox_SelectionChanged"
                          CornerRadius="4">

@@ -157,7 +157,6 @@ void Generate()
         Console.WriteLine("Done.");
     }
     
-    
     Console.WriteLine("4. Generate border data.");
     
     var border = topo.GenerateBorders("area");
@@ -197,8 +196,10 @@ void Generate()
     sw.Restart();
     try
     {
-        _ = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
+        var deserialized = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
         sw.Stop();
+        // テストポイントです
+        _ = deserialized;
         Console.WriteLine(
             $"Took {sw.ElapsedMilliseconds}ms to deserialize the data.");
         Console.ForegroundColor = ConsoleColor.Green;
