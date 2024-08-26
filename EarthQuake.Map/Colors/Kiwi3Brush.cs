@@ -21,9 +21,9 @@ namespace EarthQuake.Map.Colors
         public static SKColor IncreaseBrightness(this SKColor color, int percentage)
         {
             // RGB成分を10%増加させる
-            int r = (int)(color.Red * (1 + percentage / 100f));
-            int g = (int)(color.Green * (1 + percentage / 100f));
-            int b = (int)(color.Blue * (1 + percentage / 100f));
+            var r = (int)(color.Red * (1 + percentage / 100f));
+            var g = (int)(color.Green * (1 + percentage / 100f));
+            var b = (int)(color.Blue * (1 + percentage / 100f));
 
             // 255を超えないように制限する
             r = Math.Min(r, 255);

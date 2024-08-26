@@ -1,27 +1,21 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Core.TopoJson;
-using HarfBuzzSharp;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarthQuake.Map.Layers
 {
     /// <summary>
-    /// 境を表示するためのレイヤー
+    /// 地物の境界線を描画するレイヤー
     /// </summary>
-    /// <param name="json"></param>
-    public class BorderLayer(TopoJson? json) : TopoLayer(json, null)
+    /// <param name="polygons">ポリゴン</param>
+    public class BorderLayer(CalculatedBorders? polygons) : MapLayer
     {
-        private readonly (SKPath, SKRect)[][][] buffer = [[],[],[],[],[],[]];
-        private readonly bool copy = false;
-        public bool DrawCoast { get; set; } = false;
-        public bool DrawCity { get; set; } = true;
-        public BorderLayer(BorderLayer copySource) : this(json: null)
+        private SKPath[][] buffer = [];
+        private Point[][][]? data = polygons?.Points;
+        private readonly int[][][]? indices = polygons?.Indices;
+        private readonly bool copy;
+        public BorderLayer(BorderLayer copySource) : this(polygons: null)
         {
             
             copy = true;
@@ -30,49 +24,98 @@ namespace EarthQuake.Map.Layers
         
         private protected override void Initialize(GeomTransform geo)
         {
-            
+            var sw = Stopwatch.StartNew();
             if (!copy)
             {
-                if (Data is not null)
+                if (data is not null && indices is not null)
                 {
-                    for (int i = 0; i < 5; i++)
+                    buffer = new SKPath[data.Length][];
+                    for (var d = 0; d < data.Length; d++)
                     {
-                        Data.Simplify = i switch
+                        // ズームレベルごとに実行される
+                        var points = data[d];
+                        var paths = new List<SKPath>(indices.Length);
+                        for (var i = 0; i < indices.Length; i++)
                         {
-                            0 => 0,
-                            1 => 0.5,
-                            _ => (i - 1) * (i)
-                        };
-                        
-                        buffer[i] = Data.AddAllLine(geo, geo.GeometryType, i == 0);
-                    }
+                            var path = new SKPath();
+                            for (var j = 0; j < indices[i].Length; j++)
+                            {
+                                var indices1 = indices[i][j];
+                                if (indices1.Length < 2) continue;
 
+                                var index1 = indices1[0];
+                                if (index1 < 0)
+                                {
+                                    // 逆方向からアクセス
+                                    var points1 = points[MapData.RealIndex(index1)];
+                                    path.MoveTo(geo.Translate(points1[^1]));
+                                    for (var i1 = points1.Length - 2; i1 >= 0; i1--)
+                                    {
+                                        path.LineTo(geo.Translate(points1[i1]));
+                                    }
+                                }
+                                else
+                                {
+                                    // 正方向からアクセス
+                                    var points1 = points[index1];
+                                    path.MoveTo(geo.Translate(points1[0]));
+                                    for (var i1 = 1; i1 < points1.Length; i1++)
+                                    {
+                                        path.LineTo(geo.Translate(points1[i1]));
+                                    }
+                                }
+                                
+                                for (var i1 = 1; i1 < indices1.Length; i1++)
+                                {
+                                    var index = indices1[i1];
+                                    if (index < 0)
+                                    {
+                                        // 逆方向からアクセス
+                                        var points1 = points[MapData.RealIndex(index)];
+                                        for (var i2 = points1.Length - 1; i2 >= 0; i2--)
+                                        {
+                                            path.LineTo(geo.Translate(points1[i2]));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // 正方向からアクセス
+                                        var points1 = points[index];
+                                        foreach (var t in points1)
+                                        {
+                                            path.LineTo(geo.Translate(t));
+                                        }
+                                    }
+                                }
+                                
+                            }
+
+                            paths.Add(path);
+                        }
+                        buffer[d] = paths.ToArray();
+                    }
                 }
             }
+            sw.Stop();
+            Debug.WriteLine($"Border: {sw.ElapsedMilliseconds}ms");
+            data = null; // データを解放
             
         }
-        private protected int GetIndex(float scale) => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), buffer.Length - 1));
+
+        private static int GetIndex(float scale) => LandLayer.GetIndex(scale);
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-            var paths = buffer[GetIndex(scale)];
-            if (paths.Length == 0) return;
-            using var paint = new SKPaint()
-            {
-                Color = SKColors.Gray,
-                Style = SKPaintStyle.Stroke,
-            };
-            void draw((SKPath, SKRect) x)
-            {
-                if (bounds.IntersectsWith(x.Item2))
-                    canvas.DrawPath(x.Item1, paint);
+            var index = GetIndex(scale);
+            using var paint = new SKPaint();
+            paint.Color = SKColors.Gray;
+            paint.Style = SKPaintStyle.Stroke;
+            paint.IsAntialias = true;
+            paint.IsStroke = true;
 
+
+            foreach (var e in buffer[index]) {
+                if (e.Bounds.IntersectsWith(bounds)) canvas.DrawPath(e, paint);
             }
-            if (DrawCity)
-                Array.ForEach(paths[3], draw);
-            paint.Color = SKColors.DarkGray;
-            Array.ForEach(paths[2], draw);
-            Array.ForEach(paths[1], draw);
-            if (DrawCoast) Array.ForEach(paths[0], draw);
         }
     }
 }

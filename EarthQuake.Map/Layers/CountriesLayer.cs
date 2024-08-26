@@ -2,19 +2,20 @@
 using EarthQuake.Core.GeoJson;
 using LibTessDotNet;
 using SkiaSharp;
-using static EarthQuake.Map.Layers.TopoLayer;
+using System.Diagnostics;
 
 namespace EarthQuake.Map.Layers
 {
     public class CountriesLayer(GeoJson geojson) : MapLayer
     {
+        private record Polygon(SKVertices Vertices, SKRect Rect);
         public GeoJson? Data = geojson;
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             using SKPaint paint = new() { Color = SKColors.Green };
-            foreach (Polygon value in polygons)
+            foreach (var value in polygons)
             {
-                SKVertices? polygon = value.Vertices;
+                var polygon = value.Vertices;
                 if (!value.Rect.IntersectsWith(bounds)) continue;
                 canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
             }
@@ -22,21 +23,22 @@ namespace EarthQuake.Map.Layers
         private readonly List<Polygon> polygons = [];
         private protected override void Initialize(GeomTransform geo)
         {
+            var sw = Stopwatch.StartNew();
             if (Data is not null && Data.Features is not null)
             {
-                foreach (GeoJson.Feature feature in Data.Features)
+                foreach (var feature in Data.Features)
                 {
-                    float minX = float.MaxValue;
-                    float maxX = float.MinValue;
-                    float minY = float.MaxValue;
-                    float maxY = float.MinValue;
+                    var minX = float.MaxValue;
+                    var maxX = float.MinValue;
+                    var minY = float.MaxValue;
+                    var maxY = float.MinValue;
                     Tess tess = new();
-                    for (int i = 0; i < feature.Geometry?.Coordinates.Length; i++)
+                    for (var i = 0; i < feature.Geometry?.Coordinates.Length; i++)
                     {
                         feature.Geometry?.AddVertex(tess, geo, i, ref minX, ref minY, ref maxX, ref maxY);
                         tess.Tessellate(WindingRule.Positive);
-                        SKPoint[] points = new SKPoint[tess.ElementCount * 3];
-                        for (int j = 0; j < points.Length; j++)
+                        var points = new SKPoint[tess.ElementCount * 3];
+                        for (var j = 0; j < points.Length; j++)
                         {
                             points[j] = new(tess.Vertices[tess.Elements[j]].Position.X, tess.Vertices[tess.Elements[j]].Position.Y);
                         }
@@ -45,6 +47,8 @@ namespace EarthQuake.Map.Layers
                 }
             }
             Data = null;
+            sw.Stop();
+            Debug.WriteLine($"World: {sw.ElapsedMilliseconds}ms");
         }
     }
 }

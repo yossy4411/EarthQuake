@@ -22,7 +22,7 @@ namespace EarthQuake.Converter
             {
                 if (quakeData.EarthQuake is not null)
                 {
-                    SKColor color = Kiwi3Color.GetColor(quakeData.EarthQuake.MaxScale);
+                    var color = Kiwi3Color.GetColor(quakeData.EarthQuake.MaxScale);
                     var rect = new Rectangle()
                     {
                         Width = 30,

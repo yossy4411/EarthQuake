@@ -14,7 +14,7 @@ namespace EarthQuake.Canvas
             var canvas = lease.SkCanvas;
             SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
             canvas.ClipRect(clipRect);
-            SKPoint translate = Translate + Center;
+            var translate = Translate + Center;
             var region = new SKRect(-translate.X / Scale, -translate.Y / Scale, (float)(-translate.X + Bounds.Width) / Scale, (float)(-translate.Y + Bounds.Height) / Scale);
             using (new SKAutoCanvasRestore(canvas))
             {

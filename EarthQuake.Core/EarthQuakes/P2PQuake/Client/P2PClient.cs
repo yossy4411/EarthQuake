@@ -62,12 +62,12 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 try
                 {
                     if (!Connect(url, 6910)) throw new P2PException("Connection timeout.");
-                    WaitingFor status = WaitingFor.Connect;
+                    var status = WaitingFor.Connect;
                     while (ClientConnected)
                     {
                         Response response = new(await Read());
 
-                        if (!IsCorrectStatus(status, response.Code, out int exp))
+                        if (!IsCorrectStatus(status, response.Code, out var exp))
                         {
                             throw new P2PException($"Invalid status code: {response.Code} expected: {exp}");
                         }
@@ -224,12 +224,12 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 {
 
                     if (!Connect(url, 6910)) throw new P2PException("Connection timeout.");
-                    WaitingFor status = WaitingFor.Connect;
+                    var status = WaitingFor.Connect;
                     while (ClientConnected)
                     {
                         Response response = new(await Read());
 
-                        if (!IsCorrectStatus(status, response.Code, out int exp))
+                        if (!IsCorrectStatus(status, response.Code, out var exp))
                         {
                             throw new P2PException($"Invalid status code: {response.Code} expected: {exp}");
                         }
@@ -351,7 +351,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 bool b;
                 do
                 {
-                    string? url = Urls[random.Next(0, Urls.Length)];
+                    var url = Urls[random.Next(0, Urls.Length)];
                     b = Connect(url, 6910);
                 } while (!b);
                 foreach (var peer in PeersConnected) // ピアクライアントの接続をすべて切る
@@ -362,12 +362,12 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 cts.Cancel();
                 PeersConnected.Clear();
                 Server.Close(); // ピアサーバーを閉じる
-                WaitingFor status = WaitingFor.Connect;
-                bool open = true;
+                var status = WaitingFor.Connect;
+                var open = true;
                 while (open)
                 {
                     Response response = new(await Read());
-                    if (!IsCorrectStatus(status, response.Code, out int exp))
+                    if (!IsCorrectStatus(status, response.Code, out var exp))
                     {
                         throw new P2PException($"Invalid status code: {response.Code} expected: {exp}");
                     }
@@ -430,8 +430,8 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         public string CreateUserQuake()
         {
             if (keys is null) return string.Empty;
-            string data = $"{random.NextInt64(0, long.MaxValue)},{AreaCode}";
-            string validation = (DateTime.Now + protocolTimeSpan).ToString(Format);
+            var data = $"{random.NextInt64(0, long.MaxValue)},{AreaCode}";
+            var validation = (DateTime.Now + protocolTimeSpan).ToString(Format);
             var bytes = Encoding.ASCII.GetBytes(validation).Concat(MD5.HashData(BufferedNetworkStream.SJIS.GetBytes(data))).ToArray();
             return $"555 1 {keys.Generate(bytes)}:{validation}:{keys.PublicKey}:{keys.Signature}:{keys.InvalidationDate.ToString(Format)}:{data}";
             // 「データ署名」「有効期限」「公開鍵」「鍵署名」「鍵期限」「感知情報データ」

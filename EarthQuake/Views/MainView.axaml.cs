@@ -1,12 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
-using System.Diagnostics;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace EarthQuake.Views;
-
+namespace EarthQuake.Views; 
 public partial class MainView : UserControl
 {
     private readonly DispatcherTimer timer;
@@ -22,30 +20,30 @@ public partial class MainView : UserControl
             ClipToBounds = true,
         };
         DockPanel.SetDock(graph, Dock.Bottom);
-        kmoniPanel.Children.Insert(0, graph);
+        KmoniPanel.Children.Insert(0, graph);
 #endif
         Selection.OnSelected += Selection_OnSelected;
-        dateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
-        dateEnd.SelectedDate = DateTime.Now.Date;
-        updateEpic.Click += Update_Epicenters;
-        timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
+        DateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
+        DateEnd.SelectedDate = DateTime.Now.Date;
+        UpdateEpic.Click += Update_Epicenters;
+        timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += Timer_Elapsed;
         timer.Start();
     }
 
     private void Timer_Elapsed(object? sender, EventArgs args)
     {
-        if (kmoni.IsVisible)
+        if (Kmoni.IsVisible)
         {
-            kmoni.InvalidateVisual();
+            Kmoni.InvalidateVisual();
         }
 
     }
 
     private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)
     {
-        statistics.Selected = e.Selected;
-        statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected);
+        Statistics.Selected = e.Selected;
+        Statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected).ToList();
     }
 
     private async void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -53,9 +51,9 @@ public partial class MainView : UserControl
         Loading.IsVisible = true;
         await Task.Run(() =>
         {
-            App.ViewModel.SetQInfo(quakes.SelectedIndex);
+            App.ViewModel.SetQInfo(Quakes.SelectedIndex);
         });
-        info.InvalidateVisual();
+        Info.InvalidateVisual();
         Loading.IsVisible = false;
 
         
@@ -63,15 +61,15 @@ public partial class MainView : UserControl
 
     private void Slider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
-        Selection.Rotation = (float)slider.Value;
+        Selection.Rotation = (float)Slider.Value;
         Selection.InvalidateVisual();
     }
 
     private void Update_Epicenters(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (dateStart.SelectedDate.HasValue && dateEnd.SelectedDate.HasValue)
+        if (DateStart.SelectedDate.HasValue && DateEnd.SelectedDate.HasValue)
         {
-            App.ViewModel.GetEpicenters(((DateTime)dateStart.SelectedDate).Date, (int)(((DateTime)dateEnd.SelectedDate).Date - ((DateTime)dateStart.SelectedDate).Date).TotalDays);
+            App.ViewModel.GetEpicenters(((DateTime)DateStart.SelectedDate).Date, (int)(((DateTime)DateEnd.SelectedDate).Date - ((DateTime)DateStart.SelectedDate).Date).TotalDays);
         }
     }
 }

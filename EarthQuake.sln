@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Android", "Earth
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.iOS", "EarthQuake.iOS\EarthQuake.iOS.csproj", "{1BFB1E88-577E-49AC-B539-073DB5DC98F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapDataGenerator", "MapDataGenerator\MapDataGenerator.csproj", "{A8C026CC-050B-4594-8929-3CC208408009}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTest", "ConsoleTest\PerformanceTest\PerformanceTest.csproj", "{47E28924-47B5-47AD-98EA-136B8335CA22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +71,14 @@ Global
 		{1BFB1E88-577E-49AC-B539-073DB5DC98F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BFB1E88-577E-49AC-B539-073DB5DC98F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1BFB1E88-577E-49AC-B539-073DB5DC98F2}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A8C026CC-050B-4594-8929-3CC208408009}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C026CC-050B-4594-8929-3CC208408009}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C026CC-050B-4594-8929-3CC208408009}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C026CC-050B-4594-8929-3CC208408009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47E28924-47B5-47AD-98EA-136B8335CA22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47E28924-47B5-47AD-98EA-136B8335CA22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47E28924-47B5-47AD-98EA-136B8335CA22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47E28924-47B5-47AD-98EA-136B8335CA22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

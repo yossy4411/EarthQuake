@@ -14,7 +14,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
     {
         public QuakeKeys(string privateKey, string publicKey, string signature, string invalidationDate)
         {
-            RSAParameters rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePrivateKey(privateKey);
+            var rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePrivateKey(privateKey);
             RSACryptoServiceProvider rsa = new();
             rsa.ImportParameters(rsaParams);
             _privateKey = rsa;
@@ -34,8 +34,8 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         {
             get
             {
-                string base64 = "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQC8p/vth2yb/k9x2/PcXKdb6oI3gAbhvr/HPTOwla5tQHB83LXNF4Y+Sv/Mu4Uu0tKWz02FrLgA5cuJZfba9QNULTZLTNUgUXIB0m/dq5Rx17IyCfLQ2XngmfFkfnRdRSK7kGnIXvO2/LOKD50JsTf2vz0RQIdw6cEmdl+Aga7i8QIBEQ==";
-                RSAParameters rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(base64);
+                var base64 = "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQC8p/vth2yb/k9x2/PcXKdb6oI3gAbhvr/HPTOwla5tQHB83LXNF4Y+Sv/Mu4Uu0tKWz02FrLgA5cuJZfba9QNULTZLTNUgUXIB0m/dq5Rx17IyCfLQ2XngmfFkfnRdRSK7kGnIXvO2/LOKD50JsTf2vz0RQIdw6cEmdl+Aga7i8QIBEQ==";
+                var rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(base64);
                 RSACryptoServiceProvider rsa = new();
                 rsa.ImportParameters(rsaParams);
                 return rsa;
@@ -45,8 +45,8 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         {
             get
             {
-                string base64 = "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDTJKLLO7wjCHz80kpnisqcPDQvA9voNY5QuAA+bOWeqvl4gmPSiylzQZzldS+n/M5p4o1PRS24WAO+kPBHCf4ETAns8M02MFwxH/FlQnbvMfi9zutJkQAu3Hq4293rHz+iCQW/MWYB5IfzFBnWtEdjkhqHsGy6sZMMe+qx/F1rcQIBEQ==";
-                RSAParameters rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(base64);
+                var base64 = "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDTJKLLO7wjCHz80kpnisqcPDQvA9voNY5QuAA+bOWeqvl4gmPSiylzQZzldS+n/M5p4o1PRS24WAO+kPBHCf4ETAns8M02MFwxH/FlQnbvMfi9zutJkQAu3Hq4293rHz+iCQW/MWYB5IfzFBnWtEdjkhqHsGy6sZMMe+qx/F1rcQIBEQ==";
+                var rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(base64);
                 RSACryptoServiceProvider rsa = new();
                 rsa.ImportParameters(rsaParams);
                 return rsa;
@@ -82,7 +82,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
                 string? va = null;
                 string? si = null;
                 string? line;
-                int i = 0;
+                var i = 0;
                 while ((line = sr.ReadLine()) is not null)
                 {
                     if (line is not null)
@@ -130,7 +130,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
             var publickeyBytes = Convert.FromBase64String(publickey);
             var validate = Encoding.ASCII.GetBytes(keyTime);
             var keysignature = IsValidSignature([.. publickeyBytes.Concat(validate)], P2PUserPublicKey, keySignature);
-            RSAParameters rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(publickey);
+            var rsaParams = Asn1PKCS.Decoder.PKCS8DERDecoder.DecodePublicKey(publickey);
             RSACryptoServiceProvider rsa = new();
             rsa.ImportParameters(rsaParams);
             var validate2 = Encoding.ASCII.GetBytes(time); 
@@ -143,13 +143,13 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         {
 
             //   - SHA1指定
-            byte[] sha1ByteArray = SHA1.HashData(data);
+            var sha1ByteArray = SHA1.HashData(data);
 
             RSAPKCS1SignatureDeformatter deformatter = new(publicKey);
             deformatter.SetHashAlgorithm("SHA1");
 
             //   - 検証
-            byte[] signatureByteArray = Convert.FromBase64String(signature);
+            var signatureByteArray = Convert.FromBase64String(signature);
             return deformatter.VerifySignature(sha1ByteArray, signatureByteArray);
         }
     }

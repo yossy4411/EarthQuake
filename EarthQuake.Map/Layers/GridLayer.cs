@@ -1,33 +1,28 @@
-﻿using Avalonia.Media;
-using EarthQuake.Core;
+﻿using EarthQuake.Core;
 using SkiaSharp;
-using System.Drawing;
 
-namespace EarthQuake.Map.Layers
+namespace EarthQuake.Map.Layers;
+
+public class GridLayer : MapLayer
 {
-    public class GridLayer : MapLayer
+    private GeomTransform _geoTransform = new();
+
+    private protected override void Initialize(GeomTransform geo)
     {
-        private GeomTransform _geoTransform = new();
+        _geoTransform = geo;
+    }
 
-        private protected override void Initialize(GeomTransform geo)
+    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    {
+        using var paint = new SKPaint();
+        paint.Color = SKColors.Gray;
+        for (var i = -180; i <= 180; i += 15)
         {
-            _geoTransform = geo;
+            canvas.DrawLine(_geoTransform.Translate(i, 90), _geoTransform.Translate(i, -90), paint);
         }
-
-        internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+        for (var i = -90; i <= 90; i += 15)
         {
-            using var paint = new SKPaint()
-            {
-                Color = SKColors.Gray
-            };
-            for (int i = -180; i <= 180; i += 15)
-            {
-                canvas.DrawLine(_geoTransform.Translate(i, 90), _geoTransform.Translate(i, -90), paint);
-            }
-            for (int i = -90; i <= 90; i += 15)
-            {
-                canvas.DrawLine(_geoTransform.Translate(-180, i), _geoTransform.Translate(180, i), paint);
-            }
+            canvas.DrawLine(_geoTransform.Translate(-180, i), _geoTransform.Translate(180, i), paint);
         }
     }
 }

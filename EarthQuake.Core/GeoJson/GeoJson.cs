@@ -29,15 +29,8 @@ namespace EarthQuake.Core.GeoJson
 
                     public override double[][][][]? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
                     {
-                        JArray array = JArray.Load(reader);
-                        if (array.First?.First?.First?.Type == JTokenType.Array)
-                        {
-                            return array.ToObject<double[][][][]>();
-                        }
-                        else
-                        {
-                            return [array.ToObject<double[][][]>() ?? [[[]]]];
-                        }
+                        var array = JArray.Load(reader);
+                        return array.First?.First?.First?.Type == JTokenType.Array ? array.ToObject<double[][][][]>() : [array.ToObject<double[][][]>() ?? [[[]]]];
                     }
 
                     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)

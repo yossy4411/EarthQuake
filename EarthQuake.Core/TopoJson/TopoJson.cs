@@ -1,12 +1,9 @@
-﻿using LibTessDotNet;
-using Microsoft.VisualBasic;
+using LibTessDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
+// ReSharper disable ClassNeverInstantiated.Global
+
 
 namespace EarthQuake.Core.TopoJson
 {
@@ -14,27 +11,34 @@ namespace EarthQuake.Core.TopoJson
     {
 
         public int[][][] Arcs { get; set; } = [[[]]];
-        public (float, float) Translate(int x, int y)
+        public Point ToPoint(int x, int y)
         {
-            return ((float)(x * Transform.Scale[0] + Transform.Translate[0]), (float)(y * Transform.Scale[1] + Transform.Translate[1]));
+            return Transform.ToPoint(x, y);
         }
+        // ReSharper disable once MemberCanBePrivate.Global
         public Transform Transform { get; set; } = new();
         public Dictionary<string, Layer> Objects { get; set; } = [];
-        public MapData GetLayer(string layerName)
+        public MapData? GetLayer(string layerName)
         {
-            return new MapData(Arcs, Objects[layerName], Transform);
+            var layer = Objects.GetValueOrDefault(layerName);
+            if (layer is null || Detailer is null)
+            {
+                return null;
+            }
+            return new MapData(Detailer, layer);
         }
         public MapData CreateLayer()
         {
-            return new MapData(Arcs, null, Transform);
+            return Detailer is null ? new MapData([], null) : new MapData(Detailer, null);
         }
+
+        public Point[][][]? Detailer { get; set; }
     }
     public class MapData
     {
         private readonly Layer? _layer;
-        private readonly int[][][] _arcs;
-        private readonly Transform _transform;
-        public double Simplify = 0;
+        private readonly Point[][][] _arcs;
+        public int Simplify = 0;
         public enum PolygonType : byte
         {
             None = 1,
@@ -43,143 +47,58 @@ namespace EarthQuake.Core.TopoJson
             Area = 8,
             City = 16
         }
-        internal MapData(int[][][] arcs, Layer? layer, Transform transform)
+        internal MapData(Point[][][] arcs, Layer? layer)
         {
 
             _layer = layer;
             _arcs = arcs;
-            _transform = transform;
         }
-        public void AddVertex(Tess tess, int[] contours, GeomTransform geo, ref float minX, ref float minY, ref float maxX, ref float maxY)
+        public void AddVertex(Tess tess, int[] contours)
         {
             List<ContourVertex> result = [];
-            for (int j = 0; j < contours.Length; j++)
+            foreach (var index in contours)
             {
-
-                var index = contours[j];
-                int _index = index >= 0 ? index : -index - 1;
-
-                int[][] coords = _arcs[_index];
-                int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
-                minX = Math.Min(minX, _point.X);
-                maxX = Math.Max(maxX, _point.X);
-                minY = Math.Min(minY, _point.Y);
-                maxY = Math.Max(maxY, _point.Y);
-                List<ContourVertex> vertices = [new ContourVertex() { Position = new Vec3(_point.X, _point.Y, 0) }];
-                for (int i = 1; i < coords.Length; i++)
-                {
-                    x += coords[i][0];
-                    y += coords[i][1];
-                    
-                    var point = geo.Translate(_transform.ToPoint(x, y));
-                    minX = Math.Min(minX, point.X);
-                    maxX = Math.Max(maxX, point.X);
-                    minY = Math.Min(minY, point.Y);
-                    maxY = Math.Max(maxY, point.Y);
-                    if (Simplify == 0 || (_point - point).Length >= Simplify | i == coords.Length - 1)
-                    {
-                        vertices.Add(new ContourVertex() { Position = new Vec3(point.X, point.Y, 0) });
-                        _point = point;
-                    }
-                }
-                if (index >= 0)
-                {
-                    result.AddRange(vertices);
-                }
-                else
-                {
-                    vertices.Reverse();
-                    result.AddRange(vertices);
-                }
-
+                var index1 = RealIndex(index);
+                var coords = _arcs[Simplify][index1];
+                var poi = coords.Select(x => new ContourVertex { Position = new Vec3(x.X, x.Y, 0) });
+                result.AddRange(index >= 0 ? poi : poi.Reverse());
             }
             tess.AddContour(result);
         }
-        public void AddLine(SKPath result, int[] contours, GeomTransform geo)
+        
+        public Point[] GetLine(int index)
         {
-            foreach (var index in contours)
-            {
-                int _index = index >= 0 ? index : -index - 1;
-                int[][] coords = _arcs[_index];
-                int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
-
-                result.MoveTo(_point);
-
-                for (int i = 1; i < coords.Length; i++)
-                {
-                    x += coords[i][0];
-                    y += coords[i][1];
-                    var point = geo.Translate(_transform.ToPoint(x, y));
-                    if ((_point - point).Length >= Simplify | i == coords.Length - 1)
-                    {
-                        result.LineTo(point);
-                        _point = point;
-                    }
-                }
-
-
-
-            }
-
-        }
-        public (SKPath, SKRect)[][] AddAllLine(GeomTransform geo, PolygonType[]? ocean = null, bool requireCity = true)
-        {
-            List<(SKPath, SKRect)> coastL = [];
-            List<(SKPath, SKRect)> prefL = [];
-            List<(SKPath, SKRect)> areaL = [];
-            List<(SKPath, SKRect)> cityL = [];
-
-            for (int j = 0; j < _arcs.Length; j++)
-            {
-                var type = ocean?[j];
-                if (type is PolygonType.None || (type is PolygonType.City && !requireCity))
-                {
-                    continue;
-                }
-                var coords = _arcs[j];
-                int x = coords[0][0], y = coords[0][1];
-                var _point = geo.Translate(_transform.ToPoint(x, y));
-                float maxX = float.MinValue;
-                float maxY = float.MinValue;
-                float minX = float.MaxValue;
-                float minY = float.MaxValue;
-                SKPath path = new();
-                path.MoveTo(_point);
-                maxX = Math.Max(maxX, _point.X);
-                maxY = Math.Max(maxY, _point.Y);
-                minX = Math.Min(minX, _point.X);
-                minY = Math.Min(minY, _point.Y);
-                for (int i = 1; i < coords.Length; i++)
-                {
-                    x += coords[i][0];
-                    y += coords[i][1];
-                    var point = geo.Translate(_transform.ToPoint(x, y));
-                    if (Simplify == 0 || (_point - point).Length >= Simplify || i == coords.Length - 1)
-                    {
-                        path.LineTo(point);
-                        maxX = Math.Max(maxX, point.X);
-                        maxY = Math.Max(maxY, point.Y);
-                        minX = Math.Min(minX, point.X);
-                        minY = Math.Min(minY, point.Y);
-                        _point = point;
-                    }
-                }
-                SKRect rect = new(minX, minY, maxX, maxY);
-                (SKPath, SKRect) value = (path, rect);
-                switch (type)
-                {
-                    case PolygonType.City: cityL.Add(value); break;
-                    case PolygonType.Coast: coastL.Add(value); break;
-                    case PolygonType.Area: areaL.Add(value); break;
-                    case PolygonType.Pref: prefL.Add(value); break;
-                }
-                
-            }
-            return [[.. coastL], [.. prefL], [.. areaL], [.. cityL]];
+            var index1 = index >= 0 ? index : -index - 1;
+            var coords = _arcs[Simplify][index1];
+            return index >= 0 ? [..coords] : [..Enumerable.Reverse(coords)];
         }
 
+        public SKPath ToPath(Feature feature)
+        {
+            SKPath path = new();
+            foreach (var arc in feature.Arcs)
+            {
+                List<SKPoint> result = [];
+                foreach (var index in arc[0])
+                {
+                    var index1 = RealIndex(index);
+                    var coords = _arcs[^1][index1].Select<Point, SKPoint>(x => x).ToList();
+                    if (index < 0)
+                    {
+                        coords.Reverse();
+                    }
+                    result.AddRange(coords);
+                }
+                path.AddPoly(result.ToArray());
+            }
+
+            return path;
+        }
+        
+        public static int RealIndex(int value)
+        {
+            return value >= 0 ? value : -value - 1;
+        }
 
         public string LayerName => _layer?.Name ?? string.Empty;
         public Feature[]? Geometries => _layer?.Geometries;
@@ -188,9 +107,13 @@ namespace EarthQuake.Core.TopoJson
     {
         public double[] Scale { get; set; } = [0, 0];
         public double[] Translate { get; set; } = [0, 0];
-        public SKPoint ToPoint(int x, int y)
+        public SKPoint ToSkPoint(int x, int y)
         {
             return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
+        }
+        public Point ToPoint(int x, int y)
+        {
+            return new Point((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
         }
 
     }
@@ -214,7 +137,7 @@ namespace EarthQuake.Core.TopoJson
 
             public override int[][][]? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
             {
-                JArray array = JArray.Load(reader);
+                var array = JArray.Load(reader);
                 if (array.First?.First?.Type == JTokenType.Array)
                 {
                     return array.ToObject<int[][][]>();

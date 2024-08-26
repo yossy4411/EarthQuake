@@ -138,7 +138,7 @@ namespace EarthQuake.Canvas
         {
             if (pressed)
             {
-                Point point = _scrollOffset - e.GetPosition(this);
+                var point = _scrollOffset - e.GetPosition(this);
                 _scrollOffset = e.GetPosition(this);
                 Translate = new(Translate.X - (float)point.X, Translate.Y - (float)point.Y);
                 InvalidateVisual();
@@ -153,7 +153,7 @@ namespace EarthQuake.Canvas
 
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            Point point = e.GetPosition(this);
+            var point = e.GetPosition(this);
             var zoomDelta = (float)Math.Pow(1.2f, e.Delta.Y);
             Scale *= zoomDelta;
             Translate = new(Translate.X + Translate.X * (zoomDelta - 1) - ((float)point.X - Center.X) * (zoomDelta - 1), Translate.Y + Translate.Y * (zoomDelta - 1) - ((float)point.Y - Center.Y) * (zoomDelta - 1));
