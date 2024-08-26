@@ -38,6 +38,10 @@ namespace EarthQuake.Core
         /// <param name="latitude">緯度</param>
         /// <returns></returns>
         public static double Mirror(double latitude) => 1.25 * Math.Asinh(Math.Tan(0.8 * latitude * Math.PI / 360)) * Height;
+        
+        // Web Mercator
+        public static double WebMercator(double latitude) => Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) / Math.PI;
+        
         public SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
         public SKPoint Translate(float lon, float lat)
         {

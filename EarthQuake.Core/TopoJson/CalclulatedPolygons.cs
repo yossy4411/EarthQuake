@@ -37,52 +37,44 @@ public readonly struct Point(float x, float y)
 public class CalculatedPolygons(string[] names, Point[][][] points)
 {
     [Key(0)]
-    public string[] Names { get; init; } = names;
+    public string[] Names { get; } = names;
     [Key(1)]
-    public Point[][][] Points { get; init; } = points;
+    public Point[][][] Points { get; } = points;
 }
+
 [MessagePackObject]
 public class CalculatedBorders(string[] names, Point[][][] points, int[][][] indices)
 {
     [Key(0)]
-    public string[] Names { get; init; } = names;
+    public string[] Names { get; } = names;
 
     [Key(1)]
-    public Point[][][] Points { get; init; } = points;
+    public Point[][][] Points { get; } = points;
         
     [Key(2)]
-    public int[][][] Indices { get; init; } = indices;
+    public int[][][] Indices { get; } = indices;
 }
+
 [MessagePackObject]
 public class PolygonsSet(CalculatedPolygons filling, Dictionary<string, SubPolygon> subPolygons, CalculatedBorders border)
 {
     [Key(0)]
-    public CalculatedPolygons Filling { get; init; } = filling;
+    public CalculatedPolygons Filling { get; } = filling;
     [Key(1)]
-    public Dictionary<string, SubPolygon> SubPolygons { get; init; } = subPolygons;
+    public Dictionary<string, SubPolygon> SubPolygons { get; } = subPolygons;
     [Key(2)]
-    public CalculatedBorders Border { get; init; } = border;
+    public CalculatedBorders Border { get; } = border;
 }
-[MessagePackObject]
-public class Border(Index[] containedIndices, Point[][] points)
-{
-    public Border() : this([], [])
-    {
 
-    }
-    [Key(0)]
-    public Point[][] Points { get; init; } = points;
-    [Key(1)]
-    public Index[] ContainedIndices { get; init; } = containedIndices;
-}
 [MessagePackObject] 
 public class SubPolygon(string[] names, int[][] indices)
 {
     [Key(0)]
-    public string[] Names { get; init; } = names;
+    public string[] Names { get; } = names;
     [Key(1)]
-    public int[][] Indices { get; init; } = indices;
+    public int[][] Indices { get; } = indices;
 }
+
 [MessagePackObject]
 public struct Index(int parentIndex, int childIndex)
 {
@@ -90,18 +82,4 @@ public struct Index(int parentIndex, int childIndex)
     public int ParentIndex = parentIndex;
     [Key(1)]
     public int ChildIndex = childIndex;
-}
-[MessagePackObject]
-public class Property(string name, string? nameKana)
-{
-    /// <summary>
-    /// 地物の名前
-    /// </summary>
-    [Key(0)]
-    public string Name { get; init; } = name;
-    /// <summary>
-    /// 地物のひらがな名
-    /// </summary>
-    [Key(1)]
-    public string? NameKana { get; init; } = nameKana;
 }

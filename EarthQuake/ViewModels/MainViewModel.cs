@@ -68,8 +68,7 @@ public class MainViewModel : ViewModelBase
 
             _land = new LandLayer(calculated.Filling) { AutoFill = true };
             CountriesLayer world;
-            using (StreamReader streamReader2 =
-                   new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson"))))
+            using (StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson"))))
             {
                 using JsonReader reader2 = new JsonTextReader(streamReader2);
                 var geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
@@ -87,8 +86,7 @@ public class MainViewModel : ViewModelBase
 
             Hypo = new Hypo3DViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
-            MapTilesLayer tile = new(MapTiles.TileUrl);
-            MapTilesLayer tile2 = new(MapTiles2.TileUrl);
+            MapTilesLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
             _foreground = new ObservationsLayer { Stations = _stations };
             Controller1 = new MapViewController(transform)
             {
@@ -97,12 +95,12 @@ public class MainViewModel : ViewModelBase
             Controller2 = new MapViewController(transform)
             {
                 Geo = transform,
-                MapLayers = [tile, _land, _land, border, _foreground]
+                MapLayers = [_land, _foreground]
             };
             Controller3 = new MapViewController(transform)
             {
                 Geo = transform,
-                MapLayers = [tile2, new BorderLayer(border), Hypo]
+                MapLayers = [tile, new BorderLayer(border), Hypo]
             };
         }
         GC.Collect();

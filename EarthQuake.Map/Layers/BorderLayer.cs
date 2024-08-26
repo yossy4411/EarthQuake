@@ -11,8 +11,9 @@ namespace EarthQuake.Map.Layers
     /// <param name="polygons">ポリゴン</param>
     public class BorderLayer(CalculatedBorders? polygons) : MapLayer
     {
-        private SKPath?[][] buffer = [];
+        private SKPath[][] buffer = [];
         private Point[][][]? data = polygons?.Points;
+        private readonly int[][][]? indices = polygons?.Indices;
         private readonly bool copy;
         public BorderLayer(BorderLayer copySource) : this(polygons: null)
         {
@@ -26,33 +27,73 @@ namespace EarthQuake.Map.Layers
             var sw = Stopwatch.StartNew();
             if (!copy)
             {
-                if (data is not null)
+                if (data is not null && indices is not null)
                 {
-                    buffer = new SKPath?[data.Length][];
-                    for (var i1 = 0; i1 < data.Length; i1++)
+                    buffer = new SKPath[data.Length][];
+                    for (var d = 0; d < data.Length; d++)
                     {
                         // ズームレベルごとに実行される
-                        var p = data[i1];
-                        var paths = new SKPath?[p.Length];
-                        for (var i = 0; i < paths.Length; i++)
+                        var points = data[d];
+                        var paths = new SKPath[data[d].Length];
+                        for (var i = 0; i < indices.Length; i++)
                         {
-                            var points = p[i];
-                            if (points.Length < 2)
+                            var path = new SKPath();
+                            for (var j = 0; j < indices[i].Length; j++)
                             {
-                                paths[i] = null;
-                                continue;
+                                var indices1 = indices[i][j];
+                                if (indices1.Length < 2) continue;
+
+                                var index1 = indices1[0];
+                                if (index1 < 0)
+                                {
+                                    // 逆方向からアクセス
+                                    var points1 = points[MapData.RealIndex(index1)];
+                                    path.MoveTo(geo.Translate(points1[^1]));
+                                    for (var i1 = points1.Length - 2; i1 >= 0; i1--)
+                                    {
+                                        path.LineTo(geo.Translate(points1[i1]));
+                                    }
+                                }
+                                else
+                                {
+                                    // 正方向からアクセス
+                                    var points1 = points[index1];
+                                    path.MoveTo(geo.Translate(points1[0]));
+                                    for (var i1 = 1; i1 < points1.Length; i1++)
+                                    {
+                                        path.LineTo(geo.Translate(points1[i1]));
+                                    }
+                                }
+                                
+                                for (var i1 = 1; i1 < indices1.Length; i1++)
+                                {
+                                    var index = indices1[i1];
+                                    if (index < 0)
+                                    {
+                                        // 逆方向からアクセス
+                                        var points1 = points[MapData.RealIndex(index)];
+                                        for (var i2 = points1.Length - 1; i2 >= 0; i2--)
+                                        {
+                                            path.LineTo(geo.Translate(points1[i2]));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // 正方向からアクセス
+                                        var points1 = points[index];
+                                        foreach (var t in points1)
+                                        {
+                                            path.LineTo(geo.Translate(t));
+                                        }
+                                    }
+                                }
+                                
                             }
-                            SKPath path = new();
-                            
-                            
-                            path.MoveTo(geo.Translate(points[0]));
-                            for (var j = 1; j < points.Length; j++) path.LineTo(geo.Translate(points[j]));
-                            
+
                             paths[i] = path;
                         }
-                        buffer[i1] = paths;
+                        buffer[d] = paths;
                     }
-
                 }
             }
             sw.Stop();
@@ -73,7 +114,6 @@ namespace EarthQuake.Map.Layers
 
 
             foreach (var e in buffer[index]) {
-                if (e is null) continue;
                 if (e.Bounds.IntersectsWith(bounds)) canvas.DrawPath(e, paint);
             }
         }
