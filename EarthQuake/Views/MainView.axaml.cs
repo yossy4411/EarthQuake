@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EarthQuake.Views; 
@@ -42,7 +43,7 @@ public partial class MainView : UserControl
     private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)
     {
         Statistics.Selected = e.Selected;
-        Statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected);
+        Statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected).ToList();
     }
 
     private async void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)

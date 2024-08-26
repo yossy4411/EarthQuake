@@ -1,10 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using EarthQuake.Core.GeoJson;
 using EarthQuake.ViewModels;
 using SkiaSharp;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace EarthQuake.Views;
@@ -12,7 +9,7 @@ namespace EarthQuake.Views;
 public partial class StatisticsPanel : UserControl
 {
     private readonly StatisticsViewModel viewModel = new();
-    public IEnumerable<Epicenters.Epicenter> Epicenters
+    public List<Epicenters.Epicenter> Epicenters
     {
         set
         {
