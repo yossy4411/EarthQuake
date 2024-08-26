@@ -34,7 +34,7 @@ namespace EarthQuake.Map.Layers
                     {
                         // ズームレベルごとに実行される
                         var points = data[d];
-                        var paths = new SKPath[data[d].Length];
+                        var paths = new List<SKPath>(indices.Length);
                         for (var i = 0; i < indices.Length; i++)
                         {
                             var path = new SKPath();
@@ -90,9 +90,9 @@ namespace EarthQuake.Map.Layers
                                 
                             }
 
-                            paths[i] = path;
+                            paths.Add(path);
                         }
-                        buffer[d] = paths;
+                        buffer[d] = paths.ToArray();
                     }
                 }
             }
