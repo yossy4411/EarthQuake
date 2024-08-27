@@ -11,4 +11,9 @@
     <ProjectReference Include="..\EarthQuake.Core\EarthQuake.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="LibTessDotNet" Version="1.1.15" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
 </Project>
