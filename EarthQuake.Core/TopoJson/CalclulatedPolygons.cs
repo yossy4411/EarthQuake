@@ -76,10 +76,10 @@ public class SubPolygon(string[] names, int[][] indices)
 }
 
 [MessagePackObject]
-public struct Index(int parentIndex, int childIndex)
+public class WorldPolygonSet(Point[][] polygons, Point[][] borders)
 {
     [Key(0)]
-    public int ParentIndex = parentIndex;
+    public Point[][] Polygons { get; } = polygons;
     [Key(1)]
-    public int ChildIndex = childIndex;
+    public Point[][] Borders { get; } = borders;
 }

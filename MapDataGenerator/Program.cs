@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using EarthQuake.Core;
+using EarthQuake.Core.GeoJson;
 using EarthQuake.Core.TopoJson;
 using LibTessDotNet;
 using MessagePack;
@@ -13,11 +15,13 @@ Console.WriteLine("Contact: https://github.com/OkayuGroup");
 Console.WriteLine();
 Console.WriteLine("What would you like to do?");
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("1. Generate a data file from a TopoJson file.");
+Console.WriteLine("1. Generate a data file from a TopoJson file (for features in Japan).");
+Console.ForegroundColor = ConsoleColor.Yellow;
+Console.WriteLine("2. Generate a data file from a GeoJson file (for features around the world).");
 Console.ForegroundColor = ConsoleColor.Blue;
-Console.WriteLine("2. Open a data file and display it.");
+Console.WriteLine("3. Open a data file and display it.");
 Console.ForegroundColor = ConsoleColor.Red;
-Console.WriteLine("3. Exit.");
+Console.WriteLine("4. Exit.");
 Console.ResetColor();
 Console.Write("Enter number [1, 2, 3]: ");
 
@@ -30,12 +34,15 @@ if (!int.TryParse(Console.ReadLine(), out var b))
 switch (b)
 {
     case 1:
-        Generate();
+        GenerateTopoJson();
         break;
     case 2:
-        Display();
+        GenerateGeoJson();
         break;
     case 3:
+        Display();
+        break;
+    case 4:
         return;
     default:
         Console.WriteLine("Invalid input.");
@@ -44,7 +51,7 @@ switch (b)
 
 return;
 
-void Generate()
+void GenerateTopoJson()
 {
     
     Console.WriteLine("Please enter the name of the topojson file you want to load.");
@@ -228,6 +235,85 @@ void Generate()
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine("All done successfully! The program will exit.");
     Console.ResetColor();
+}
+
+void GenerateGeoJson()
+{
+    Console.WriteLine("Please enter the name of the geojson file you want to load.");
+    Console.Write("File full-path: ");
+    GeoJson? geoJson;
+    try
+    {
+        string? path;
+        if ((path = Console.ReadLine()) is null)
+        {
+            Console.WriteLine("Invalid input.");
+            return;
+        }
+        geoJson = JsonConvert.DeserializeObject<GeoJson>(File.ReadAllText(path));
+        Console.WriteLine("Loading the file... This may take a while.");
+        if (geoJson is null)
+        {
+            Console.WriteLine("Failed to load the file.");
+            return;
+        }
+    } catch (FileNotFoundException)
+    {
+        Console.WriteLine("The specified file was not found.");
+        return;
+    }
+    catch (JsonException)
+    {
+        Console.WriteLine("Failed to load the file.");
+        return;
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+        return;
+    }
+
+    Console.WriteLine("Contents loaded");
+
+    Console.WriteLine("1. Generate polygons from the GeoJson data.");
+    var geo = new GeomTransform();
+    var polygons = new Point[][geoJson.Features.Length];
+    for (var i2 = 0; i2 < geoJson.Features.Length; i2++)
+    {
+        var feature = geoJson.Features[i2];
+        Tess tess = new();
+        for (var i = 0; i < feature.Geometry?.Coordinates.Length; i++)
+        {
+            feature.Geometry?.AddVertex(tess, geo, i);
+            tess.Tessellate(WindingRule.Positive);
+            var points = new Point[tess.ElementCount * 3];
+            for (var j = 0; j < points.Length; j++)
+            {
+                points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X,
+                    tess.Vertices[tess.Elements[j]].Position.Y);
+            }
+
+            polygons[i2] = points;
+        }
+    }
+
+    Console.WriteLine("Done.");
+    Console.WriteLine("2. Generate borders from the GeoJson data.");
+
+    var borders = geoJson.Features.SelectMany(x => x.Geometry!.Coordinates.Select(polygon =>
+        polygon.SelectMany(border => border).Select(p => new Point((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();
+
+    Console.WriteLine("Done.");
+
+    Console.WriteLine("3. Save the data to a file.");
+    Console.WriteLine("Using default file path.");
+    var data = new WorldPolygonSet(polygons, borders);
+    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
+    var bytes = MessagePackSerializer.Serialize(data, lz4Options);
+    File.WriteAllBytes("world.mpk.lz4", bytes);
+    Console.WriteLine($"The data was saved to: {Path.GetFullPath("world.mpk.lz4")}");
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("All done successfully! The program will exit.");
 }
 
 void Display()

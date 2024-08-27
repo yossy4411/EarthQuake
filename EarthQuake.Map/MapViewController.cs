@@ -43,6 +43,5 @@ public class MapViewController(GeomTransform geo)
                 fore.Render(canvas, scale, bounds);
 
         }
-            
     }
 }

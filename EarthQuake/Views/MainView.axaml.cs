@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,7 +27,7 @@ public partial class MainView : UserControl
         DateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
         DateEnd.SelectedDate = DateTime.Now.Date;
         UpdateEpic.Click += Update_Epicenters;
-        timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(250) };
+        timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += Timer_Elapsed;
         timer.Start();
     }
@@ -55,8 +56,6 @@ public partial class MainView : UserControl
         });
         Info.InvalidateVisual();
         Loading.IsVisible = false;
-
-        
     }
 
     private void Slider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -69,7 +68,11 @@ public partial class MainView : UserControl
     {
         if (DateStart.SelectedDate.HasValue && DateEnd.SelectedDate.HasValue)
         {
-            App.ViewModel.GetEpicenters(((DateTime)DateStart.SelectedDate).Date, (int)(((DateTime)DateEnd.SelectedDate).Date - ((DateTime)DateStart.SelectedDate).Date).TotalDays);
+            App.ViewModel.GetEpicenters(DateStart.SelectedDate.Value.Date, (int)(DateEnd.SelectedDate.Value.Date - DateStart.SelectedDate.Value.Date).TotalDays);
+        }
+        else
+        {
+            Debug.WriteLine("Date is not set or invalid.");
         }
     }
 }

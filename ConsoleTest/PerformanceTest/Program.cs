@@ -6,7 +6,6 @@ using var client = new HttpClient();
 
 var file = await client.GetByteArrayAsync("http://172.18.0.93:8080/data/v3/10/899/406.pbf");
 
-
 // PBFデータを解凍する
 using var compressedStream = new MemoryStream(file);
 await using var decompressionStream = new GZipStream(compressedStream, CompressionMode.Decompress);
@@ -21,6 +20,7 @@ var layer = vectorTile.GetLayer("landuse");
 var feature = layer.GetFeature(0);
 // ポリゴンのジオメトリを取得
 var geometry = feature.Geometry<float>();
+
 foreach (var point2d in geometry.SelectMany(x => x))
 {
     Console.WriteLine(point2d.X);

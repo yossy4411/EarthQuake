@@ -27,11 +27,6 @@ namespace EarthQuake.Core.TopoJson
             }
             return new MapData(Detailer, layer);
         }
-        public MapData CreateLayer()
-        {
-            return Detailer is null ? new MapData([], null) : new MapData(Detailer, null);
-        }
-
         public Point[][][]? Detailer { get; set; }
     }
     public class MapData
@@ -70,7 +65,7 @@ namespace EarthQuake.Core.TopoJson
         {
             var index1 = index >= 0 ? index : -index - 1;
             var coords = _arcs[Simplify][index1];
-            return index >= 0 ? [..coords] : [..Enumerable.Reverse(coords)];
+            return index >= 0 ? [..coords] : [..coords.Reverse()];
         }
 
         public SKPath ToPath(Feature feature)
