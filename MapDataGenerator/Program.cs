@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
-using EarthQuake.Core;
-using EarthQuake.Core.GeoJson;
 using EarthQuake.Core.TopoJson;
 using LibTessDotNet;
-using MessagePack;
+using MapDataGenerator;
 using Newtonsoft.Json;
 using SkiaSharp;
 
@@ -23,7 +21,7 @@ Console.WriteLine("3. Open a data file and display it.");
 Console.ForegroundColor = ConsoleColor.Red;
 Console.WriteLine("4. Exit.");
 Console.ResetColor();
-Console.Write("Enter number [1, 2, 3]: ");
+Console.Write("Enter number [1, 2, 3, 4]: ");
 
 if (!int.TryParse(Console.ReadLine(), out var b))
 {
@@ -43,6 +41,8 @@ switch (b)
         Display();
         break;
     case 4:
+        Console.WriteLine("Exiting...");
+        Console.WriteLine("Goodbye!");
         return;
     default:
         Console.WriteLine("Invalid input.");
@@ -181,12 +181,11 @@ void GenerateTopoJson()
     Console.WriteLine("5. Serialize the data.");
     Console.WriteLine("This may take a while.");
     Console.WriteLine("PolygonsSet => MessagePack => .mpk.lz4");
-    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
     var sw = Stopwatch.StartNew();
     byte[] bytes;
     try
     {
-        bytes = MessagePackSerializer.Serialize(result, lz4Options);
+        bytes = Serializer.Serialize(result);
     }
     catch (Exception e)
     {
@@ -203,7 +202,7 @@ void GenerateTopoJson()
     sw.Restart();
     try
     {
-        var deserialized = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
+        var deserialized = Serializer.Deserialize<PolygonsSet>(bytes);
         sw.Stop();
         // テストポイントです
         _ = deserialized;
@@ -276,40 +275,39 @@ void GenerateGeoJson()
     Console.WriteLine("Contents loaded");
 
     Console.WriteLine("1. Generate polygons from the GeoJson data.");
-    var geo = new GeomTransform();
-    var polygons = new SKPoint[][geoJson.Features.Length];
+    var polygons = new SKPoint[geoJson.Features.Length][];
     for (var i2 = 0; i2 < geoJson.Features.Length; i2++)
     {
         var feature = geoJson.Features[i2];
         Tess tess = new();
         for (var i = 0; i < feature.Geometry?.Coordinates.Length; i++)
         {
-            feature.Geometry?.AddVertex(tess, geo, i);
-            tess.Tessellate(WindingRule.Positive);
-            var points = new SKPoint[tess.ElementCount * 3];
-            for (var j = 0; j < points.Length; j++)
-            {
-                points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X,
-                    tess.Vertices[tess.Elements[j]].Position.Y);
-            }
-
-            polygons[i2] = points;
+            feature.Geometry?.AddVertex(tess, i);
         }
+        tess.Tessellate(WindingRule.Positive);
+        var points = new SKPoint[tess.ElementCount * 3];
+        for (var j = 0; j < points.Length; j++)
+        { 
+            points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
+                tess.Vertices[tess.Elements[j]].Position.Y);
+        }
+
+        polygons[i2] = points;
     }
 
     Console.WriteLine("Done.");
     Console.WriteLine("2. Generate borders from the GeoJson data.");
 
-    var borders = geoJson.Features.SelectMany(x => x.Geometry!.Coordinates.Select(polygon =>
-        polygon.SelectMany(border => border).Select(p => new SKPoint((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();
+    /*var borders = geoJson.Features.SelectMany(x => x.Geometry!.Coordinates.Select(polygon =>
+        polygon.SelectMany(border => border).Select(p => new SKPoint((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();*/
+    Console.WriteLine("This is not implemented yet because the data is not used in the current App.");
 
     Console.WriteLine("Done.");
 
     Console.WriteLine("3. Save the data to a file.");
     Console.WriteLine("Using default file path.");
-    var data = new WorldPolygonSet(polygons, borders);
-    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
-    var bytes = MessagePackSerializer.Serialize(data, lz4Options);
+    var data = new WorldPolygonSet(polygons);
+    var bytes = Serializer.Serialize(data);
     File.WriteAllBytes("world.mpk.lz4", bytes);
     Console.WriteLine($"The data was saved to: {Path.GetFullPath("world.mpk.lz4")}");
     Console.ForegroundColor = ConsoleColor.Green;
@@ -326,10 +324,9 @@ void Display()
         Console.WriteLine("Invalid input.");
         return;
     }
-    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
     try
     {
-        var polygonsSet = MessagePackSerializer.Deserialize<PolygonsSet>(File.ReadAllBytes(path), lz4Options);
+        var polygonsSet = Serializer.Deserialize<PolygonsSet>(File.ReadAllBytes(path));
         Console.WriteLine("Data loaded. Display with json format.");
         var json = JsonConvert.SerializeObject(polygonsSet);
         Console.WriteLine(json);
@@ -348,7 +345,7 @@ void Display()
         {
             try
             {
-                var json = JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(File.ReadAllBytes(path), lz4Options));
+                var json = JsonConvert.SerializeObject(Serializer.Deserialize<object>(File.ReadAllBytes(path)));
                 Console.WriteLine(json[..Math.Min(json.Length, 10000)]);
             }
             catch (Exception)

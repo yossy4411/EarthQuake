@@ -1,9 +1,9 @@
-﻿using EarthQuake.Core.TopoJson;
-using LibTessDotNet;
+﻿using LibTessDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace EarthQuake.Core.GeoJson;
+
+namespace MapDataGenerator;
 
 public class GeoJson
 {
@@ -33,12 +33,11 @@ public class GeoJson
                     throw new NotImplementedException();
                 }
             }
-            public void AddVertex(Tess tess, GeomTransform geo, int vertex)
+            public void AddVertex(Tess tess, int vertex)
             {
 
                 var coordinates = Coordinates[vertex];
-                List<ContourVertex> result = [];
-                result.AddRange(coordinates[0].Select(coord => geo.Translate(coord[0], coord[1])).Select(point => new ContourVertex { Position = new Vec3(point.X, point.Y, 0) }));
+                var result = coordinates[0].Select(x => x).Select(point => new ContourVertex { Position = new Vec3((float) point[0], (float) point[1], 0) }).ToList();
                 tess.AddContour(result);
             }
         }

@@ -1,11 +1,13 @@
+using EarthQuake.Core;
 using LibTessDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
+
 // ReSharper disable ClassNeverInstantiated.Global
 
 
-namespace EarthQuake.Core.TopoJson
+namespace MapDataGenerator
 {
     public class TopoJson
     {
@@ -89,11 +91,7 @@ namespace EarthQuake.Core.TopoJson
 
             return path;
         }
-        
-        public static int RealIndex(int value)
-        {
-            return value >= 0 ? value : -value - 1;
-        }
+        public static int RealIndex(int value) => GeomTransform.RealIndex(value);
 
         public string LayerName => _layer?.Name ?? string.Empty;
         public Feature[]? Geometries => _layer?.Geometries;
@@ -102,10 +100,6 @@ namespace EarthQuake.Core.TopoJson
     {
         public double[] Scale { get; set; } = [0, 0];
         public double[] Translate { get; set; } = [0, 0];
-        public SKPoint ToSkPoint(int x, int y)
-        {
-            return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
-        }
         public SKPoint ToPoint(int x, int y)
         {
             return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));

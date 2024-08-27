@@ -2,10 +2,8 @@
 using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using EarthQuake.Map.Layers;
 using EarthQuake.Core;
 using System;
@@ -19,7 +17,6 @@ using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
 using EarthQuake.Models;
-using MessagePack;
 
 namespace EarthQuake.ViewModels;
 
@@ -56,22 +53,17 @@ public class MainViewModel : ViewModelBase
     {
         {
             transform = new GeomTransform();
-            JsonSerializer serializer = new();
-
-            var lz4Options =
-                MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
             PolygonsSet? calculated;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
             {
-                calculated = MessagePackSerializer.Deserialize<PolygonsSet>(stream, lz4Options);
+                calculated = Serializer.Deserialize<PolygonsSet>(stream);
             }
 
             _land = new LandLayer(calculated.Filling) { AutoFill = true };
             CountriesLayer world;
-            using (StreamReader streamReader2 = new(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.geojson"))))
+            using (var stream2 = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
-                using JsonReader reader2 = new JsonTextReader(streamReader2);
-                var geojson = serializer.Deserialize<GeoJson>(reader2) ?? new GeoJson();
+                var geojson = Serializer.Deserialize<WorldPolygonSet>(stream2);
                 world = new CountriesLayer(geojson);
             }
 

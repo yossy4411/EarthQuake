@@ -34,7 +34,7 @@ namespace EarthQuake.Map.Layers
                     {
                         // ズームレベルごとに実行される
                         var points = data[d];
-                        var paths = new List<SKPath>(indices.Length);
+                        var paths = new SKPath[indices.Length];
                         for (var i = 0; i < indices.Length; i++)
                         {
                             var path = new SKPath();
@@ -47,7 +47,7 @@ namespace EarthQuake.Map.Layers
                                 if (index1 < 0)
                                 {
                                     // 逆方向からアクセス
-                                    var points1 = points[MapData.RealIndex(index1)];
+                                    var points1 = points[GeomTransform.RealIndex(index1)];
                                     path.MoveTo(geo.Translate(points1[^1]));
                                     for (var i1 = points1.Length - 2; i1 >= 0; i1--)
                                     {
@@ -71,7 +71,7 @@ namespace EarthQuake.Map.Layers
                                     if (index < 0)
                                     {
                                         // 逆方向からアクセス
-                                        var points1 = points[MapData.RealIndex(index)];
+                                        var points1 = points[GeomTransform.RealIndex(index)];
                                         for (var i2 = points1.Length - 1; i2 >= 0; i2--)
                                         {
                                             path.LineTo(geo.Translate(points1[i2]));
@@ -90,9 +90,9 @@ namespace EarthQuake.Map.Layers
                                 
                             }
 
-                            paths.Add(path);
+                            paths[i] = path;
                         }
-                        buffer[d] = paths.ToArray();
+                        buffer[d] = paths;
                     }
                 }
             }

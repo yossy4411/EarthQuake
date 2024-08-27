@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using static EarthQuake.Core.TopoJson.MapData;
 
 namespace EarthQuake.Core
 {
@@ -10,7 +9,6 @@ namespace EarthQuake.Core
         private readonly SKPoint offset = new(135, (float)TranslateFromLat(35));
         public const int Height = 150;
         private const double MercatorLimit = 85.05112877980659;
-        public PolygonType[]? GeometryType { get; set; }
         public SKPoint Translate(double lon, double lat)
         {
             var x = (float)(lon - offset.X) * Zoom;
@@ -47,7 +45,11 @@ namespace EarthQuake.Core
         {
             var x = (lon - offset.X) * Zoom;
             var y = -((float)TranslateFromLat(lat) - offset.Y) * Zoom;
-            return new(x, y);
+            return new SKPoint(x, y);
+        }
+        public static int RealIndex(int value)
+        {
+            return value >= 0 ? value : -value - 1;
         }
     }
 }

@@ -49,12 +49,12 @@ public class SubPolygon(string[] names, int[][] indices)
 }
 
 [MessagePackObject]
-public class WorldPolygonSet(SKPoint[][] polygons, SKPoint[][] borders)
+public class WorldPolygonSet(SKPoint[][]? polygons/*, SKPoint[][] borders*/)
 {
     [Key(0)]
-    public SKPoint[][] Polygons { get; } = polygons;
-    [Key(1)]
-    public SKPoint[][] Borders { get; } = borders;
+    public SKPoint[][]? Polygons { get; } = polygons;
+    /*[Key(1)]
+    public SKPoint[][] Borders { get; } = borders;*/
 }
 
 public static class Serializer
@@ -98,20 +98,28 @@ public static class Serializer
         }
 
 
-        private static readonly IFormatterResolver Resolver =
-            CompositeResolver.Create(new SkiaSharpResolver(), StandardResolver.Instance);
+        
 
-        private static readonly MessagePackSerializerOptions Options = MessagePackSerializerOptions.Standard
-            .WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(Resolver);
+        
+    }
+    private static readonly IFormatterResolver Resolver = 
+        CompositeResolver.Create(new SkiaSharpResolver(), StandardResolver.Instance);
+     
+    private static readonly MessagePackSerializerOptions Options = MessagePackSerializerOptions.Standard
+         .WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(Resolver);
 
-        public static byte[] Serialize<T>(T obj)
-        {
-            return MessagePackSerializer.Serialize(obj, Options);
-        }
+    public static byte[] Serialize<T>(T obj)
+    {
+        return MessagePackSerializer.Serialize(obj, Options);
+    }
 
-        public static T Deserialize<T>(byte[] bytes)
-        {
-            return MessagePackSerializer.Deserialize<T>(bytes, Options);
-        }
+    public static T Deserialize<T>(byte[] bytes)
+    {
+        return MessagePackSerializer.Deserialize<T>(bytes, Options);
+    }
+
+    public static T Deserialize<T>(Stream stream)
+    {
+        return MessagePackSerializer.Deserialize<T>(stream, Options);
     }
 }
