@@ -12,7 +12,7 @@ namespace EarthQuake.Map.Layers
     public class BorderLayer(CalculatedBorders? polygons) : MapLayer
     {
         private SKPath[][] buffer = [];
-        private Point[][][]? data = polygons?.Points;
+        private SKPoint[][][]? data = polygons?.Points;
         private readonly int[][][]? indices = polygons?.Indices;
         private readonly bool copy;
         public BorderLayer(BorderLayer copySource) : this(polygons: null)

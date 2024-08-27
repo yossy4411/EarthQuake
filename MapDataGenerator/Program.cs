@@ -277,7 +277,7 @@ void GenerateGeoJson()
 
     Console.WriteLine("1. Generate polygons from the GeoJson data.");
     var geo = new GeomTransform();
-    var polygons = new Point[][geoJson.Features.Length];
+    var polygons = new SKPoint[][geoJson.Features.Length];
     for (var i2 = 0; i2 < geoJson.Features.Length; i2++)
     {
         var feature = geoJson.Features[i2];
@@ -286,10 +286,10 @@ void GenerateGeoJson()
         {
             feature.Geometry?.AddVertex(tess, geo, i);
             tess.Tessellate(WindingRule.Positive);
-            var points = new Point[tess.ElementCount * 3];
+            var points = new SKPoint[tess.ElementCount * 3];
             for (var j = 0; j < points.Length; j++)
             {
-                points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X,
+                points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X,
                     tess.Vertices[tess.Elements[j]].Position.Y);
             }
 
@@ -301,7 +301,7 @@ void GenerateGeoJson()
     Console.WriteLine("2. Generate borders from the GeoJson data.");
 
     var borders = geoJson.Features.SelectMany(x => x.Geometry!.Coordinates.Select(polygon =>
-        polygon.SelectMany(border => border).Select(p => new Point((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();
+        polygon.SelectMany(border => border).Select(p => new SKPoint((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();
 
     Console.WriteLine("Done.");
 
@@ -370,7 +370,7 @@ internal static class TopoJsonGenerator
     /// <param name="detailLevels"></param>
     internal static void ParseArcs(this TopoJson topo, float[] detailLevels)
     {
-        var detailer = new Point[detailLevels.Length][][];
+        var detailer = new SKPoint[detailLevels.Length][][];
         Console.WriteLine("Counting the number of arcs to calculate...");
         var total = topo.Arcs.Length * detailLevels.Length;
         var count = 0;
@@ -378,11 +378,11 @@ internal static class TopoJsonGenerator
         {
             var detailLevel = detailLevels[i3];
             Console.WriteLine($"Calculating detail level: {detailLevel}");
-            var detail = new Point[topo.Arcs.Length][];
+            var detail = new SKPoint[topo.Arcs.Length][];
             for (var i2 = 0; i2 < topo.Arcs.Length; i2++)
             {
                 var arc = topo.Arcs[i2];
-                List<Point> points = [];
+                List<SKPoint> points = [];
                 int x = arc[0][0], y = arc[0][1];
                 var sPoint = topo.ToPoint(x, y);
                 points.Add(sPoint);
@@ -394,7 +394,7 @@ internal static class TopoJsonGenerator
                     var point = topo.ToPoint(x, y);
 
                     if (detailLevel != 0 &&
-                        !(Point.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
+                        !(SKPoint.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
                         continue;
                     sPoint = point;
                     points.Add(point);
@@ -423,7 +423,7 @@ internal static class TopoJsonGenerator
         var data = topo.GetLayer(layerName);
         if (data?.Geometries is null) return null;
 
-        var parent = new Point[6][][];
+        var parent = new SKPoint[6][][];
         Console.WriteLine("Using calculate levels: 1-6");
         Console.WriteLine("Counting the number of polygons to calculate...");
         var total = data.Geometries.Length * 6;
@@ -432,7 +432,7 @@ internal static class TopoJsonGenerator
         for (var i2 = 0; i2 < 6; i2++)
         {
             data.Simplify = i2;
-            var child = new Point[data.Geometries.Length][];
+            var child = new SKPoint[data.Geometries.Length][];
             for (var i = 0; i < data.Geometries.Length; i++)
             {
                 var feature = data.Geometries[i];
@@ -445,11 +445,11 @@ internal static class TopoJsonGenerator
                 ProgressBar(i2 * data.Geometries.Length + i, total, $"Generating feature #{i + 1} Simplify: {i2 + 1} (Name: {feature.Properties?.Name})");
                 tess.Tessellate(WindingRule.Positive);
 
-                var points = new Point[tess.ElementCount * 3];
+                var points = new SKPoint[tess.ElementCount * 3];
 
                 for (var j = 0; j < points.Length; j++)
                 {
-                    points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X,
+                    points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X,
                         tess.Vertices[tess.Elements[j]].Position.Y);
                 }
                 child[i] = points;
@@ -492,8 +492,8 @@ internal static class TopoJsonGenerator
     {
         var notContained = geometry.Arcs.SelectMany(x => x[0]).Select(x => MapData.RealIndex(x) + 1).FirstOrDefault(x => !originIndex.Contains(x)) - 1;
         if (notContained == -1) return true;
-        var (px, py) = layer.GetLine(notContained)[0];
-        return path.Bounds.Contains(px, py) && path.Contains(px, py);
+        var p = layer.GetLine(notContained)[0];
+        return path.Bounds.Contains(p) && path.Contains(p.X, p.Y);
     }
     
     internal static CalculatedBorders? GenerateBorders(this TopoJson topo, string layerName)

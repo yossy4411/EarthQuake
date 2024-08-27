@@ -1,55 +1,28 @@
 ﻿using MessagePack;
+using MessagePack.Formatters;
+using MessagePack.Resolvers;
 using SkiaSharp;
 
 namespace EarthQuake.Core.TopoJson;
 
-/// <summary>
-/// 2Dの位置を表す構造体 絶対位置を表す
-/// </summary>
-/// <param name="x">x座標</param>
-/// <param name="y">y座標</param>
-[MessagePackObject]
-public readonly struct Point(float x, float y)
-{
-    [Key(0)]
-    public float X { get; } = x;
-    [Key(1)]
-    public float Y { get; } = y;
-    
-        
-    public static implicit operator SKPoint(Point p) => new(p.X, p.Y);
-        
-
-    public static float Distance(Point p1, Point p2)
-    {
-        var dx = p1.X - p2.X;
-        var dy = p1.Y - p2.Y;
-        return MathF.Sqrt(dx * dx + dy * dy);
-    }
-    public void Deconstruct(out float x, out float y)
-    {
-        x = X;
-        y = Y;
-    }
-}
     
 [MessagePackObject]
-public class CalculatedPolygons(string[] names, Point[][][] points)
+public class CalculatedPolygons(string[] names, SKPoint[][][] points)
 {
     [Key(0)]
     public string[] Names { get; } = names;
     [Key(1)]
-    public Point[][][] Points { get; } = points;
+    public SKPoint[][][] Points { get; } = points;
 }
 
 [MessagePackObject]
-public class CalculatedBorders(string[] names, Point[][][] points, int[][][] indices)
+public class CalculatedBorders(string[] names, SKPoint[][][] points, int[][][] indices)
 {
     [Key(0)]
     public string[] Names { get; } = names;
 
     [Key(1)]
-    public Point[][][] Points { get; } = points;
+    public SKPoint[][][] Points { get; } = points;
         
     [Key(2)]
     public int[][][] Indices { get; } = indices;
@@ -76,10 +49,69 @@ public class SubPolygon(string[] names, int[][] indices)
 }
 
 [MessagePackObject]
-public class WorldPolygonSet(Point[][] polygons, Point[][] borders)
+public class WorldPolygonSet(SKPoint[][] polygons, SKPoint[][] borders)
 {
     [Key(0)]
-    public Point[][] Polygons { get; } = polygons;
+    public SKPoint[][] Polygons { get; } = polygons;
     [Key(1)]
-    public Point[][] Borders { get; } = borders;
+    public SKPoint[][] Borders { get; } = borders;
+}
+
+public static class Serializer
+{
+    private class SkPointFormatter : IMessagePackFormatter<SKPoint>
+    {
+        public void Serialize(ref MessagePackWriter writer, SKPoint value, MessagePackSerializerOptions options)
+        {
+            writer.WriteArrayHeader(2);
+            writer.Write(value.X);
+            writer.Write(value.Y);
+        }
+
+        public SKPoint Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+            var count = reader.ReadArrayHeader();
+            if (count != 2) throw new MessagePackSerializationException("Invalid SKPoint format");
+            var x = reader.ReadSingle();
+            var y = reader.ReadSingle();
+            return new SKPoint(x, y);
+        }
+    }
+
+    public class SkiaSharpResolver : IFormatterResolver
+    {
+        private static readonly SkPointFormatter SkPointFormatter = new();
+
+        public IMessagePackFormatter<T>? GetFormatter<T>()
+        {
+            return FormatterCache<T>.Formatter;
+        }
+
+        private static class FormatterCache<T>
+        {
+            public static readonly IMessagePackFormatter<T>? Formatter;
+
+            static FormatterCache()
+            {
+                Formatter = typeof(T) == typeof(SKPoint) ? (IMessagePackFormatter<T>)SkPointFormatter : null;
+            }
+        }
+
+
+        private static readonly IFormatterResolver Resolver =
+            CompositeResolver.Create(new SkiaSharpResolver(), StandardResolver.Instance);
+
+        private static readonly MessagePackSerializerOptions Options = MessagePackSerializerOptions.Standard
+            .WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(Resolver);
+
+        public static byte[] Serialize<T>(T obj)
+        {
+            return MessagePackSerializer.Serialize(obj, Options);
+        }
+
+        public static T Deserialize<T>(byte[] bytes)
+        {
+            return MessagePackSerializer.Deserialize<T>(bytes, Options);
+        }
+    }
 }

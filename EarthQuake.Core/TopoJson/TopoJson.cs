@@ -11,7 +11,7 @@ namespace EarthQuake.Core.TopoJson
     {
 
         public int[][][] Arcs { get; set; } = [[[]]];
-        public Point ToPoint(int x, int y)
+        public SKPoint ToPoint(int x, int y)
         {
             return Transform.ToPoint(x, y);
         }
@@ -27,12 +27,12 @@ namespace EarthQuake.Core.TopoJson
             }
             return new MapData(Detailer, layer);
         }
-        public Point[][][]? Detailer { get; set; }
+        public SKPoint[][][]? Detailer { get; set; }
     }
     public class MapData
     {
         private readonly Layer? _layer;
-        private readonly Point[][][] _arcs;
+        private readonly SKPoint[][][] _arcs;
         public int Simplify = 0;
         public enum PolygonType : byte
         {
@@ -42,7 +42,7 @@ namespace EarthQuake.Core.TopoJson
             Area = 8,
             City = 16
         }
-        internal MapData(Point[][][] arcs, Layer? layer)
+        internal MapData(SKPoint[][][] arcs, Layer? layer)
         {
 
             _layer = layer;
@@ -61,7 +61,7 @@ namespace EarthQuake.Core.TopoJson
             tess.AddContour(result);
         }
         
-        public Point[] GetLine(int index)
+        public SKPoint[] GetLine(int index)
         {
             var index1 = index >= 0 ? index : -index - 1;
             var coords = _arcs[Simplify][index1];
@@ -77,7 +77,7 @@ namespace EarthQuake.Core.TopoJson
                 foreach (var index in arc[0])
                 {
                     var index1 = RealIndex(index);
-                    var coords = _arcs[^1][index1].Select<Point, SKPoint>(x => x).ToList();
+                    var coords = _arcs[^1][index1].ToList();
                     if (index < 0)
                     {
                         coords.Reverse();
@@ -106,9 +106,9 @@ namespace EarthQuake.Core.TopoJson
         {
             return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
         }
-        public Point ToPoint(int x, int y)
+        public SKPoint ToPoint(int x, int y)
         {
-            return new Point((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
+            return new SKPoint((float)(x * Scale[0] + Translate[0]), (float)(y * Scale[1] + Translate[1]));
         }
 
     }
@@ -133,14 +133,7 @@ namespace EarthQuake.Core.TopoJson
             public override int[][][]? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
             {
                 var array = JArray.Load(reader);
-                if (array.First?.First?.Type == JTokenType.Array)
-                {
-                    return array.ToObject<int[][][]>();
-                }
-                else
-                {
-                    return [array.ToObject<int[][]>() ?? [[]]];
-                }
+                return array.First?.First?.Type == JTokenType.Array ? array.ToObject<int[][][]>() : [array.ToObject<int[][]>() ?? [[]]];
             }
 
             public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
