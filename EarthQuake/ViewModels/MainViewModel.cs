@@ -78,7 +78,7 @@ public class MainViewModel : ViewModelBase
 
             Hypo = new Hypo3DViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
-            MapTilesLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
+            RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
             _foreground = new ObservationsLayer { Stations = _stations };
             Controller1 = new MapViewController(transform)
             {
