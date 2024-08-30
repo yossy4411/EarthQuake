@@ -2,20 +2,20 @@
 using SkiaSharp;
 using System.Diagnostics;
 
-namespace EarthQuake.Map
+namespace EarthQuake.Map.Tiles
 {
     /// <summary>
     /// LRU (Least Recently Used) を使用したキャッシュの保存
     /// </summary>
-    /// <typeparam name="K">Key</typeparam>
-    /// <typeparam name="V">Value</typeparam>
+    /// <typeparam name="T1">Key</typeparam>
+    /// <typeparam name="T2">Value</typeparam>
     /// <param name="capacity"></param>
-    public class LruCache<K, V>(int capacity) where K : IEquatable<K>
+    public class LruCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
     {
-        private readonly Dictionary<K, LinkedListNode<(K key, V value)>> cache = [];
-        private readonly LinkedList<(K key, V value)> lruList = [];
+        private readonly Dictionary<T1, LinkedListNode<(T1 key, T2 value)>> cache = [];
+        private readonly LinkedList<(T1 key, T2 value)> lruList = [];
 
-        public bool TryGet(K key, out V? value)
+        public bool TryGet(T1 key, out T2? value)
         {
             if (cache.TryGetValue(key, out var node))
             {
@@ -28,7 +28,7 @@ namespace EarthQuake.Map
             value = default;
             return false;
         }
-        public void Put(K key, V value)
+        public void Put(T1 key, T2 value)
         {
             if (cache.TryGetValue(key, out var node))
             {
@@ -50,7 +50,7 @@ namespace EarthQuake.Map
                     }
                 }
                 // 新しいデータを追加
-                var newNode = new LinkedListNode<(K key, V value)>((key, value));
+                var newNode = new LinkedListNode<(T1 key, T2 value)>((key, value));
                 lruList.AddFirst(newNode);
                 cache[key] = newNode;
             }
@@ -210,26 +210,6 @@ namespace EarthQuake.Map
             public static TilePoint operator +(TilePoint point, (int x, int y)point1) => point.Add(point1.x, point1.y);
         }
         
-    }
-    
-    public class RasterTilesController(string url) : MapTilesController<RasterTilesController.RasterTile>(url)
-    { 
-        public record RasterTile(SKPoint LeftTop, float Zoom, SKBitmap? Image);
-
-        private static async Task<SKBitmap?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
-        {
-            var response = await webClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode) return null;
-            var network = await response.Content.ReadAsByteArrayAsync();
-            return SKBitmap.Decode(network);
-
-        }
-        private protected override async Task<RasterTile> GetTile(HttpClient client, SKPoint point, TilePoint point1)
-        {
-            var bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(Url, point1.X, point1.Y, point1.Z));
-            return new RasterTile(point, MathF.Pow(2, point1.Z), bitmap);
-        }
     }
     
 }
