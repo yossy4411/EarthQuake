@@ -1,34 +1,32 @@
-﻿using System.IO.Compression;
-using Mapbox.VectorTile;
+﻿using System.Diagnostics;
+using Mapbox.Vector.Tile;
 
 
-using var client = new HttpClient();
 
-var file = await client.GetByteArrayAsync("http://172.18.0.93:8080/data/v3/10/899/406.pbf");
 
-// PBFデータを解凍する
-using var compressedStream = new MemoryStream(file);
-await using var decompressionStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-using var resultStream = new MemoryStream();
-decompressionStream.CopyTo(resultStream);
-var decompressed = resultStream.ToArray();
+var file = new FileStream("3244.pbf", FileMode.Open, FileAccess.Read); // https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/13/7189/3244.pbf
 
-var vectorTile = new VectorTile(decompressed);
+// await using var decompressionStream = new GZipStream(file, CompressionMode.Decompress);
+var vectorTile = VectorTileParser.Parse(file);
 
-var layer = vectorTile.GetLayer("landuse");
-// 1個目のフィーチャを取得
-var feature = layer.GetFeature(0);
-// ポリゴンのジオメトリを取得
-var geometry = feature.Geometry<float>();
+var sw = Stopwatch.StartNew();
 
-foreach (var point2d in geometry.SelectMany(x => x))
+foreach (var vectorTileLayer in vectorTile)
 {
-    Console.WriteLine(point2d.X);
-    Console.WriteLine(point2d.Y);
-    
-    // Webメルカトルの位置?に変換
-    var x = point2d.X / 4096 * 360 - 180;
-    var y = point2d.Y / 4096 * 360 - 180;
-    Console.WriteLine(x);
-    Console.WriteLine(y);
+    var features =
+        string.Join("\n\n", vectorTileLayer.VectorTileFeatures.Select(x =>
+            $"""
+             Attributes:
+             {string.Join('\n', x.Attributes.Select(v => $"{v.Key}: {v.Value}"))}
+             Type: {x.GeometryType}
+             {x.Geometry.SelectMany(p=>p).Count()} Points found.
+             """));
+    Console.WriteLine($"""
+                       Name: {vectorTileLayer.Name}
+                       Features: {features}
+                       
+                       """);
 }
+
+sw.Stop();
+Console.WriteLine($"{sw.ElapsedMilliseconds}ms elapsed for parsing and printing the vector tile data.");
