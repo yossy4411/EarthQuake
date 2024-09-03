@@ -10,18 +10,18 @@ namespace EarthQuake.Map.Tiles
     /// <typeparam name="T1">Key</typeparam>
     /// <typeparam name="T2">Value</typeparam>
     /// <param name="capacity"></param>
-    public class LruCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
+    public class LRUCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
     {
-        private readonly Dictionary<T1, LinkedListNode<(T1 key, T2 value)>> cache = [];
-        private readonly LinkedList<(T1 key, T2 value)> lruList = [];
+        private readonly Dictionary<T1, LinkedListNode<(T1 key, T2 value)>> _cache = [];
+        private readonly LinkedList<(T1 key, T2 value)> _lruList = [];
 
         public bool TryGet(T1 key, out T2? value)
         {
-            if (cache.TryGetValue(key, out var node))
+            if (_cache.TryGetValue(key, out var node))
             {
                 // キャッシュヒット: データをリストの先頭に移動
-                lruList.Remove(node);
-                lruList.AddFirst(node);
+                _lruList.Remove(node);
+                _lruList.AddFirst(node);
                 value = node.Value.value;
                 return true;
             }
@@ -30,29 +30,29 @@ namespace EarthQuake.Map.Tiles
         }
         public void Put(T1 key, T2 value)
         {
-            if (cache.TryGetValue(key, out var node))
+            if (_cache.TryGetValue(key, out var node))
             {
                 // キャッシュヒット: データを更新し、リストの先頭に移動
-                lruList.Remove(node);
+                _lruList.Remove(node);
                 node.Value = (key, value);
-                lruList.AddFirst(node);
+                _lruList.AddFirst(node);
             }
             else
             {
-                if (cache.Count >= capacity)
+                if (_cache.Count >= capacity)
                 {
                     // キャッシュが満杯: 最後の要素（LRU）を削除
-                    var lru = lruList.Last;
+                    var lru = _lruList.Last;
                     if (lru != null)
                     {
-                        cache.Remove(lru.Value.key);
-                        lruList.RemoveLast();
+                        _cache.Remove(lru.Value.key);
+                        _lruList.RemoveLast();
                     }
                 }
                 // 新しいデータを追加
                 var newNode = new LinkedListNode<(T1 key, T2 value)>((key, value));
-                lruList.AddFirst(newNode);
-                cache[key] = newNode;
+                _lruList.AddFirst(newNode);
+                _cache[key] = newNode;
             }
         }
     }
@@ -62,15 +62,15 @@ namespace EarthQuake.Map.Tiles
         public const int ImageSize = 256;
         private protected readonly string Url;
         public GeomTransform? Transform { get; set; }
-        private readonly LruCache<TilePoint, T> images = new(100);
-        private readonly List<MapTileRequest> requests = [];
-        private readonly Task[] tasks = new Task[1];
+        private readonly LRUCache<TilePoint, T> _tiles = new(100);
+        private readonly List<MapTileRequest> _requests = [];
+        private readonly Task[] _tasks = new Task[1];
         protected MapTilesController(string url)
         {
             Url = url;
-            for (var i = 0; i < tasks.Length; i++)
+            for (var i = 0; i < _tasks.Length; i++)
             {
-                tasks[i] = Task.Run(Handle);
+                _tasks[i] = Task.Run(Handle);
             }
         }
         private async Task Handle()
@@ -78,13 +78,14 @@ namespace EarthQuake.Map.Tiles
             HttpClient client = new();
             while (true)
             {
-                if (requests.Count <= 0) continue;
+                if (_requests.Count <= 0) continue;
                 try
                 {
-                    var req = requests[0];
-                    await GetTile(client, 
+                    var req = _requests[0];
+                    var tile = await GetTile(client, 
                         req.Point, 
                         req.TilePoint);
+                    _tiles.Put(req.TilePoint, tile);
                         
                 }
                 catch (Exception ex)
@@ -93,7 +94,7 @@ namespace EarthQuake.Map.Tiles
                 }
                 finally
                 {
-                    requests.RemoveAt(0);
+                    _requests.RemoveAt(0);
                 }
             }
         }
@@ -179,15 +180,15 @@ namespace EarthQuake.Map.Tiles
             {
                 var leftTop = Transform!.Translate(left, top);
 
-                if (images.TryGet(point, out var value))
+                if (_tiles.TryGet(point, out var value))
                 {
                     return (tile = value) is not null;
                 }
 
-                if (requests.Any(x => x.TilePoint == point)) return false;
+                if (_requests.Any(x => x.TilePoint == point)) return false;
                 {
-                    requests.RemoveAll(x => x.TilePoint.Z != point.Z);
-                    requests.Add(new MapTileRequest(leftTop, point));
+                    _requests.RemoveAll(x => x.TilePoint.Z != point.Z);
+                    _requests.Add(new MapTileRequest(leftTop, point));
                 }
                 return false;
             } catch (Exception ex)

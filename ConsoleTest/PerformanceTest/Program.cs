@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Mapbox.Vector.Tile;
-
-
+using SkiaSharp;
 
 
 var file = new FileStream("3244.pbf", FileMode.Open, FileAccess.Read); // https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/13/7189/3244.pbf
@@ -30,3 +29,5 @@ foreach (var vectorTileLayer in vectorTile)
 
 sw.Stop();
 Console.WriteLine($"{sw.ElapsedMilliseconds}ms elapsed for parsing and printing the vector tile data.");
+
+var paint = new SKPaint();
