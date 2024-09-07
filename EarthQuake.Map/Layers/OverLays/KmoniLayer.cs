@@ -18,7 +18,7 @@ public class KmoniLayer : ForeGroundLayer
                 
             var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
             if (transform is null) continue;
-            var hypo = transform.Translate(point.Point);
+            var hypo = GeomTransform.Translate(point.Point);
             SKPoint center = new(hypo.X * scale, hypo.Y * scale);
             using (new SKAutoCanvasRestore(canvas))
             {
@@ -33,13 +33,13 @@ public class KmoniLayer : ForeGroundLayer
                     {
                         if (i == 0)
                         {
-                            var point2 = transform.Translate(point.Point + new SKPoint(0, radius));
+                            var point2 = GeomTransform.Translate(point.Point + new SKPoint(0, radius));
                             path.MoveTo(point2.X * scale, point2.Y * scale);
                         }
                         else
                         {
                             var (sin, cos) = Math.SinCos(i * double.Pi / 180);
-                            var point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
+                            var point2 = GeomTransform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
                             path.LineTo(point2.X * scale, point2.Y * scale);
                         }
                     }
@@ -62,13 +62,13 @@ public class KmoniLayer : ForeGroundLayer
                     {
                         if (i == 0)
                         {
-                            var point2 = transform.Translate(point.Point + new SKPoint(0, radius));
+                            var point2 = GeomTransform.Translate(point.Point + new SKPoint(0, radius));
                             path.MoveTo(point2.X * scale, point2.Y * scale);
                         }
                         else
                         {
                             var (sin, cos) = Math.SinCos(i * double.Pi / 180);
-                            var point2 = transform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
+                            var point2 = GeomTransform.Translate(point.Point + new SKPoint((float)sin * radius, (float)cos * radius));
                             path.LineTo(point2.X * scale, point2.Y * scale);
                         }
                     }
@@ -86,7 +86,7 @@ public class KmoniLayer : ForeGroundLayer
             if (transform is not null)
             {
                 var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
-                var hypo = transform.Translate(point.Point);
+                var hypo = GeomTransform.Translate(point.Point);
                 SKPoint center = new(hypo.X * scale, hypo.Y * scale);
                 if (elapsed > 0 && elapsed % 1 < 0.5)
                 {

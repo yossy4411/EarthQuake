@@ -26,7 +26,7 @@ public class CountriesLayer(WorldPolygonSet world) : MapLayer
             polygons = new SKVertices[data.Length];
             for (var i = 0; i < data.Length; i++)
             {
-                polygons[i] = SKVertices.CreateCopy(SKVertexMode.Triangles, data[i].Select(geo.Translate).ToArray(),
+                polygons[i] = SKVertices.CreateCopy(SKVertexMode.Triangles, data[i].Select(GeomTransform.Translate).ToArray(),
                     null);
             }
         }

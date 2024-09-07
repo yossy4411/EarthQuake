@@ -40,7 +40,7 @@ namespace EarthQuake.Map.Layers
                     var skPoints = new SKPoint[points.Length];
                     for (var k = 0; k < points.Length; k++)
                     {
-                        skPoints[k] = geo.Translate(points[k]);
+                        skPoints[k] = GeomTransform.Translate(points[k]);
                     }
 
 
