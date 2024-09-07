@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mapbox.Vector.Tile;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
 
@@ -30,6 +31,20 @@ public class VectorMapStyles
             Layers = layersList
         };
 
+    }
+    
+    public VectorTileFeature[] ParsePaths(Stream stream, TilePoint point)
+    {
+        var layers = VectorTileParser.Parse(stream);
+        var dict = new Dictionary<string, VectorTileLayer>(layers.Select(x => new KeyValuePair<string, VectorTileLayer>(x.Name, x)));
+        return Layers.Select(mapLayer =>
+        {
+            if (mapLayer.Source is null || !dict.TryGetValue(mapLayer.Source, out var layer)) return null;
+            var features = from v in layer.VectorTileFeatures
+                where mapLayer.IsVisible(new Dictionary<string, object>(v.Attributes))
+                select v;
+            return mapLayer.CreateFeature(features, point);
+        }).Where(m => m is not null).OfType<VectorTileFeature>().ToArray();
     }
 
     private static VectorTileMapLayer? NewLayer(JToken jToken)
@@ -100,25 +115,16 @@ public class VectorMapStyles
             var key = token[1].ToObject<string>()!;
             var value = token.Where((_, j) => 1 < j).Select(x => x.ToObject<string>()!).ToArray();
 
-            return vValues =>
+            return dictionary =>
             {
-                Dictionary<string, string> dictionary;
-                if (vValues is Dictionary<string, string> d)
-                {
-                    dictionary = d;
-                }
-                else
-                {
-                    dictionary = new Dictionary<string, string>(vValues);
-                }
-                if (dictionary.TryGetValue(key, out var v)) return false;
+                if (dictionary.TryGetValue(key, out var v) || v is not string s) return false;
                 switch (type)
                 {
                     case 1:
-                        if (v != value[0]) return false;
+                        if (s != value[0]) return false;
                         break;
                     case 2:
-                        if (v == value[0]) return false;
+                        if (s == value[0]) return false;
                         break;
                     case 3:
                         if (!value.Contains(v)) return false;
@@ -152,34 +158,25 @@ public class VectorMapStyles
             filterList.Add((type, key, value));
         }
 
-        return vValues =>
+        return dictionary =>
         {
-            Dictionary<string, string> dictionary;
-             if (vValues is Dictionary<string, string> d)
-             {
-                 dictionary = d;
-             }
-             else
-             {
-                 dictionary = new Dictionary<string, string>(vValues);
-             }
             foreach (var (type, key, values) in filterList)
             {
                 
-                if (dictionary.TryGetValue(key, out var v)) return false;
+                if (dictionary.TryGetValue(key, out var v) || v is not string s) return false;
                 switch (counter)
                     {
                         case 1:　// ALL
                             switch (type)
                             {
                                 case 1:
-                                    if (v != values[0]) return false;
+                                    if (s != values[0]) return false;
                                     break;
                                 case 2:
-                                    if (v == values[0]) return false;
+                                    if (s == values[0]) return false;
                                     break;
                                 case 3:
-                                    if (!values.Contains(v)) return false;
+                                    if (!values.Contains(s)) return false;
                                     break;
                             }
 
@@ -188,13 +185,13 @@ public class VectorMapStyles
                             switch (type)
                             {
                                 case 1:
-                                    if (v == values[0]) return true;
+                                    if (s == values[0]) return true;
                                     break;
                                 case 2:
-                                    if (v != values[0]) return true;
+                                    if (s != values[0]) return true;
                                     break;
                                 case 3:
-                                    if (values.Contains(v)) return true;
+                                    if (values.Contains(s)) return true;
                                     break;
                             }
 
