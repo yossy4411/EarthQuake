@@ -61,7 +61,6 @@ namespace EarthQuake.Map.Tiles
     {
         public const int ImageSize = 256;
         private protected readonly string Url;
-        public GeomTransform? Transform { get; set; }
         private readonly LRUCache<TilePoint, T> _tiles = new(100);
         private readonly List<MapTileRequest> _requests = [];
         private readonly Task[] _tasks = new Task[1];
@@ -148,11 +147,7 @@ namespace EarthQuake.Map.Tiles
         {
 
             tile = default;
-            if (Transform is null)
-            {
-                tilePoint = TilePoint.Empty;
-                return false;
-            }
+            
             GetTileLeftTop(lon, GeomTransform.TranslateFromLat(lat), zoom, out var left, out var top, out var x, out var y, out var z);
             tilePoint = new TilePoint(x, y, z);
             return GetTile(ref tile, tilePoint, left, top);
@@ -167,10 +162,6 @@ namespace EarthQuake.Map.Tiles
         public bool TryGetTile(TilePoint tilePoint, out T? tile)
         {
             tile = default;
-            if (Transform is null)
-            {
-                return false;
-            }
             GetTileLeftTop(tilePoint.X, tilePoint.Y, tilePoint.Z, out var left, out var top);
             return GetTile(ref tile, tilePoint, left, top);
         }

@@ -59,7 +59,7 @@ public class Hypo3DViewLayer : ForeGroundLayer
             
     }
     public void ClearFeature() => points.Clear();
-    public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers, GeomTransform geo)
+    public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers)
     {
         if (centers == null) return;
         foreach (var feature in centers.OrderByDescending(x=>x.Properties.Dep??0))
@@ -69,7 +69,7 @@ public class Hypo3DViewLayer : ForeGroundLayer
         }
             
     }
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
     }
 

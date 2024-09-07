@@ -10,7 +10,7 @@ public class VectorMapLayer : MapLayer
         throw new NotImplementedException();
     }
 
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
         throw new NotImplementedException();
     }

@@ -9,11 +9,11 @@ public abstract class MapLayer
     private bool initialized;
     public static readonly SKTypeface Font = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Fonts/NotoSansJP-Medium.ttf")));
     internal abstract void Render(SKCanvas canvas, float scale, SKRect bounds);
-    private protected abstract void Initialize(GeomTransform geo);
-    public void Update(GeomTransform geo)
+    private protected abstract void Initialize();
+    public void Update()
     {
         if (initialized) return;
-        Initialize(geo);
+        Initialize();
         initialized = true;
     }
 }

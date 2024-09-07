@@ -9,8 +9,6 @@ public class RasterMapLayer(string source) : MapLayer
     private readonly RasterTilesController _controller = new(source);
     internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
-        if (_controller.Transform is null) return;
-            
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
         RasterTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 6, out var point);
         var zoom = (int)Math.Pow(2, point.Z);
@@ -36,8 +34,7 @@ public class RasterMapLayer(string source) : MapLayer
 
     }
 
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
-        _controller.Transform = geo;
     }
 }

@@ -6,7 +6,6 @@ namespace EarthQuake.Map.Layers.OverLays;
 
 public class KmoniLayer : ForeGroundLayer
 {
-    private GeomTransform? transform;
     private readonly List<EewPoint> points = [];
     public PSWave? Wave { get; set; }
     internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
@@ -17,7 +16,6 @@ public class KmoniLayer : ForeGroundLayer
         {
                 
             var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
-            if (transform is null) continue;
             var hypo = GeomTransform.Translate(point.Point);
             SKPoint center = new(hypo.X * scale, hypo.Y * scale);
             using (new SKAutoCanvasRestore(canvas))
@@ -83,32 +81,28 @@ public class KmoniLayer : ForeGroundLayer
         }
         foreach (var point in points)
         {
-            if (transform is not null)
+            var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
+            var hypo = GeomTransform.Translate(point.Point);
+            SKPoint center = new(hypo.X * scale, hypo.Y * scale);
+            if (elapsed > 0 && elapsed % 1 < 0.5)
             {
-                var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
-                var hypo = GeomTransform.Translate(point.Point);
-                SKPoint center = new(hypo.X * scale, hypo.Y * scale);
-                if (elapsed > 0 && elapsed % 1 < 0.5)
+                using (new SKAutoCanvasRestore(canvas))
                 {
-                    using (new SKAutoCanvasRestore(canvas))
-                    {
-                        paint.Color = SKColors.White;
-                        paint.IsStroke = true;
-                        paint.StrokeWidth = 5;
-                        canvas.Translate(center);
-                        canvas.DrawPath(ObservationsLayer.HypoPath, paint);
-                        paint.IsStroke = false;
-                        paint.Color = SKColors.Red;
-                        canvas.DrawPath(ObservationsLayer.HypoPath, paint);
-                    }
+                    paint.Color = SKColors.White;
+                    paint.IsStroke = true;
+                    paint.StrokeWidth = 5;
+                    canvas.Translate(center);
+                    canvas.DrawPath(ObservationsLayer.HypoPath, paint);
+                    paint.IsStroke = false;
+                    paint.Color = SKColors.Red;
+                    canvas.DrawPath(ObservationsLayer.HypoPath, paint);
                 }
             }
         }
     }
 
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
-        transform = geo;
 /*            SetHypo((33.137551f, 135.050537f), DateTime.Now.AddSeconds(3), 30);
             SetHypo((38.307181f, 142.708f), DateTime.Now.AddSeconds(3), 20);
             SetHypo((37.485320f, 137.25f), DateTime.Now.AddSeconds(3), 0);*/

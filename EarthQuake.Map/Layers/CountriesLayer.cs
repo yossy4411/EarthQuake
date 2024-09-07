@@ -18,7 +18,7 @@ public class CountriesLayer(WorldPolygonSet world) : MapLayer
         }
     }
     private SKVertices[] polygons = [];
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
         var sw = Stopwatch.StartNew();
         if (data is not null)

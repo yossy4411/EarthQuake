@@ -22,7 +22,7 @@ namespace EarthQuake.Map.Layers
             names = copySource.names;
             buffer = copySource.buffer;
         }
-        private protected override void Initialize(GeomTransform geo)
+        private protected override void Initialize()
         {
             var sw = Stopwatch.StartNew();
 

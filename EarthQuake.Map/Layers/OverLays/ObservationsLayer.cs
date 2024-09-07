@@ -44,10 +44,10 @@ public class ObservationsLayer : ForeGroundLayer
             return path;
         } 
     }
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
     }
-    public void SetData(PQuakeData quakeData, GeomTransform geo)
+    public void SetData(PQuakeData quakeData)
     {
         if (quakeData.EarthQuake.Hypocenter is not null)
         {
@@ -55,7 +55,7 @@ public class ObservationsLayer : ForeGroundLayer
         }
 
         if (quakeData.Points is null || Stations is null) return;
-        oPoints = quakeData.Points.Select(x => Stations.FirstOrDefault(v => v.Name == x.Addr)?.GetSKPoint(geo) ?? new()).ToArray();
+        oPoints = quakeData.Points.Select(x => Stations.FirstOrDefault(v => v.Name == x.Addr)?.GetSKPoint() ?? new()).ToArray();
         oColors = quakeData.Points.Select(x => x.Scale).ToArray();
     }
     internal override void Render(SKCanvas canvas, float scale, SKRect bounds)

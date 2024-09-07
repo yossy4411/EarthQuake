@@ -2,7 +2,7 @@
 
 namespace EarthQuake.Core
 {
-    public class GeomTransform
+    public static class GeomTransform
     {
         
         public const int Zoom = 50;

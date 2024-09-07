@@ -31,7 +31,6 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
     private readonly ObservationsLayer _foreground;
-    private readonly GeomTransform transform;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
     public readonly Hypo3DViewLayer Hypo;
@@ -52,7 +51,6 @@ public class MainViewModel : ViewModelBase
     public MainViewModel() 
     {
         {
-            transform = new GeomTransform();
             PolygonsSet? calculated;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
             {
@@ -80,18 +78,16 @@ public class MainViewModel : ViewModelBase
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
             _foreground = new ObservationsLayer { Stations = _stations };
-            Controller1 = new MapViewController(transform)
+            Controller1 = new MapViewController
             {
                 MapLayers = [world, border, grid],
             };
-            Controller2 = new MapViewController(transform)
+            Controller2 = new MapViewController
             {
-                Geo = transform,
                 MapLayers = [_land, _foreground]
             };
-            Controller3 = new MapViewController(transform)
+            Controller3 = new MapViewController
             {
-                Geo = transform,
                 MapLayers = [tile, new BorderLayer(border), Hypo]
             };
         }
@@ -112,7 +108,7 @@ public class MainViewModel : ViewModelBase
                 epicenters.Add(data.Features);
             }
         }
-        Hypo.AddFeature(epicenters, transform);
+        Hypo.AddFeature(epicenters);
     }
     public static void OpenLicenseLink() => OpenLink(MapTiles.Link);
     public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
@@ -148,6 +144,6 @@ public class MainViewModel : ViewModelBase
         quakeData.SortPoints(_stations);
         _land.SetInfo(quakeData);
                 
-        _foreground.SetData(quakeData, transform);
+        _foreground.SetData(quakeData);
     }
 }

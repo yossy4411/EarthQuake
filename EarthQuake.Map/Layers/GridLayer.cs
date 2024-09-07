@@ -5,11 +5,10 @@ namespace EarthQuake.Map.Layers;
 
 public class GridLayer : MapLayer
 {
-    private GeomTransform _geoTransform = new();
 
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
-        _geoTransform = geo;
+        
     }
 
     internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
