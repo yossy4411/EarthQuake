@@ -8,14 +8,12 @@ namespace EarthQuake.Map.Tiles;
 
 public abstract class VectorTileFeature
 {
-    public abstract IReadOnlyDictionary<string, string>? Properties { get; init; }
-    public abstract SKObject? Geometry { get; }
+    public virtual SKObject? Geometry { get; }
 }
 
 public class VectorFillFeature : VectorTileFeature
 {
     public override SKVertices? Geometry { get; }
-    public override IReadOnlyDictionary<string, string>? Properties { get; init; }
 
     public VectorFillFeature(IEnumerable<MVectorTileFeature> features, TilePoint point)
     {
@@ -35,7 +33,6 @@ public class VectorFillFeature : VectorTileFeature
 public class VectorLineFeature : VectorTileFeature
 {
     public override SKPath? Geometry { get; }
-    public override IReadOnlyDictionary<string, string>? Properties { get; init; }
 
     public VectorLineFeature(IEnumerable<MVectorTileFeature> features, TilePoint point)
     {

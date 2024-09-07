@@ -79,26 +79,26 @@ public class VectorMapStyles
         var vMapFilter = GetFilter(jToken);
         var source = jToken["source-layer"]?.ToObject<string>()!;
         var paintToken = jToken["paint"];
+        var minZoom = jToken["minzoom"]?.ToObject<int>() ?? 0;
+        var maxZoom = jToken["maxzoom"]?.ToObject<int>() ?? 22;
         switch (jToken["type"]?.ToObject<string>())
         {
             case "fill":
                 var fillColorToken = paintToken!["fill-color"];
                 var fillColor = ParseColor(fillColorToken?.ToObject<string>());
-                return new VectorFillLayer(source, fillColor, vMapFilter);
+                return new VectorFillLayer(source, fillColor, vMapFilter) {MinZoom = minZoom, MaxZoom = maxZoom};
             case "line":
                 var lineColorToken = paintToken!["line-color"];
                 var lineColor = lineColorToken is null ? SKColor.Empty : ParseColor(lineColorToken.ToObject<string>());
                 var lineWidthToken = paintToken["line-width"];
-                float lineWidth;
+                List<(float, float)> lineWidth;
                 if (lineWidthToken is JObject li)
                 {
-                    var start = li["stops"]?[0]![1]!.ToObject<float>() ?? 0;
-                    lineWidth = start; // It is not so easy; f**king GL Style.
-                    // TODO: 線形補間を実装する
+                    lineWidth = li["stops"]?.Select(x => x.ToObject<float[]>()).Select(x => (x![0], x[1])).ToList() ?? [];
                 }
                 else
                 {
-                    lineWidth = lineWidthToken?.ToObject<float>() ?? 1;
+                    lineWidth = [(0, lineWidthToken?.ToObject<float>() ?? 1)];
                 }
                
                 var strokeCap = paintToken["line-cap"]?.ToObject<string>() switch
@@ -120,13 +120,19 @@ public class VectorMapStyles
                 {
                     StrokeCap = strokeCap,
                     StrokeJoin = strokeJoin,
-                    PathEffect = pathEffect
+                    PathEffect = pathEffect,
+                    MinZoom = minZoom,
+                    MaxZoom = maxZoom
                 };
             case "symbol":
                 var textSize = paintToken?["text-size"]?.ToObject<float>() ?? 12;
                 var textColorToken = paintToken?["text-color"]?.ToObject<string>();
                 var textColor = ParseColor(textColorToken);
-                return new VectorSymbolLayer(source, textColor, textSize, vMapFilter);
+                return new VectorSymbolLayer(source, textColor, textSize, vMapFilter)
+                {
+                    MinZoom = minZoom,
+                    MaxZoom = maxZoom
+                };
             default:
                 return null;
         }
@@ -134,8 +140,8 @@ public class VectorMapStyles
 
     private static VectorMapFilter? GetFilter(JToken jToken)
     {
-        var token = jToken["filter"] as JArray;
-        if (token?[1] is not JArray filters)
+        if (jToken["filter"] is not JArray token) return null;
+        if (token[1] is not JArray filters)
         {
             var type = token![0].ToObject<string>() switch
             {

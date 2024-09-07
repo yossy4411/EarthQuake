@@ -17,6 +17,13 @@
       <None Update="3244.pbf">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="gsi.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\EarthQuake.Map\EarthQuake.Map.csproj" />
     </ItemGroup>
 
 </Project>
