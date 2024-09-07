@@ -1,4 +1,5 @@
-﻿using Mapbox.Vector.Tile;
+﻿using System.Diagnostics;
+using Mapbox.Vector.Tile;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
@@ -47,25 +48,59 @@ public class VectorMapStyles
         }).Where(m => m is not null).OfType<VectorTileFeature>().ToArray();
     }
 
+    private static SKColor ParseColor(string? value)
+    {
+        switch (value)
+        {
+            case null:
+                return SKColor.Empty;
+            case ['#', _, _, _, _, _, _]:
+                return SKColor.Parse(value);
+        }
+
+        if (value.StartsWith("rgba"))
+        {
+            // ex. rgba(40,20,100,0.8)
+            var values = value[5..^1].Split(',');
+            return new SKColor(byte.Parse(values[0]), byte.Parse(values[1]), byte.Parse(values[2]), (byte)(float.Parse(values[3]) * 255));
+        }
+        if (value.StartsWith("rgb"))
+        {
+            // ex. rgb(40,20,100)
+            var values = value[4..^1].Split(',');
+            return new SKColor(byte.Parse(values[0]), byte.Parse(values[1]), byte.Parse(values[2]));
+        }
+        Debug.WriteLine("Unknown color format: " + value);
+        return SKColor.Empty;
+    }
+    
     private static VectorTileMapLayer? NewLayer(JToken jToken)
     {
         var vMapFilter = GetFilter(jToken);
         var source = jToken["source-layer"]?.ToObject<string>()!;
-        var paintToken = jToken["paint"]!;
+        var paintToken = jToken["paint"];
         switch (jToken["type"]?.ToObject<string>())
         {
             case "fill":
-                var fillColorToken = paintToken["fill-color"];
-                var fillOpacity = paintToken["fill-opacity"]?.ToObject<float>() ?? 1;
-                var fillColor = fillColorToken is null
-                    ? SKColor.Empty
-                    : SKColor.Parse(fillColorToken.ToObject<string>()).WithAlpha((byte)(fillOpacity * 255));
-                
+                var fillColorToken = paintToken!["fill-color"];
+                var fillColor = ParseColor(fillColorToken?.ToObject<string>());
                 return new VectorFillLayer(source, fillColor, vMapFilter);
             case "line":
-                var lineColorToken = paintToken["line-color"];
-                var lineColor = lineColorToken is null ? SKColor.Empty : SKColor.Parse(lineColorToken.ToObject<string>());
-                var lineWidth = paintToken["line-width"]?.ToObject<float>() ?? 1;
+                var lineColorToken = paintToken!["line-color"];
+                var lineColor = lineColorToken is null ? SKColor.Empty : ParseColor(lineColorToken.ToObject<string>());
+                var lineWidthToken = paintToken["line-width"];
+                float lineWidth;
+                if (lineWidthToken is JObject li)
+                {
+                    var start = li["stops"]?[0]![1]!.ToObject<float>() ?? 0;
+                    lineWidth = start; // It is not so easy; f**king GL Style.
+                    // TODO: 線形補間を実装する
+                }
+                else
+                {
+                    lineWidth = lineWidthToken?.ToObject<float>() ?? 1;
+                }
+               
                 var strokeCap = paintToken["line-cap"]?.ToObject<string>() switch
                 {
                     "round" => SKStrokeCap.Round,
@@ -80,7 +115,7 @@ public class VectorMapStyles
                 };
                 
                 var dashArray = paintToken["line-dasharray"]?.ToObject<float[]>();
-                var pathEffect = dashArray is null ? null : SKPathEffect.CreateDash(dashArray, 0);
+                var pathEffect = dashArray is null || dashArray.Length % 2 != 0 ? null : SKPathEffect.CreateDash(dashArray, 0); // 多分偶数じゃないと機能しないんよね
                 return new VectorLineLayer(source, lineColor, lineWidth, vMapFilter)
                 {
                     StrokeCap = strokeCap,
@@ -88,13 +123,10 @@ public class VectorMapStyles
                     PathEffect = pathEffect
                 };
             case "symbol":
-                var textField = paintToken["text-field"]?.ToObject<string>()!;
-                var textSize = paintToken["text-size"]?.ToObject<float>() ?? 12;
-                var textColorToken = paintToken["text-color"]?.ToObject<string>();
-                var textColor = textColorToken is null
-                    ? SKColor.Empty
-                    : SKColor.Parse(textColorToken);
-                return new VectorSymbolLayer(source, textField, textColor, textSize, vMapFilter);
+                var textSize = paintToken?["text-size"]?.ToObject<float>() ?? 12;
+                var textColorToken = paintToken?["text-color"]?.ToObject<string>();
+                var textColor = ParseColor(textColorToken);
+                return new VectorSymbolLayer(source, textColor, textSize, vMapFilter);
             default:
                 return null;
         }

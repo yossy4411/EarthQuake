@@ -62,10 +62,9 @@ public class VectorLineLayer(string source, SKColor lineColor, float lineWidth, 
     }
 }
 
-public class VectorSymbolLayer(string source, string textField, SKColor textColor, float textSize, VectorMapFilter? filter = null)
+public class VectorSymbolLayer(string source, SKColor textColor, float textSize, VectorMapFilter? filter = null)
     : VectorTileMapLayer(VectorMapLayerType.Symbol, source, filter)
 {
-    public string TextField { get; } = textField;
     public SKColor TextColor { get; } = textColor;
     public float TextSize { get; } = textSize;
     public override VectorTileFeature? CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
