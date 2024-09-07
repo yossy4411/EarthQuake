@@ -11,7 +11,7 @@ public class RasterMapLayer(string source) : MapLayer
     {
         if (_controller.Transform is null) return;
             
-        var origin = _controller.Transform.TranslateToNonTransform(bounds.Left, bounds.Top);
+        var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
         RasterTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 6, out var point);
         var zoom = (int)Math.Pow(2, point.Z);
         var h = (int)Math.Ceiling(bounds.Height / GeomTransform.Zoom / (GeomTransform.Height * 2f / zoom));

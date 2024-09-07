@@ -178,7 +178,7 @@ namespace EarthQuake.Map.Tiles
         {
             try
             {
-                var leftTop = Transform!.Translate(left, top);
+                var leftTop = GeomTransform.Translate(left, top);
 
                 if (_tiles.TryGet(point, out var value))
                 {

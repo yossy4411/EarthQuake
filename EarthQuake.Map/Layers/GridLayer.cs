@@ -18,11 +18,11 @@ public class GridLayer : MapLayer
         paint.Color = SKColors.Gray;
         for (var i = -180; i <= 180; i += 15)
         {
-            canvas.DrawLine(_geoTransform.Translate(i, 90), _geoTransform.Translate(i, -90), paint);
+            canvas.DrawLine(GeomTransform.Translate(i, 90), GeomTransform.Translate(i, -90), paint);
         }
         for (var i = -90; i <= 90; i += 15)
         {
-            canvas.DrawLine(_geoTransform.Translate(-180, i), _geoTransform.Translate(180, i), paint);
+            canvas.DrawLine(GeomTransform.Translate(-180, i), GeomTransform.Translate(180, i), paint);
         }
     }
 }

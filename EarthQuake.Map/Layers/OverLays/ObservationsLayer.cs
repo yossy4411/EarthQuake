@@ -51,7 +51,7 @@ public class ObservationsLayer : ForeGroundLayer
     {
         if (quakeData.EarthQuake.Hypocenter is not null)
         {
-            hypo = geo.Translate(quakeData.EarthQuake.Hypocenter.Longitude, quakeData.EarthQuake.Hypocenter.Latitude);
+            hypo = GeomTransform.Translate(quakeData.EarthQuake.Hypocenter.Longitude, quakeData.EarthQuake.Hypocenter.Latitude);
         }
 
         if (quakeData.Points is null || Stations is null) return;
