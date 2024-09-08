@@ -93,7 +93,7 @@ namespace EarthQuake.Map.Layers
                     paint.Color = colors[i];
                 }
 
-                canvas.DrawVertices(poly, SKBlendMode.Clear, paint);
+                canvas.DrawVertices(poly, SKBlendMode.SrcOver, paint);
             }
 
         }

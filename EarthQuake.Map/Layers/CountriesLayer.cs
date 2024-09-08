@@ -14,7 +14,7 @@ public class CountriesLayer(WorldPolygonSet world) : MapLayer
         paint.Color = SKColors.Green;
         foreach (var polygon in polygons)
         {
-            canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
+            canvas.DrawVertices(polygon, SKBlendMode.SrcOver, paint);
         }
     }
     private SKVertices[] polygons = [];
