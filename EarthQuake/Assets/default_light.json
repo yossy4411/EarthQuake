@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Empty Style",
+  "name": "Default Light",
   "metadata": {},
   "sources": {
     "gsi": {
@@ -10,14 +10,9 @@
       "maxzoom": 15
     }
   },
-  "sprite": "",
-  "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
+  "sprite": "https://gsi-cyberjapan.github.io/gsivectortile-mapbox-gl-js/sprite/pale",
+  "glyphs": "https://maps.gsi.go.jp/xyz/noto-jp/{fontstack}/{range}.pbf",
   "layers": [
-    {
-      "id": "bg",
-      "type": "background",
-      "paint": {"background-color": "#FFFFFF"}
-    },
     {
       "id": "boundary",
       "type": "line",
@@ -132,6 +127,20 @@
         "line-width": 1.5,
         "line-dasharray": [2, 1]
       }
+    },
+    {
+      "id": "symbol-city",
+      "type": "symbol",
+      "source": "gsi",
+      "source-layer": "label",
+      "layout": {
+        "text-field": ["get", "knj"],
+        "text-font": ["NotoSansCJKjp-Regular"],
+        "visibility": "visible",
+        "symbol-avoid-edges": false,
+        "text-size": 12
+      },
+      "paint": {"text-color": "rgba(51, 50, 50, 1)"}
     }
   ],
   "id": "xcb5icc"

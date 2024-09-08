@@ -66,7 +66,7 @@ public class MainViewModel : ViewModelBase
                 world = new CountriesLayer(geojson);
             }
             VectorMapLayer map;
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/light-map-style.json", UriKind.Absolute))) {
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute))) {
                 using var streamReader = new StreamReader(stream);
                 var styles = VectorMapStyles.LoadGLJson(streamReader);
                 map = new VectorMapLayer(styles);
