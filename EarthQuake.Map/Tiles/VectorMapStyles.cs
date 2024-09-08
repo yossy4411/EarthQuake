@@ -40,23 +40,17 @@ public class VectorMapStyles
         var dict = new Dictionary<string, VectorTileLayer>(layers.Select(x => new KeyValuePair<string, VectorTileLayer>(x.Name, x)));
         return Layers.Select(mapLayer =>
         {
-            if (mapLayer.Source is null || !dict.TryGetValue(mapLayer.Source, out var layer)) return null;
-            var features = from v in layer.VectorTileFeatures
-                where mapLayer.IsVisible(new Dictionary<string, object>(v.Attributes))
-                select v;
+            if (mapLayer.Source is null || point.Z < mapLayer.MinZoom || point.Z > mapLayer.MaxZoom || !dict.TryGetValue(mapLayer.Source, out var layer)) return null;
+            var features =
+                layer.VectorTileFeatures.Where(v => mapLayer.IsVisible(new Dictionary<string, object>(v.Attributes)));
             return mapLayer.CreateFeature(features, point);
         }).Where(m => m is not null).OfType<VectorTileFeature>().ToArray();
     }
 
     private static SKColor ParseColor(string? value)
     {
-        switch (value)
-        {
-            case null:
-                return SKColor.Empty;
-            case ['#', _, _, _, _, _, _]:
-                return SKColor.Parse(value);
-        }
+        if (value is null) return SKColor.Empty;
+        if (value.StartsWith('#')) return SKColor.TryParse(value, out var color) ? color : SKColor.Empty;
 
         if (value.StartsWith("rgba"))
         {
@@ -141,103 +135,92 @@ public class VectorMapStyles
     private static VectorMapFilter? GetFilter(JToken jToken)
     {
         if (jToken["filter"] is not JArray token) return null;
-        if (token[1] is not JArray filters)
+        if (token[1] is not JArray)
         {
-            var type = token![0].ToObject<string>() switch
-            {
-                "==" => 1,
-                "!=" => 2,
-                "in" => 3,
-                _ => 0
-            };
             var key = token[1].ToObject<string>()!;
-            var value = token.Where((_, j) => 1 < j).Select(x => x.ToObject<string>()!).ToArray();
-
-            return dictionary =>
+            switch (token[0].ToObject<string>())
             {
-                if (dictionary.TryGetValue(key, out var v) || v is not string s) return false;
-                switch (type)
+                case "==":
                 {
-                    case 1:
-                        if (s != value[0]) return false;
-                        break;
-                    case 2:
-                        if (s == value[0]) return false;
-                        break;
-                    case 3:
-                        if (!value.Contains(v)) return false;
-                        break;
+                    var value = ParseValue(token[2]);
+                    return dictionary => dictionary.TryGetValue(key, out var v) && CompareValue(value, v);
                 }
-
-                return true;
-            };
-        }
-
-        var counter = filters[0].ToObject<string>() switch
-        {
-            "all" => 1,
-            "any" => 2,
-            _ => 0
-        };
-        if (filters[1] is not JArray) return null;
-        List<(int, string, string[])> filterList = [];
-        for (var i = 1; i < filters.Count; i++)
-        {
-            var filter = (filters[i] as JArray)!;
-            var type = filter[0].ToObject<string>() switch
-            {
-                "==" => 1,
-                "!=" => 2,
-                "in" => 3,
-                _ => 0
-            };
-            var key = filter[1].ToObject<string>()!;
-            var value = filter.Where((_, j) => 1 < j).Select(x => x.ToObject<string>()!).ToArray();
-            filterList.Add((type, key, value));
-        }
-
-        return dictionary =>
-        {
-            foreach (var (type, key, values) in filterList)
-            {
-                
-                if (dictionary.TryGetValue(key, out var v) || v is not string s) return false;
-                switch (counter)
-                    {
-                        case 1:　// ALL
-                            switch (type)
-                            {
-                                case 1:
-                                    if (s != values[0]) return false;
-                                    break;
-                                case 2:
-                                    if (s == values[0]) return false;
-                                    break;
-                                case 3:
-                                    if (!values.Contains(s)) return false;
-                                    break;
-                            }
-
-                            break;
-                        case 2:  // ANY
-                            switch (type)
-                            {
-                                case 1:
-                                    if (s == values[0]) return true;
-                                    break;
-                                case 2:
-                                    if (s != values[0]) return true;
-                                    break;
-                                case 3:
-                                    if (values.Contains(s)) return true;
-                                    break;
-                            }
-
-                            break;
-                    }
+                case "!=":
+                {
+                    var value = ParseValue(token[2]);
+                    return dictionary => dictionary.TryGetValue(key, out var v) && !CompareValue(value, v);
+                }
+                case "in":
+                {
+                    var values = token.Skip(2).Select(ParseValue).ToArray();
+                    return dictionary => dictionary.TryGetValue(key, out var v) && values.Any(x => CompareValue(x, v));
+                }
             }
 
-            return true;
+            return null;
+        }
+        List<VectorMapFilter> filterList = [];
+        for (var i = 1; i < token.Count; i++)
+        {
+            var token1 = (JArray)token[i];
+            var key = token1[1].ToObject<string>()!;
+            switch (token1[0].ToObject<string>())
+            {
+                case "==":
+                {
+                    var value = ParseValue(token1[2]);
+                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && CompareValue(value, v));
+                    break;
+                }
+                case "!=":
+                {
+                    var value = ParseValue(token1[2]);
+                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && !CompareValue(value, v));
+                    break;
+                }
+                case "in":
+                {
+                    var values = token1.Skip(2).Select(ParseValue).ToArray();
+                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && values.Any(x => CompareValue(x, v)));
+                    break;
+                }
+                default:
+                    continue;
+            }
+        }
+        if (filterList.Count == 0) return _ => false;
+        if (token[0].ToObject<string>() == "all")
+            return dictionary => filterList.All(x => x(dictionary));
+        return dictionary => filterList.Any(x => x(dictionary));
+        
+    }
+    
+    /// <summary>
+    /// 値を展開します
+    /// </summary>
+    /// <param name="token">展開するトークン</param>
+    /// <returns>(値, 型)</returns>
+    private static (object?, int) ParseValue(JToken token)
+    {
+        return token.Type switch
+        {
+            JTokenType.String => (token.ToObject<string>(), 1),  // 文字列
+            JTokenType.Integer => (token.ToObject<int>(), 2),    // 整数
+            JTokenType.Float => (token.ToObject<float>(), 3),    // 浮動小数点数
+            JTokenType.Boolean => (token.ToObject<bool>(), 4),   // 真偽値
+            _ => (null, 0)
+        };
+    }
+    
+    private static bool CompareValue((object?, int) value, object target)
+    {
+        return value.Item2 switch
+        {
+            1 => target is string s && s == (string?)value.Item1,
+            2 => target is long l && l == (int)value.Item1! || target is int i && i == (int)value.Item1!,
+            3 => target is float f && Math.Abs(f - (float)value.Item1!) < 0.001f || target is double d && Math.Abs(d - (float)value.Item1!) < 0.001f,
+            4 => target is bool b && b == (bool)value.Item1!,
+            _ => false
         };
     }
 }

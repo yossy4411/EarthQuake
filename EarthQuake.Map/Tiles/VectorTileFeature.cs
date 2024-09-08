@@ -9,6 +9,7 @@ namespace EarthQuake.Map.Tiles;
 public abstract class VectorTileFeature
 {
     public virtual SKObject? Geometry { get; }
+    public VectorTileMapLayer Layer { get; init; } = null!;
 }
 
 public class VectorFillFeature : VectorTileFeature
@@ -21,12 +22,24 @@ public class VectorFillFeature : VectorTileFeature
         foreach (var feature in features)
         {
             if (feature.Geometry.Count <= 0) return;
-            tess.AddContour(feature.Geometry[0].Select(x => { var coord = x.ToPosition(point.X, point.Y, point.Z, 256);
-            var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude); return new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 }); }).ToArray());
+            foreach (var coordinates in feature.Geometry)
+            {
+                tess.AddContour(coordinates.Select(x =>
+                {
+                    var coord = x.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u);
+                    var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude);
+                    return new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 });
+                }).ToArray());
+            }
         }
         tess.Tessellate(WindingRule.Positive);
-        var points = tess.Vertices.Select(x => new SKPoint(x.Position.X, x.Position.Y)).ToArray();
-        Geometry = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
+        var points = new SKPoint[tess.ElementCount * 3];
+        for (var j = 0; j < points.Length; j++)
+        { 
+            points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
+                tess.Vertices[tess.Elements[j]].Position.Y);
+        }
+        Geometry = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null);
     }
 }
 
@@ -42,7 +55,7 @@ public class VectorLineFeature : VectorTileFeature
             foreach (var points in feature.Geometry)
             {
                 var first = true;
-                foreach (var pos in points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, 256))
+                foreach (var pos in points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u))
                              .Select(coord => GeomTransform.Translate(coord.Longitude, coord.Latitude)))
                 {
                     if (first)

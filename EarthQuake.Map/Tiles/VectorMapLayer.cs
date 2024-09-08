@@ -46,7 +46,7 @@ public class VectorFillLayer(string source, SKColor fillColor, VectorMapFilter? 
     public SKColor FillColor { get; init; } = fillColor;
     public override VectorTileFeature CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
     {
-        return new VectorFillFeature(features, point);
+        return new VectorFillFeature(features, point) { Layer = this };
     }
 }
 
@@ -59,11 +59,16 @@ public class VectorLineLayer(string source, SKColor lineColor, List<(float, floa
     public SKPathEffect? PathEffect { get; init; }
     public override VectorTileFeature CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
     {
-        return new VectorLineFeature(features, point);
+        return new VectorLineFeature(features, point) { Layer = this };
     }
     public float GetWidth(float zoom)
     {
+        // 1点のみの場合
         if (lineWidth.Count == 1) return lineWidth[0].Item2;
+        // 範囲外の場合
+        if (zoom < lineWidth[0].Item1) return lineWidth[0].Item2;
+        if (zoom >= lineWidth[^1].Item1) return lineWidth[^1].Item2;
+        
         // 2点以上での線形補間
         var (prev, next) = lineWidth.Zip(lineWidth.Skip(1)).First(x => x.First.Item1 <= zoom && zoom < x.Second.Item1);
         var rate = (zoom - prev.Item1) / (next.Item1 - prev.Item1);
