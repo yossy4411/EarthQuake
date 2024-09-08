@@ -5,17 +5,18 @@ using EarthQuake.Map;
 using System.Collections.Generic;
 using System.Diagnostics;
 using EarthQuake.Map.Layers;
-using EarthQuake.Core;
 using System;
 using Avalonia.Platform;
 using EarthQuake.Core.EarthQuakes;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.IO;
 using DynamicData;
 using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
+using EarthQuake.Map.Tiles;
 using EarthQuake.Models;
 
 namespace EarthQuake.ViewModels;
@@ -26,12 +27,11 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller2 { get; set; }
     public MapViewController Controller3 { get; set; }
     public Brush BgBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
-    private static MapSource MapTiles => MapSource.GsiLight;
+    private static MapSource MapTilesBase => MapSource.GsiVector;
     private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
     private readonly ObservationsLayer _foreground;
-    private readonly GeomTransform transform;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
     public readonly Hypo3DViewLayer Hypo;
@@ -52,7 +52,6 @@ public class MainViewModel : ViewModelBase
     public MainViewModel() 
     {
         {
-            transform = new GeomTransform();
             PolygonsSet? calculated;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
             {
@@ -61,14 +60,17 @@ public class MainViewModel : ViewModelBase
 
             _land = new LandLayer(calculated.Filling) { AutoFill = true };
             CountriesLayer world;
-            using (var stream2 = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
-                var geojson = Serializer.Deserialize<WorldPolygonSet>(stream2);
+                var geojson = Serializer.Deserialize<WorldPolygonSet>(stream);
                 world = new CountriesLayer(geojson);
             }
-
-
-            var border = new BorderLayer(calculated.Border);
+            VectorMapLayer map;
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute))) {
+                using var streamReader = new StreamReader(stream);
+                var styles = VectorMapStyles.LoadGLJson(streamReader);
+                map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
+            }
             var grid = new GridLayer();
             _kmoni = new KmoniLayer();
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
@@ -78,21 +80,19 @@ public class MainViewModel : ViewModelBase
 
             Hypo = new Hypo3DViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
-            MapTilesLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
+            RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
             _foreground = new ObservationsLayer { Stations = _stations };
-            Controller1 = new MapViewController(transform)
+            Controller1 = new MapViewController
             {
-                MapLayers = [world, border, grid],
+                MapLayers = [map, grid],
             };
-            Controller2 = new MapViewController(transform)
+            Controller2 = new MapViewController
             {
-                Geo = transform,
-                MapLayers = [_land, _foreground]
+                MapLayers = [world, _land, map, _foreground]
             };
-            Controller3 = new MapViewController(transform)
+            Controller3 = new MapViewController
             {
-                Geo = transform,
-                MapLayers = [tile, new BorderLayer(border), Hypo]
+                MapLayers = [tile, map, Hypo]
             };
         }
         GC.Collect();
@@ -112,9 +112,9 @@ public class MainViewModel : ViewModelBase
                 epicenters.Add(data.Features);
             }
         }
-        Hypo.AddFeature(epicenters, transform);
+        Hypo.AddFeature(epicenters);
     }
-    public static void OpenLicenseLink() => OpenLink(MapTiles.Link);
+    public static void OpenLicenseLink() => OpenLink(MapTilesBase.Link);
     public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
     private static void OpenLink(string uri)
     {
@@ -148,6 +148,6 @@ public class MainViewModel : ViewModelBase
         quakeData.SortPoints(_stations);
         _land.SetInfo(quakeData);
                 
-        _foreground.SetData(quakeData, transform);
+        _foreground.SetData(quakeData);
     }
 }

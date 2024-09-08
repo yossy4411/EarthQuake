@@ -31,6 +31,6 @@ namespace EarthQuake.Core.EarthQuakes
             }
             return list;
         }
-        public SKPoint GetSKPoint(GeomTransform transform) => transform.Translate(Longitude, Latitude);
+        public SKPoint GetSKPoint() => GeomTransform.Translate(Longitude, Latitude);
     }
 }

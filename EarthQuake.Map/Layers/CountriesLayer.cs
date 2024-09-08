@@ -14,11 +14,11 @@ public class CountriesLayer(WorldPolygonSet world) : MapLayer
         paint.Color = SKColors.Green;
         foreach (var polygon in polygons)
         {
-            canvas.DrawVertices(polygon, SKBlendMode.Clear, paint);
+            canvas.DrawVertices(polygon, SKBlendMode.SrcOver, paint);
         }
     }
     private SKVertices[] polygons = [];
-    private protected override void Initialize(GeomTransform geo)
+    private protected override void Initialize()
     {
         var sw = Stopwatch.StartNew();
         if (data is not null)
@@ -26,7 +26,7 @@ public class CountriesLayer(WorldPolygonSet world) : MapLayer
             polygons = new SKVertices[data.Length];
             for (var i = 0; i < data.Length; i++)
             {
-                polygons[i] = SKVertices.CreateCopy(SKVertexMode.Triangles, data[i].Select(geo.Translate).ToArray(),
+                polygons[i] = SKVertices.CreateCopy(SKVertexMode.Triangles, data[i].Select(GeomTransform.Translate).ToArray(),
                     null);
             }
         }

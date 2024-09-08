@@ -32,7 +32,7 @@
                       BorderThickness="0"
                       Margin="5"
                       Padding="0">
-                <TextBlock Text="OpenStreetMap"
+                <TextBlock Text="{Binding MapTilesBase.Name}"
                            Tag="license"
                            Foreground="Blue"
                            TextDecorations="Underline"
@@ -199,7 +199,7 @@
                           Padding="0"
                           Grid.Row="1"
                           Grid.Column="1">
-                    <TextBlock Text="地理院地図（陰影起伏図）"
+                    <TextBlock Text="{Binding MapTiles2.Name}"
                                 Tag="license"
                                 Foreground="Blue"
                                 TextDecorations="Underline"

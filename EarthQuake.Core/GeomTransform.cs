@@ -2,20 +2,20 @@
 
 namespace EarthQuake.Core
 {
-    public class GeomTransform
+    public static class GeomTransform
     {
         
-        public static int Zoom => 50;
-        private readonly SKPoint offset = new(135, (float)TranslateFromLat(35));
+        public const int Zoom = 50;
+        private static readonly SKPoint Offset = new(135, (float)TranslateFromLat(35));
         public const int Height = 150;
         private const double MercatorLimit = 85.05112877980659;
-        public SKPoint Translate(double lon, double lat)
+        public static SKPoint Translate(double lon, double lat)
         {
-            var x = (float)(lon - offset.X) * Zoom;
-            var y = -(float)(TranslateFromLat(lat) - offset.Y) * Zoom;
+            var x = (float)(lon - Offset.X) * Zoom;
+            var y = -(float)(TranslateFromLat(lat) - Offset.Y) * Zoom;
             return new SKPoint(x, y);
         }
-        public SKPoint TranslateToNonTransform(float x, float y) => new(x / Zoom + offset.X, offset.Y - y / Zoom);
+        public static SKPoint TranslateToNonTransform(float x, float y) => new(x / Zoom + Offset.X, Offset.Y - y / Zoom);
         /// <summary>
         /// 緯度から計算された位置に変換します。
         /// </summary>
@@ -40,11 +40,11 @@ namespace EarthQuake.Core
         // Web Mercator
         public static double WebMercator(double latitude) => Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) / Math.PI;
         
-        public SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
-        public SKPoint Translate(float lon, float lat)
+        public static SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
+        public static SKPoint Translate(float lon, float lat)
         {
-            var x = (lon - offset.X) * Zoom;
-            var y = -((float)TranslateFromLat(lat) - offset.Y) * Zoom;
+            var x = (lon - Offset.X) * Zoom;
+            var y = -((float)TranslateFromLat(lat) - Offset.Y) * Zoom;
             return new SKPoint(x, y);
         }
         public static int RealIndex(int value)
