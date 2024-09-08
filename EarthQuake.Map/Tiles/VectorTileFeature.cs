@@ -73,3 +73,22 @@ public class VectorLineFeature : VectorTileFeature
         Geometry = path;
     }
 }
+
+public class VectorSymbolFeature : VectorTileFeature
+{
+    public (SKPoint, string?)[] Points { get; }
+    public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, string? fieldKey = "name")
+    {
+        if (fieldKey is null)
+        {
+            Points = [];
+            return;
+        }
+        Points = (from feature in features
+            let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
+            let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
+            let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
+            select (skPoint, text)).ToArray();
+    }
+    
+}

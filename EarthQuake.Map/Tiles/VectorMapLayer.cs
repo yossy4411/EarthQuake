@@ -76,14 +76,14 @@ public class VectorLineLayer(string source, SKColor lineColor, List<(float, floa
     }
 }
 
-public class VectorSymbolLayer(string source, SKColor textColor, float textSize, VectorMapFilter? filter = null)
+public class VectorSymbolLayer(string source, SKColor textColor, float textSize, string? fieldKey = "name", VectorMapFilter? filter = null)
     : VectorTileMapLayer(VectorMapLayerType.Symbol, source, filter)
 {
     public SKColor TextColor { get; } = textColor;
     public float TextSize { get; } = textSize;
-    public override VectorTileFeature? CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
+    public override VectorTileFeature CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
     {
-        return null; // TODO: 文字の描画の実装
+        return new VectorSymbolFeature(features, point, fieldKey) { Layer = this };
     }
 }
 

@@ -26,6 +26,7 @@ public class VectorMapLayer(VectorMapStyles styles) : MapLayer
         var z = MathF.Log(scale, 2) + 6;
         using var paint = new SKPaint();
         paint.IsAntialias = true;
+        paint.Typeface = Font;
         for (var j = 0; j <= h; j++)
         {
                 
@@ -60,6 +61,20 @@ public class VectorMapLayer(VectorMapStyles styles) : MapLayer
                             if (lineFeature.Geometry is not null)
                             {
                                 canvas.DrawPath(lineFeature.Geometry, paint);
+                            }
+
+                            break;
+                        }
+                        case VectorSymbolFeature symbolFeature:
+                        {
+                            var layer = (VectorSymbolLayer?)symbolFeature.Layer;
+                            if (layer is null) continue;
+                            paint.Color = layer.TextColor;
+                            paint.TextSize = layer.TextSize / scale;
+                            paint.Style = SKPaintStyle.Fill;
+                            foreach (var (point1, text) in symbolFeature.Points)
+                            {
+                                canvas.DrawText(text, point1, paint);
                             }
 
                             break;
