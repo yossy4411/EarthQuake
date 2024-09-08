@@ -11,7 +11,7 @@ namespace EarthQuake.Map.Layers
     {
         public bool Draw { get; set; } = true;
         private SKColor[]? colors;
-        private SKPoint[][][]? data = polygons?.Points;
+        private Point[][][]? data = polygons?.Points;
         private SKVertices[][] buffer = [];
         private readonly string[]? names = polygons?.Names;
         public bool AutoFill { get; init; }
@@ -22,7 +22,7 @@ namespace EarthQuake.Map.Layers
             names = copySource.names;
             buffer = copySource.buffer;
         }
-        private protected override void Initialize()
+        private protected override void Initialize(GeomTransform geo)
         {
             var sw = Stopwatch.StartNew();
 
@@ -40,7 +40,7 @@ namespace EarthQuake.Map.Layers
                     var skPoints = new SKPoint[points.Length];
                     for (var k = 0; k < points.Length; k++)
                     {
-                        skPoints[k] = GeomTransform.Translate(points[k]);
+                        skPoints[k] = geo.Translate(points[k]);
                     }
 
 
@@ -93,7 +93,7 @@ namespace EarthQuake.Map.Layers
                     paint.Color = colors[i];
                 }
 
-                canvas.DrawVertices(poly, SKBlendMode.SrcOver, paint);
+                canvas.DrawVertices(poly, SKBlendMode.Clear, paint);
             }
 
         }

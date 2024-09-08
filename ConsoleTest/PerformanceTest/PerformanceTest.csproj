@@ -8,22 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="mapbox-vector-tile" Version="5.0.2" />
       <PackageReference Include="Mapbox.VectorTile" Version="1.0.4-alpha2" />
-      <PackageReference Include="SkiaSharp" Version="2.88.8" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="3244.pbf">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="gsi.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\EarthQuake.Map\EarthQuake.Map.csproj" />
+      <PackageReference Include="SkiaSharp" Version="3.0.0-preview.4.1" />
     </ItemGroup>
 
 </Project>

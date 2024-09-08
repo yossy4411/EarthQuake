@@ -59,17 +59,17 @@ public class Hypo3DViewLayer : ForeGroundLayer
             
     }
     public void ClearFeature() => points.Clear();
-    public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers)
+    public void AddFeature(IEnumerable<Epicenters.Epicenter>? centers, GeomTransform geo)
     {
         if (centers == null) return;
         foreach (var feature in centers.OrderByDescending(x=>x.Properties.Dep??0))
         {
-            var p = GeomTransform.Translate(feature.Geometry.Coordinates[0], feature.Geometry.Coordinates[1]);
+            var p = geo.Translate(feature.Geometry.Coordinates[0], feature.Geometry.Coordinates[1]);
             points.Add(new Epicenter(feature, new SKPoint3(p.X, p.Y, feature.Properties.Dep??0), feature.Properties.Mag));
         }
             
     }
-    private protected override void Initialize()
+    private protected override void Initialize(GeomTransform geo)
     {
     }
 

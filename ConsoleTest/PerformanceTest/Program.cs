@@ -1,17 +1,34 @@
-﻿using EarthQuake.Map.Tiles;
-using Mapbox.Vector.Tile;
+﻿using System.IO.Compression;
+using Mapbox.VectorTile;
 
 
-using var file = new FileStream("3244.pbf", FileMode.Open, FileAccess.Read); // https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/13/7189/3244.pbf
+using var client = new HttpClient();
+
+var file = await client.GetByteArrayAsync("http://172.18.0.93:8080/data/v3/10/899/406.pbf");
 
 
-using var styleFile = new FileStream("gsi.json", FileMode.Open, FileAccess.Read); // 地理院地図のスタイルファイル
-using var styleReader = new StreamReader(styleFile);
-var styles = VectorMapStyles.LoadGLJson(styleReader);
+// PBFデータを解凍する
+using var compressedStream = new MemoryStream(file);
+await using var decompressionStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+using var resultStream = new MemoryStream();
+decompressionStream.CopyTo(resultStream);
+var decompressed = resultStream.ToArray();
 
-var l = styles.ParsePaths(file, new TilePoint(7189, 3244, 13));
+var vectorTile = new VectorTile(decompressed);
 
-var first = l[0];
-
-
-_ = first;
+var layer = vectorTile.GetLayer("landuse");
+// 1個目のフィーチャを取得
+var feature = layer.GetFeature(0);
+// ポリゴンのジオメトリを取得
+var geometry = feature.Geometry<float>();
+foreach (var point2d in geometry.SelectMany(x => x))
+{
+    Console.WriteLine(point2d.X);
+    Console.WriteLine(point2d.Y);
+    
+    // Webメルカトルの位置?に変換
+    var x = point2d.X / 4096 * 360 - 180;
+    var y = point2d.Y / 4096 * 360 - 180;
+    Console.WriteLine(x);
+    Console.WriteLine(y);
+}

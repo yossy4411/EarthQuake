@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using EarthQuake.Core;
 using SkiaSharp;
 
@@ -8,19 +7,13 @@ namespace EarthQuake.Map.Layers;
 public abstract class MapLayer
 {
     private bool initialized;
-    public static readonly SKTypeface Font = LoadFont();
-
-    private static SKTypeface LoadFont()
-    {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EarthQuake.Map.Assets.NotoSansJP-Regular.ttf");
-        return SKTypeface.FromStream(stream);
-    }
+    public static readonly SKTypeface Font = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Fonts/NotoSansJP-Medium.ttf")));
     internal abstract void Render(SKCanvas canvas, float scale, SKRect bounds);
-    private protected abstract void Initialize();
-    public void Update()
+    private protected abstract void Initialize(GeomTransform geo);
+    public void Update(GeomTransform geo)
     {
         if (initialized) return;
-        Initialize();
+        Initialize(geo);
         initialized = true;
     }
 }

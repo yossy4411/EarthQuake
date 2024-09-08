@@ -6,8 +6,9 @@ using SkiaSharp;
 
 namespace EarthQuake.Map;
 
-public class MapViewController()
+public class MapViewController(GeomTransform geo)
 {
+    public GeomTransform Geo { get; init; } = geo;
     private readonly MapLayer[] _mapLayers = [];
     public MapLayer[] MapLayers
     {
@@ -17,7 +18,7 @@ public class MapViewController()
             _mapLayers = value; 
             foreach (var item in _mapLayers)
             {
-                item.Update();
+                item.Update(Geo);
             }
         }
     }
@@ -42,5 +43,6 @@ public class MapViewController()
                 fore.Render(canvas, scale, bounds);
 
         }
+            
     }
 }

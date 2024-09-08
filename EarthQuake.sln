@@ -29,8 +29,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapDataGenerator", "MapData
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTest", "ConsoleTest\PerformanceTest\PerformanceTest.csproj", "{47E28924-47B5-47AD-98EA-136B8335CA22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,10 +79,6 @@ Global
 		{47E28924-47B5-47AD-98EA-136B8335CA22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47E28924-47B5-47AD-98EA-136B8335CA22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47E28924-47B5-47AD-98EA-136B8335CA22}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55B42566-B182-49CD-BC68-718A43EA3FFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55B42566-B182-49CD-BC68-718A43EA3FFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55B42566-B182-49CD-BC68-718A43EA3FFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55B42566-B182-49CD-BC68-718A43EA3FFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
