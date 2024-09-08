@@ -56,6 +56,7 @@ public class VectorMapLayer(VectorMapStyles styles) : MapLayer
                             paint.Color = layer.LineColor;
                             paint.StrokeWidth = layer.GetWidth(z) / scale;
                             paint.Style = SKPaintStyle.Stroke;
+                            paint.PathEffect = layer.PathEffect;
                             if (lineFeature.Geometry is not null)
                             {
                                 canvas.DrawPath(lineFeature.Geometry, paint);
