@@ -12,7 +12,7 @@ namespace EarthQuake.Map.Layers
     public class BorderLayer(CalculatedBorders? polygons) : MapLayer
     {
         private SKPath[][] buffer = [];
-        private Point[][][]? data = polygons?.Points;
+        private SKPoint[][][]? data = polygons?.Points;
         private readonly int[][][]? indices = polygons?.Indices;
         private readonly bool copy;
         public BorderLayer(BorderLayer copySource) : this(polygons: null)
@@ -22,7 +22,7 @@ namespace EarthQuake.Map.Layers
             buffer = copySource.buffer;
         }
         
-        private protected override void Initialize(GeomTransform geo)
+        private protected override void Initialize()
         {
             var sw = Stopwatch.StartNew();
             if (!copy)
@@ -34,7 +34,7 @@ namespace EarthQuake.Map.Layers
                     {
                         // ズームレベルごとに実行される
                         var points = data[d];
-                        var paths = new List<SKPath>(indices.Length);
+                        var paths = new SKPath[indices.Length];
                         for (var i = 0; i < indices.Length; i++)
                         {
                             var path = new SKPath();
@@ -47,21 +47,21 @@ namespace EarthQuake.Map.Layers
                                 if (index1 < 0)
                                 {
                                     // 逆方向からアクセス
-                                    var points1 = points[MapData.RealIndex(index1)];
-                                    path.MoveTo(geo.Translate(points1[^1]));
+                                    var points1 = points[GeomTransform.RealIndex(index1)];
+                                    path.MoveTo(GeomTransform.Translate(points1[^1]));
                                     for (var i1 = points1.Length - 2; i1 >= 0; i1--)
                                     {
-                                        path.LineTo(geo.Translate(points1[i1]));
+                                        path.LineTo(GeomTransform.Translate(points1[i1]));
                                     }
                                 }
                                 else
                                 {
                                     // 正方向からアクセス
                                     var points1 = points[index1];
-                                    path.MoveTo(geo.Translate(points1[0]));
+                                    path.MoveTo(GeomTransform.Translate(points1[0]));
                                     for (var i1 = 1; i1 < points1.Length; i1++)
                                     {
-                                        path.LineTo(geo.Translate(points1[i1]));
+                                        path.LineTo(GeomTransform.Translate(points1[i1]));
                                     }
                                 }
                                 
@@ -71,10 +71,10 @@ namespace EarthQuake.Map.Layers
                                     if (index < 0)
                                     {
                                         // 逆方向からアクセス
-                                        var points1 = points[MapData.RealIndex(index)];
+                                        var points1 = points[GeomTransform.RealIndex(index)];
                                         for (var i2 = points1.Length - 1; i2 >= 0; i2--)
                                         {
-                                            path.LineTo(geo.Translate(points1[i2]));
+                                            path.LineTo(GeomTransform.Translate(points1[i2]));
                                         }
                                     }
                                     else
@@ -83,16 +83,16 @@ namespace EarthQuake.Map.Layers
                                         var points1 = points[index];
                                         foreach (var t in points1)
                                         {
-                                            path.LineTo(geo.Translate(t));
+                                            path.LineTo(GeomTransform.Translate(t));
                                         }
                                     }
                                 }
                                 
                             }
 
-                            paths.Add(path);
+                            paths[i] = path;
                         }
-                        buffer[d] = paths.ToArray();
+                        buffer[d] = paths;
                     }
                 }
             }

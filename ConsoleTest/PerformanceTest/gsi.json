@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "name": "Empty Style",
+  "metadata": {},
+  "sources": {
+    "gsi": {
+      "type": "vector",
+      "tiles": ["https://map.okayugroup.com/tiles/{z}/{x}/{y}.pbf"],
+      "minzoom": 5,
+      "maxzoom": 15
+    }
+  },
+  "sprite": "",
+  "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "boundary",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "boundary",
+      "paint": {"line-color": "#444"}
+    },
+    {
+      "id": "water-sea",
+      "type": "fill",
+      "source": "gsi",
+      "source-layer": "waterarea",
+      "maxzoom": 17,
+      "paint": {"fill-color": "#88D7F6"}
+    },
+    {
+      "id": "water-river",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "river",
+      "paint": {"line-color": "#88D7F6"}
+    },
+    {
+      "id": "water-coast",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "coastline",
+      "maxzoom": 8,
+      "paint": {"line-color": "rgba(120, 137, 215, 1)"}
+    },
+    {
+      "id": "exp-1",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": ["all", ["==", "ftCode", 52703]],
+      "paint": {
+        "line-color": "rgba(40, 188, 23, 1)",
+        "line-width": {"stops": [[5, 1.2], [6, 3]]}
+      }
+    },
+    {
+      "id": "exp-11",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": ["all", ["==", "ftCode", 52704]],
+      "paint": {
+        "line-color": "#97DE8D",
+        "line-width": {"stops": [[5, 1.2], [6, 3]]}
+      }
+    },
+    {
+      "id": "exp-2",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1]],
+      "paint": {
+        "line-color": "rgba(40, 188, 23, 1)",
+        "line-width": {"stops": [[1, 3], [12, 2], [14, 15]]}
+      }
+    },
+    {
+      "id": "exp-21",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": ["all", ["==", "ftCode", 2704], ["==", "motorway", 1]],
+      "paint": {
+        "line-color": "#97DE8D",
+        "line-width": {"stops": [[1, 3], [12, 2], [14, 15]]}
+      }
+    }
+  ],
+  "id": "xcb5icc"
+}

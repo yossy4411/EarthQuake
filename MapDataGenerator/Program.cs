@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using EarthQuake.Core.TopoJson;
 using LibTessDotNet;
-using MessagePack;
+using MapDataGenerator;
 using Newtonsoft.Json;
 using SkiaSharp;
 
@@ -13,13 +13,15 @@ Console.WriteLine("Contact: https://github.com/OkayuGroup");
 Console.WriteLine();
 Console.WriteLine("What would you like to do?");
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("1. Generate a data file from a TopoJson file.");
+Console.WriteLine("1. Generate a data file from a TopoJson file (for features in Japan).");
+Console.ForegroundColor = ConsoleColor.Yellow;
+Console.WriteLine("2. Generate a data file from a GeoJson file (for features around the world).");
 Console.ForegroundColor = ConsoleColor.Blue;
-Console.WriteLine("2. Open a data file and display it.");
+Console.WriteLine("3. Open a data file and display it.");
 Console.ForegroundColor = ConsoleColor.Red;
-Console.WriteLine("3. Exit.");
+Console.WriteLine("4. Exit.");
 Console.ResetColor();
-Console.Write("Enter number [1, 2, 3]: ");
+Console.Write("Enter number [1, 2, 3, 4]: ");
 
 if (!int.TryParse(Console.ReadLine(), out var b))
 {
@@ -30,12 +32,17 @@ if (!int.TryParse(Console.ReadLine(), out var b))
 switch (b)
 {
     case 1:
-        Generate();
+        GenerateTopoJson();
         break;
     case 2:
-        Display();
+        GenerateGeoJson();
         break;
     case 3:
+        Display();
+        break;
+    case 4:
+        Console.WriteLine("Exiting...");
+        Console.WriteLine("Goodbye!");
         return;
     default:
         Console.WriteLine("Invalid input.");
@@ -44,7 +51,7 @@ switch (b)
 
 return;
 
-void Generate()
+void GenerateTopoJson()
 {
     
     Console.WriteLine("Please enter the name of the topojson file you want to load.");
@@ -174,12 +181,11 @@ void Generate()
     Console.WriteLine("5. Serialize the data.");
     Console.WriteLine("This may take a while.");
     Console.WriteLine("PolygonsSet => MessagePack => .mpk.lz4");
-    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
     var sw = Stopwatch.StartNew();
     byte[] bytes;
     try
     {
-        bytes = MessagePackSerializer.Serialize(result, lz4Options);
+        bytes = Serializer.Serialize(result);
     }
     catch (Exception e)
     {
@@ -196,7 +202,7 @@ void Generate()
     sw.Restart();
     try
     {
-        var deserialized = MessagePackSerializer.Deserialize<PolygonsSet>(bytes, lz4Options);
+        var deserialized = Serializer.Deserialize<PolygonsSet>(bytes);
         sw.Stop();
         // テストポイントです
         _ = deserialized;
@@ -230,6 +236,84 @@ void Generate()
     Console.ResetColor();
 }
 
+void GenerateGeoJson()
+{
+    Console.WriteLine("Please enter the name of the geojson file you want to load.");
+    Console.Write("File full-path: ");
+    GeoJson? geoJson;
+    try
+    {
+        string? path;
+        if ((path = Console.ReadLine()) is null)
+        {
+            Console.WriteLine("Invalid input.");
+            return;
+        }
+        geoJson = JsonConvert.DeserializeObject<GeoJson>(File.ReadAllText(path));
+        Console.WriteLine("Loading the file... This may take a while.");
+        if (geoJson is null)
+        {
+            Console.WriteLine("Failed to load the file.");
+            return;
+        }
+    } catch (FileNotFoundException)
+    {
+        Console.WriteLine("The specified file was not found.");
+        return;
+    }
+    catch (JsonException)
+    {
+        Console.WriteLine("Failed to load the file.");
+        return;
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+        return;
+    }
+
+    Console.WriteLine("Contents loaded");
+
+    Console.WriteLine("1. Generate polygons from the GeoJson data.");
+    var polygons = new SKPoint[geoJson.Features.Length][];
+    for (var i2 = 0; i2 < geoJson.Features.Length; i2++)
+    {
+        var feature = geoJson.Features[i2];
+        Tess tess = new();
+        for (var i = 0; i < feature.Geometry?.Coordinates.Length; i++)
+        {
+            feature.Geometry?.AddVertex(tess, i);
+        }
+        tess.Tessellate(WindingRule.Positive);
+        var points = new SKPoint[tess.ElementCount * 3];
+        for (var j = 0; j < points.Length; j++)
+        { 
+            points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
+                tess.Vertices[tess.Elements[j]].Position.Y);
+        }
+
+        polygons[i2] = points;
+    }
+
+    Console.WriteLine("Done.");
+    Console.WriteLine("2. Generate borders from the GeoJson data.");
+
+    /*var borders = geoJson.Features.SelectMany(x => x.Geometry!.Coordinates.Select(polygon =>
+        polygon.SelectMany(border => border).Select(p => new SKPoint((float)p[0], (float)p[1])).ToArray()).ToArray()).ToArray();*/
+    Console.WriteLine("This is not implemented yet because the data is not used in the current App.");
+
+    Console.WriteLine("Done.");
+
+    Console.WriteLine("3. Save the data to a file.");
+    Console.WriteLine("Using default file path.");
+    var data = new WorldPolygonSet(polygons);
+    var bytes = Serializer.Serialize(data);
+    File.WriteAllBytes("world.mpk.lz4", bytes);
+    Console.WriteLine($"The data was saved to: {Path.GetFullPath("world.mpk.lz4")}");
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("All done successfully! The program will exit.");
+}
+
 void Display()
 {
     Console.WriteLine("Please enter the name of the data file you want to load.");
@@ -240,10 +324,9 @@ void Display()
         Console.WriteLine("Invalid input.");
         return;
     }
-    var lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
     try
     {
-        var polygonsSet = MessagePackSerializer.Deserialize<PolygonsSet>(File.ReadAllBytes(path), lz4Options);
+        var polygonsSet = Serializer.Deserialize<PolygonsSet>(File.ReadAllBytes(path));
         Console.WriteLine("Data loaded. Display with json format.");
         var json = JsonConvert.SerializeObject(polygonsSet);
         Console.WriteLine(json);
@@ -262,7 +345,7 @@ void Display()
         {
             try
             {
-                var json = JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(File.ReadAllBytes(path), lz4Options));
+                var json = JsonConvert.SerializeObject(Serializer.Deserialize<object>(File.ReadAllBytes(path)));
                 Console.WriteLine(json[..Math.Min(json.Length, 10000)]);
             }
             catch (Exception)
@@ -284,7 +367,7 @@ internal static class TopoJsonGenerator
     /// <param name="detailLevels"></param>
     internal static void ParseArcs(this TopoJson topo, float[] detailLevels)
     {
-        var detailer = new Point[detailLevels.Length][][];
+        var detailer = new SKPoint[detailLevels.Length][][];
         Console.WriteLine("Counting the number of arcs to calculate...");
         var total = topo.Arcs.Length * detailLevels.Length;
         var count = 0;
@@ -292,11 +375,11 @@ internal static class TopoJsonGenerator
         {
             var detailLevel = detailLevels[i3];
             Console.WriteLine($"Calculating detail level: {detailLevel}");
-            var detail = new Point[topo.Arcs.Length][];
+            var detail = new SKPoint[topo.Arcs.Length][];
             for (var i2 = 0; i2 < topo.Arcs.Length; i2++)
             {
                 var arc = topo.Arcs[i2];
-                List<Point> points = [];
+                List<SKPoint> points = [];
                 int x = arc[0][0], y = arc[0][1];
                 var sPoint = topo.ToPoint(x, y);
                 points.Add(sPoint);
@@ -308,7 +391,7 @@ internal static class TopoJsonGenerator
                     var point = topo.ToPoint(x, y);
 
                     if (detailLevel != 0 &&
-                        !(Point.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
+                        !(SKPoint.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
                         continue;
                     sPoint = point;
                     points.Add(point);
@@ -337,7 +420,7 @@ internal static class TopoJsonGenerator
         var data = topo.GetLayer(layerName);
         if (data?.Geometries is null) return null;
 
-        var parent = new Point[6][][];
+        var parent = new SKPoint[6][][];
         Console.WriteLine("Using calculate levels: 1-6");
         Console.WriteLine("Counting the number of polygons to calculate...");
         var total = data.Geometries.Length * 6;
@@ -346,7 +429,7 @@ internal static class TopoJsonGenerator
         for (var i2 = 0; i2 < 6; i2++)
         {
             data.Simplify = i2;
-            var child = new Point[data.Geometries.Length][];
+            var child = new SKPoint[data.Geometries.Length][];
             for (var i = 0; i < data.Geometries.Length; i++)
             {
                 var feature = data.Geometries[i];
@@ -359,11 +442,11 @@ internal static class TopoJsonGenerator
                 ProgressBar(i2 * data.Geometries.Length + i, total, $"Generating feature #{i + 1} Simplify: {i2 + 1} (Name: {feature.Properties?.Name})");
                 tess.Tessellate(WindingRule.Positive);
 
-                var points = new Point[tess.ElementCount * 3];
+                var points = new SKPoint[tess.ElementCount * 3];
 
                 for (var j = 0; j < points.Length; j++)
                 {
-                    points[j] = new Point(tess.Vertices[tess.Elements[j]].Position.X,
+                    points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X,
                         tess.Vertices[tess.Elements[j]].Position.Y);
                 }
                 child[i] = points;
@@ -406,8 +489,8 @@ internal static class TopoJsonGenerator
     {
         var notContained = geometry.Arcs.SelectMany(x => x[0]).Select(x => MapData.RealIndex(x) + 1).FirstOrDefault(x => !originIndex.Contains(x)) - 1;
         if (notContained == -1) return true;
-        var (px, py) = layer.GetLine(notContained)[0];
-        return path.Bounds.Contains(px, py) && path.Contains(px, py);
+        var p = layer.GetLine(notContained)[0];
+        return path.Bounds.Contains(p) && path.Contains(p.X, p.Y);
     }
     
     internal static CalculatedBorders? GenerateBorders(this TopoJson topo, string layerName)

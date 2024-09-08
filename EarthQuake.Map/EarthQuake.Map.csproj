@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Skia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Skia" Version="11.1.3" />
     <PackageReference Include="LibTessDotNet" Version="1.1.15" />
+    <PackageReference Include="mapbox-vector-tile" Version="5.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <None Remove="Assets\NotoSansJP-Regular.ttf" />
+    <EmbeddedResource Include="Assets\NotoSansJP-Regular.ttf" />
   </ItemGroup>
 
 </Project>
