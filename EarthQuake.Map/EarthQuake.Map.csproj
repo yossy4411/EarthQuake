@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <None Remove="Assets\NotoSansJP-Regular.ttf" />
+    <EmbeddedResource Include="Assets\NotoSansJP-Regular.ttf" />
   </ItemGroup>
 
 </Project>

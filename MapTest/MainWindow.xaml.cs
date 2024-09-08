@@ -22,7 +22,7 @@ public partial class MainWindow
         using var stream = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\world.mpk.lz4", FileMode.Open);
         var worldSet = Serializer.Deserialize<WorldPolygonSet>(stream);
         var world = new CountriesLayer(worldSet);
-        using var stream2 = new FileStream(@"E:\source\EarthQuake\ConsoleTest\PerformanceTest\gsi.json", FileMode.Open);
+        using var stream2 = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\default_light.json", FileMode.Open);
         using var reader = new StreamReader(stream2);
         var styles = VectorMapStyles.LoadGLJson(reader);
         var map = new VectorMapLayer(styles);
