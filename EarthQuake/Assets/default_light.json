@@ -129,16 +129,68 @@
       }
     },
     {
-      "id": "symbol-city",
+      "id": "symbol-pref2",
       "type": "symbol",
       "source": "gsi",
       "source-layer": "label",
+      "minzoom": 8,
+      "maxzoom": 11,
+      "filter": ["all", ["==", "ftCode", 100], ["==", "annoCtg", 140]],
       "layout": {
         "text-field": ["get", "knj"],
         "text-font": ["NotoSansCJKjp-Regular"],
+        "text-rotate": 0,
         "visibility": "visible",
         "symbol-avoid-edges": false,
-        "text-size": 12
+        "icon-anchor": "right",
+        "text-size": 22
+      },
+      "paint": {"text-color": "rgba(51, 50, 50, 1)"}
+    },
+    {
+      "id": "symbol-pref1",
+      "type": "symbol",
+      "source": "gsi",
+      "source-layer": "label",
+      "minzoom": 6,
+      "maxzoom": 8,
+      "filter": ["all", ["==", "ftCode", 50100], ["==", "annoCtg", 140]],
+      "layout": {
+        "text-field": ["get", "knj"],
+        "text-font": ["NotoSansCJKjp-Regular"],
+        "text-rotate": 0,
+        "visibility": "visible",
+        "symbol-avoid-edges": false,
+        "icon-anchor": "right",
+        "text-size": 22
+      },
+      "paint": {"text-color": "rgba(51, 50, 50, 1)"}
+    },
+    {
+      "id": "symbol-city1",
+      "type": "symbol",
+      "source": "gsi",
+      "source-layer": "symbol",
+      "minzoom": 6,
+      "maxzoom": 8,
+      "filter": ["all", ["==", "ftCode", 51303]],
+      "layout": {
+        "text-field": ["get", "knj"],
+        "text-font": ["NotoSansCJKjp-Regular"],
+        "text-rotate": 0,
+        "visibility": "visible",
+        "symbol-avoid-edges": false,
+        "icon-anchor": "center",
+        "text-size": 16,
+        "icon-image": "人口50万人未満-500",
+        "icon-allow-overlap": false,
+        "text-transform": "none",
+        "text-anchor": "left",
+        "icon-pitch-alignment": "viewport",
+        "icon-rotation-alignment": "auto",
+        "icon-size": 0.5,
+        "text-justify": "auto",
+        "text-offset": [0.4, 0]
       },
       "paint": {"text-color": "rgba(51, 50, 50, 1)"}
     }

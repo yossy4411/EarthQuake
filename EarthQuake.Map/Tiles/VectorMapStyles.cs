@@ -119,11 +119,12 @@ public class VectorMapStyles
                     MaxZoom = maxZoom
                 };
             case "symbol":
-                var textSize = paintToken?["text-size"]?.ToObject<float>() ?? 12;
+                var layoutToken = jToken["layout"];
+                var textSize = layoutToken?["text-size"]?.ToObject<float>() ?? 16;
                 var textColorToken = paintToken?["text-color"]?.ToObject<string>();
                 var textColor = ParseColor(textColorToken);
                 // { "layout": { "text-field": ["get", "name"] } } みたいな形式になってるはずだから、2番目の要素を取得
-                var field = jToken["layout"]?["text-field"]?[1]?.ToObject<string>();
+                var field = layoutToken?["text-field"]?[1]?.ToObject<string>();
                 return new VectorSymbolLayer(source, textColor, textSize, field, vMapFilter)
                 {
                     MinZoom = minZoom,
