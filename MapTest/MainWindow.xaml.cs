@@ -25,7 +25,7 @@ public partial class MainWindow
         using var stream2 = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\default_light.json", FileMode.Open);
         using var reader = new StreamReader(stream2);
         var styles = VectorMapStyles.LoadGLJson(reader);
-        var map = new VectorMapLayer(styles);
+        var map = new VectorMapLayer(styles, "https://map.okayugroup.com/tiles/{z}/{x}/{y}.pbf");
         Controller = new MapViewController
         {
             MapLayers = [world, map]

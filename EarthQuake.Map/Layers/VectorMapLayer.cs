@@ -5,10 +5,10 @@ using SkiaSharp;
 namespace EarthQuake.Map.Layers;
 
 /// <summary>
-/// (一時的な実装) ベクトルタイルを描画するレイヤー
+/// ベクトルタイルを描画するレイヤー
 /// </summary>
 /// <param name="styles"></param>
-public class VectorMapLayer(VectorMapStyles styles) : MapLayer
+public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
 {
     private VectorTilesController? _controller;
     private VectorMapStyles? _styles = styles;
@@ -17,13 +17,13 @@ public class VectorMapLayer(VectorMapStyles styles) : MapLayer
     {
         if (_controller is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
-        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 6, out var point);
+        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
         var zoom = (int)Math.Pow(2, point.Z);
         var h = (int)Math.Ceiling(bounds.Height / GeomTransform.Zoom / (GeomTransform.Height * 2f / zoom));
         var w = (int)Math.Ceiling(bounds.Width / GeomTransform.Zoom / (360f / zoom));
         h = Math.Min(h, zoom - point.Y);
         w = Math.Min(w, zoom - point.X);
-        var z = MathF.Log(scale, 2) + 6;
+        var z = MathF.Log(scale, 2) + 5;
         using var paint = new SKPaint();
         paint.IsAntialias = true;
         paint.Typeface = Font;
@@ -88,7 +88,7 @@ public class VectorMapLayer(VectorMapStyles styles) : MapLayer
 
     private protected override void Initialize()
     {
-        _controller = new VectorTilesController("https://map.okayugroup.com/tiles/{z}/{x}/{y}.pbf", _styles!);
+        _controller = new VectorTilesController(url, _styles!);
         _styles = null; // 参照を解放
     }
 }

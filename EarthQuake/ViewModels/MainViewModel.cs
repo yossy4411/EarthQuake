@@ -27,7 +27,7 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller2 { get; set; }
     public MapViewController Controller3 { get; set; }
     public Brush BgBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
-    private static MapSource MapTiles => MapSource.GsiLight;
+    private static MapSource MapTilesBase => MapSource.GsiVector;
     private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private readonly List<Station> _stations;
@@ -69,7 +69,7 @@ public class MainViewModel : ViewModelBase
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute))) {
                 using var streamReader = new StreamReader(stream);
                 var styles = VectorMapStyles.LoadGLJson(streamReader);
-                map = new VectorMapLayer(styles);
+                map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
             }
             var grid = new GridLayer();
             _kmoni = new KmoniLayer();
@@ -114,7 +114,7 @@ public class MainViewModel : ViewModelBase
         }
         Hypo.AddFeature(epicenters);
     }
-    public static void OpenLicenseLink() => OpenLink(MapTiles.Link);
+    public static void OpenLicenseLink() => OpenLink(MapTilesBase.Link);
     public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
     private static void OpenLink(string uri)
     {
