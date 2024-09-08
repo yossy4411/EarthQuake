@@ -44,44 +44,6 @@
       "paint": {"line-color": "rgba(120, 137, 215, 1)"}
     },
     {
-      "id": "railway-01",
-      "type": "line",
-      "metadata": {
-        "layer-id": "layer-1303",
-        "title": "新幹線",
-        "path": "鉄道-新幹線",
-        "added": 1
-      },
-      "source": "gsi",
-      "source-layer": "railway",
-      "minzoom": 4,
-      "maxzoom": 8,
-      "filter": ["all", ["in", "ftCode", 58204]],
-      "layout": {"line-cap": "square", "visibility": "visible"},
-      "paint": {
-        "line-color": "rgba(128, 128, 128, 1)",
-        "line-width": 1.5,
-        "line-dasharray": [2, 1]
-      }
-    },
-    {
-      "id": "railway-00",
-      "type": "line",
-      "metadata": {
-        "layer-id": "layer-1303",
-        "title": "新幹線",
-        "path": "鉄道-新幹線",
-        "added": 1
-      },
-      "source": "gsi",
-      "source-layer": "railway",
-      "minzoom": 4,
-      "maxzoom": 8,
-      "filter": ["all", ["in", "ftCode", 58203]],
-      "layout": {"line-cap": "square", "visibility": "visible"},
-      "paint": {"line-color": "rgba(78, 78, 78, 1)", "line-width": 1.5}
-    },
-    {
       "id": "exp-1",
       "type": "line",
       "source": "gsi",

@@ -5,17 +5,18 @@ using EarthQuake.Map;
 using System.Collections.Generic;
 using System.Diagnostics;
 using EarthQuake.Map.Layers;
-using EarthQuake.Core;
 using System;
 using Avalonia.Platform;
 using EarthQuake.Core.EarthQuakes;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.IO;
 using DynamicData;
 using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
+using EarthQuake.Map.Tiles;
 using EarthQuake.Models;
 
 namespace EarthQuake.ViewModels;
@@ -59,14 +60,17 @@ public class MainViewModel : ViewModelBase
 
             _land = new LandLayer(calculated.Filling) { AutoFill = true };
             CountriesLayer world;
-            using (var stream2 = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
-                var geojson = Serializer.Deserialize<WorldPolygonSet>(stream2);
+                var geojson = Serializer.Deserialize<WorldPolygonSet>(stream);
                 world = new CountriesLayer(geojson);
             }
-
-
-            var border = new BorderLayer(calculated.Border);
+            VectorMapLayer map;
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/light-map-style.json", UriKind.Absolute))) {
+                using var streamReader = new StreamReader(stream);
+                var styles = VectorMapStyles.LoadGLJson(streamReader);
+                map = new VectorMapLayer(styles);
+            }
             var grid = new GridLayer();
             _kmoni = new KmoniLayer();
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
@@ -80,15 +84,15 @@ public class MainViewModel : ViewModelBase
             _foreground = new ObservationsLayer { Stations = _stations };
             Controller1 = new MapViewController
             {
-                MapLayers = [world, border, grid],
+                MapLayers = [map, grid],
             };
             Controller2 = new MapViewController
             {
-                MapLayers = [_land, _foreground]
+                MapLayers = [world, _land, map, _foreground]
             };
             Controller3 = new MapViewController
             {
-                MapLayers = [tile, new BorderLayer(border), Hypo]
+                MapLayers = [tile, map, Hypo]
             };
         }
         GC.Collect();
