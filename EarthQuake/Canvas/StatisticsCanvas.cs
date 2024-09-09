@@ -213,7 +213,7 @@ namespace EarthQuake.Canvas
                                 {
                                     path.LineTo(i * width / (length0 - 1),  height - (count2[i, j - 1] * height / max));
                                 }
-                                paint.Color = Kiwi3Color.GetColor(Core.EarthQuakes.Converter.FromInt(j));
+                                paint.Color = Core.EarthQuakes.Converter.FromInt(j).GetKiwi3Color();
                                 path.Close();
                                 canvas.DrawPath(path, paint);
                             }

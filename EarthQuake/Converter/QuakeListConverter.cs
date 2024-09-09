@@ -3,13 +3,10 @@ using EarthQuake.Core.EarthQuakes.P2PQuake;
 using System;
 using Avalonia.Controls;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls.Shapes;
 using EarthQuake.Map.Colors;
-using Avalonia.Media;
-using SkiaSharp;
+
 
 namespace EarthQuake.Converter
 {
@@ -22,7 +19,7 @@ namespace EarthQuake.Converter
             {
                 if (quakeData.EarthQuake is not null)
                 {
-                    var color = Kiwi3Color.GetColor(quakeData.EarthQuake.MaxScale);
+                    var color = quakeData.EarthQuake.MaxScale.GetKiwi3Color();
                     var rect = new Rectangle()
                     {
                         Width = 30,

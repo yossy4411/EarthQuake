@@ -61,7 +61,7 @@ namespace EarthQuake.Map.Layers
             {
                 var name = names[i];
                 var a = quakeData.Points.FirstOrDefault(x => x.Addr.StartsWith(name));
-                if (a is not null) colors[i] = Kiwi3Color.GetColor(a.Scale);
+                if (a is not null) colors[i] = a.Scale.GetKiwi3Color();
                 else if (AutoFill) colors[i] = SKColors.DarkGreen;
                 else colors[i] = SKColors.Empty;
             }
