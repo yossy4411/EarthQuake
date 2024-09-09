@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Net.Mime;
+using EarthQuake.Map.Layers;
 using Mapbox.Vector.Tile;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -125,7 +127,7 @@ public class VectorMapStyles
                 var textColor = ParseColor(textColorToken);
                 // { "layout": { "text-field": ["get", "name"] } } みたいな形式になってるはずだから、2番目の要素を取得
                 var field = layoutToken?["text-field"]?[1]?.ToObject<string>();
-                return new VectorSymbolLayer(source, textColor, textSize, field, vMapFilter)
+                return new VectorSymbolLayer(source, textColor, MapLayer.Font, textSize, field, vMapFilter)
                 {
                     MinZoom = minZoom,
                     MaxZoom = maxZoom

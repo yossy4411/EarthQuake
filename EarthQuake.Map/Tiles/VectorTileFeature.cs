@@ -1,4 +1,5 @@
 ﻿using EarthQuake.Core;
+using EarthQuake.Map.Layers;
 using LibTessDotNet;
 using Mapbox.Vector.Tile;
 using SkiaSharp;
@@ -54,20 +55,8 @@ public class VectorLineFeature : VectorTileFeature
         {
             foreach (var points in feature.Geometry)
             {
-                var first = true;
-                foreach (var pos in points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u))
-                             .Select(coord => GeomTransform.Translate(coord.Longitude, coord.Latitude)))
-                {
-                    if (first)
-                    {
-                        path.MoveTo(pos);
-                        first = false;
-                    }
-                    else
-                    {
-                        path.LineTo(pos);
-                    }
-                }
+                path.AddPoly(points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u))
+                             .Select(coord => GeomTransform.Translate(coord.Longitude, coord.Latitude)).ToArray(), false);
             }
         }
         Geometry = path;
@@ -76,8 +65,8 @@ public class VectorLineFeature : VectorTileFeature
 
 public class VectorSymbolFeature : VectorTileFeature
 {
-    public (SKPoint, string?)[] Points { get; }
-    public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, string? fieldKey = "name")
+    public (SKTextBlob?,SKPoint)[] Points { get; }
+    public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, SKFont font, string? fieldKey = "name")
     {
         if (fieldKey is null)
         {
@@ -88,7 +77,7 @@ public class VectorSymbolFeature : VectorTileFeature
             let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
             let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
             let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
-            select (skPoint, text)).ToArray();
+            select (SKTextBlob.Create(text, font), skPoint)).ToArray();
     }
     
 }

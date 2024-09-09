@@ -5,7 +5,7 @@ namespace EarthQuake.Map.Tiles;
 public abstract class VectorTileMapLayer (
     VectorMapLayerType type,
     string? source = null,
-    VectorMapFilter? filter = null)
+    VectorMapFilter? filter = null) : IDisposable
 {
     public VectorMapLayerType Type { get; } = type;
     public string? Source { get; } = source;
@@ -18,6 +18,11 @@ public abstract class VectorTileMapLayer (
     }
     
     public abstract VectorTileFeature? CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point);
+
+    public virtual void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }
 
 public delegate bool VectorMapFilter(Dictionary<string, object> values);
@@ -76,14 +81,15 @@ public class VectorLineLayer(string source, SKColor lineColor, List<(float, floa
     }
 }
 
-public class VectorSymbolLayer(string source, SKColor textColor, float textSize, string? fieldKey = "name", VectorMapFilter? filter = null)
+public class VectorSymbolLayer(string source, SKColor textColor, SKTypeface fontStyle, float fontSize, string? fieldKey = "name", VectorMapFilter? filter = null)
     : VectorTileMapLayer(VectorMapLayerType.Symbol, source, filter)
 {
     public SKColor TextColor { get; } = textColor;
-    public float TextSize { get; } = textSize;
+    public float FontSize { get; } = fontSize;
+    private readonly SKFont _fontStyle = fontStyle.ToFont(fontSize);
     public override VectorTileFeature CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
     {
-        return new VectorSymbolFeature(features, point, fieldKey) { Layer = this };
+        return new VectorSymbolFeature(features, point, _fontStyle, fieldKey) { Layer = this };
     }
 }
 

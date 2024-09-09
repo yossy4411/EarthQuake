@@ -70,13 +70,16 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
                             var layer = (VectorSymbolLayer?)symbolFeature.Layer;
                             if (layer is null) continue;
                             paint.Color = layer.TextColor;
-                            paint.TextSize = layer.TextSize / scale;
                             paint.Style = SKPaintStyle.Fill;
-                            foreach (var (point1, text) in symbolFeature.Points)
+                            foreach (var (text, skPoint) in symbolFeature.Points)
                             {
-                                canvas.DrawText(text, point1, paint);
+                                using (new SKAutoCanvasRestore(canvas))
+                                {
+                                    canvas.Translate(skPoint);
+                                    canvas.Scale(layer.FontSize　/ scale / 16f);
+                                    canvas.DrawText(text, 0, 0, paint);
+                                }
                             }
-
                             break;
                         }
                     }
