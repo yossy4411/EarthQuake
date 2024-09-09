@@ -1,23 +1,9 @@
-﻿using Avalonia.Data.Converters;
-using EarthQuake.Core.EarthQuakes.P2PQuake;
-using Avalonia.Media;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Shapes;
-using System.Runtime.CompilerServices;
+﻿using SkiaSharp;
 
 namespace EarthQuake.Map.Colors
 {
     public static class ColorBrush
     {
-        public static IBrush GetBrush(this SKColor color)
-        {
-            return new SolidColorBrush(new Color(color.Alpha, color.Red, color.Green, color.Blue));
-        }
         public static SKColor IncreaseBrightness(this SKColor color, int percentage)
         {
             // RGB成分を10%増加させる

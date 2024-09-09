@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using Avalonia.Platform;
-using EarthQuake.Core;
 using SkiaSharp;
 
 namespace EarthQuake.Map.Layers;

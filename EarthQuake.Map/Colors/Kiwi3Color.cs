@@ -1,12 +1,4 @@
-﻿using Avalonia.Data.Converters;
-using Avalonia.Media;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Shapes;
+﻿using SkiaSharp;
 using EarthQuake.Core.EarthQuakes;
 
 namespace EarthQuake.Map.Colors
