@@ -6,14 +6,13 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
 { 
     
 
-    private static async Task<SKBitmap?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
+    private static async Task<SKImage?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
     {
         var response = await webClient.GetAsync(url);
 
         if (!response.IsSuccessStatusCode) return null;
-        var network = await response.Content.ReadAsByteArrayAsync();
-        return SKBitmap.Decode(network);
-
+        await using var network = await response.Content.ReadAsStreamAsync();
+        return SKImage.FromEncodedData(network);
     }
     private protected override async Task<RasterTile> GetTile(HttpClient client, SKPoint point, TilePoint point1)
     {
@@ -22,4 +21,4 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
     }
 }
 
-public record RasterTile(SKPoint LeftTop, float Zoom, SKBitmap? Image);
+public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image);

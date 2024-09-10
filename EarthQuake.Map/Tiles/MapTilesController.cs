@@ -1,4 +1,5 @@
-﻿using EarthQuake.Core;
+﻿using System.Collections.Concurrent;
+using EarthQuake.Core;
 using SkiaSharp;
 using System.Diagnostics;
 
@@ -9,7 +10,7 @@ namespace EarthQuake.Map.Tiles
     /// </summary>
     /// <typeparam name="T1">Key</typeparam>
     /// <typeparam name="T2">Value</typeparam>
-    /// <param name="capacity"></param>
+    /// <param name="capacity">最大保存量</param>
     public class LRUCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
     {
         private readonly Dictionary<T1, LinkedListNode<(T1 key, T2 value)>> _cache = [];
@@ -61,9 +62,9 @@ namespace EarthQuake.Map.Tiles
     {
         public const int ImageSize = 256;
         private protected readonly string Url;
-        private readonly LRUCache<TilePoint, T> _tiles = new(100);
-        private readonly List<MapTileRequest> _requests = [];
-        private readonly Task[] _tasks = new Task[1];
+        private readonly LRUCache<TilePoint, T> _tiles = new(256);
+        private readonly BlockingCollection<MapTileRequest> _requests = new(new ConcurrentQueue<MapTileRequest>());
+        private readonly Task[] _tasks = new Task[4];
         protected MapTilesController(string url)
         {
             Url = url;
@@ -75,25 +76,16 @@ namespace EarthQuake.Map.Tiles
         private async Task Handle()
         {
             HttpClient client = new();
-            while (true)
+            foreach (var req in _requests.GetConsumingEnumerable()) // リクエストが来るたびに処理
             {
-                if (_requests.Count <= 0) continue;
                 try
                 {
-                    var req = _requests[0];
-                    var tile = await GetTile(client, 
-                        req.Point, 
-                        req.TilePoint);
+                    var tile = await GetTile(client, req.Point, req.TilePoint);
                     _tiles.Put(req.TilePoint, tile);
-                        
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.StackTrace);
-                }
-                finally
-                {
-                    _requests.RemoveAt(0);
                 }
             }
         }
@@ -178,7 +170,6 @@ namespace EarthQuake.Map.Tiles
 
                 if (_requests.Any(x => x.TilePoint == point)) return false;
                 {
-                    _requests.RemoveAll(x => x.TilePoint.Z != point.Z);
                     _requests.Add(new MapTileRequest(leftTop, point));
                 }
                 return false;

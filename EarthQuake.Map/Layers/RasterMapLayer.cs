@@ -27,7 +27,7 @@ public class RasterMapLayer(string source) : MapLayer
                     var resizeX = 360f * GeomTransform.Zoom / RasterTilesController.ImageSize / tile.Zoom;
                     var resizeY = (float)(GeomTransform.Height * 2) * GeomTransform.Zoom / RasterTilesController.ImageSize / tile.Zoom;
                     canvas.Scale(resizeX, resizeY);
-                    canvas.DrawBitmap(tile.Image, tile.LeftTop.X / resizeX, tile.LeftTop.Y / resizeY);
+                    canvas.DrawImage(tile.Image, tile.LeftTop.X / resizeX, tile.LeftTop.Y / resizeY);
                 }
             }
         }
