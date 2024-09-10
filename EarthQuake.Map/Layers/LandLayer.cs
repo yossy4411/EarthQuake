@@ -27,28 +27,11 @@ namespace EarthQuake.Map.Layers
             var sw = Stopwatch.StartNew();
 
             if (copy || data is null) return;
-            buffer = new SKVertices[data.Length][];
-            for (var i = 0; i < data.Length; i++)
-            {
-                // ズームレベルごとに実行される
-                var p = data[i];
-                var polygons = new SKVertices[p.Length];
-                for (var j = 0; j < p.Length; j++)
-                {
-                    
-                    var points = p[j];
-                    var skPoints = new SKPoint[points.Length];
-                    for (var k = 0; k < points.Length; k++)
-                    {
-                        skPoints[k] = GeomTransform.Translate(points[k]);
-                    }
-
-
-                    polygons[j] = SKVertices.CreateCopy(SKVertexMode.Triangles, skPoints, null);
-                }
-
-                buffer[i] = polygons;
-            }
+            buffer = data.Select(p =>
+                p.Select(x =>
+                        SKVertices.CreateCopy(SKVertexMode.Triangles, x.Select(GeomTransform.Translate).ToArray(),
+                            null))
+                    .ToArray()).ToArray();
             data = null;
             sw.Stop();
             Debug.WriteLine($"{GetType().Name}: {sw.ElapsedMilliseconds}ms");
