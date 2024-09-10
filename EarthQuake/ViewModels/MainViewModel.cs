@@ -30,7 +30,7 @@ public class MainViewModel : ViewModelBase
     private static MapSource MapTilesBase => MapSource.GsiVector;
     private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
-    private readonly List<Station> _stations;
+    private IEnumerable<Station>? _stations;
     private readonly ObservationsLayer _foreground;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
@@ -73,15 +73,11 @@ public class MainViewModel : ViewModelBase
             }
             var grid = new GridLayer();
             _kmoni = new KmoniLayer();
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
-            {
-                _stations = Station.GetStations(stream);
-            }
 
             Hypo = new Hypo3DViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
-            _foreground = new ObservationsLayer { Stations = _stations };
+            _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
                 MapLayers = [map, grid],
@@ -131,6 +127,10 @@ public class MainViewModel : ViewModelBase
         await using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
         wave = await PSWave.LoadAsync(parquet);
         _kmoni.Wave = wave;
+        await using var stations = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.parquet"));
+        _stations = await Station.GetStationsFromParquet(stations);
+        _foreground.Stations = _stations;
+        
     }
     public async Task Update()
     {
@@ -145,7 +145,7 @@ public class MainViewModel : ViewModelBase
     {
         var quakeData = Data[index]; // 震源・震度情報
         
-        quakeData.SortPoints(_stations);
+        quakeData.SortPoints(_stations!);
         _land.SetInfo(quakeData);
                 
         _foreground.SetData(quakeData);

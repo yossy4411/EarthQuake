@@ -14,7 +14,7 @@ public class ObservationsLayer : ForeGroundLayer
     private SKPoint hypo;
     private SKPoint[]? oPoints;
     private Scale[]? oColors;
-    public IList<Station>? Stations { get; init; }
+    public IEnumerable<Station>? Stations { get; set; }
     public bool DrawStations { get; set; }
 
     public static SKPath HypoPath 
