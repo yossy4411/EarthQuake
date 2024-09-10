@@ -49,12 +49,10 @@ public class SubPolygon(string[] names, int[][] indices)
 }
 
 [MessagePackObject]
-public class WorldPolygonSet(SKPoint[][]? polygons/*, SKPoint[][] borders*/)
+public class WorldPolygonSet(SKPoint[]? polygons/*, SKPoint[][] borders*/)
 {
     [Key(0)]
-    public SKPoint[][]? Polygons { get; } = polygons;
-    /*[Key(1)]
-    public SKPoint[][] Borders { get; } = borders;*/
+    public SKPoint[]? Polygons { get; } = polygons;
 }
 
 public static class Serializer

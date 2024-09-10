@@ -35,7 +35,7 @@ switch (b)
         GenerateTopoJson();
         break;
     case 2:
-        GenerateGeoJson();
+        GenerateWorld();
         break;
     case 3:
         Display();
@@ -236,7 +236,7 @@ void GenerateTopoJson()
     Console.ResetColor();
 }
 
-void GenerateGeoJson()
+void GenerateWorld()
 {
     Console.WriteLine("Please enter the name of the geojson file you want to load.");
     Console.Write("File full-path: ");
@@ -275,24 +275,20 @@ void GenerateGeoJson()
     Console.WriteLine("Contents loaded");
 
     Console.WriteLine("1. Generate polygons from the GeoJson data.");
-    var polygons = new SKPoint[geoJson.Features.Length][];
-    for (var i2 = 0; i2 < geoJson.Features.Length; i2++)
+    Tess tess = new();
+    foreach (var feature in geoJson.Features)
     {
-        var feature = geoJson.Features[i2];
-        Tess tess = new();
         for (var i = 0; i < feature.Geometry?.Coordinates.Length; i++)
         {
             feature.Geometry?.AddVertex(tess, i);
         }
-        tess.Tessellate(WindingRule.Positive);
-        var points = new SKPoint[tess.ElementCount * 3];
-        for (var j = 0; j < points.Length; j++)
-        { 
-            points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
-                tess.Vertices[tess.Elements[j]].Position.Y);
-        }
-
-        polygons[i2] = points;
+    }
+    tess.Tessellate(WindingRule.Positive);
+     var points = new SKPoint[tess.ElementCount * 3];
+    for (var j = 0; j < points.Length; j++)
+    { 
+        points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
+           tess.Vertices[tess.Elements[j]].Position.Y);
     }
 
     Console.WriteLine("Done.");
@@ -306,7 +302,7 @@ void GenerateGeoJson()
 
     Console.WriteLine("3. Save the data to a file.");
     Console.WriteLine("Using default file path.");
-    var data = new WorldPolygonSet(polygons);
+    var data = new WorldPolygonSet(points);
     var bytes = Serializer.Serialize(data);
     File.WriteAllBytes("world.mpk.lz4", bytes);
     Console.WriteLine($"The data was saved to: {Path.GetFullPath("world.mpk.lz4")}");
