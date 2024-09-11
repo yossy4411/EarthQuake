@@ -7,22 +7,25 @@ namespace EarthQuake.Map.Layers.OverLays;
 public class KmoniLayer : ForeGroundLayer
 {
     private readonly List<EewPoint> points = [];
-    public PSWave? Wave { get; set; }
+    public InterpolatedWaveData? Wave { get; set; }
     internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         using SKPaint paint = new();
         paint.IsAntialias = true;
+        if (Wave is null) return;
         foreach (var point in points)
         {
                 
-            var elapsed = (DateTime.Now - point.Issued).TotalSeconds;
+            var elapsed = (float) (DateTime.Now - point.Issued).TotalSeconds;
+            if (elapsed < 0) continue;
             var hypo = GeomTransform.Translate(point.Point);
             SKPoint center = new(hypo.X * scale, hypo.Y * scale);
+            
             using (new SKAutoCanvasRestore(canvas))
             {
                 {
                     // P波を描画する
-                    var radius = (float)Wave![point.Depth].GetRadius(elapsed);
+                    var radius = Wave.GetPRadius(point.Depth, elapsed);
                     paint.Color = SKColors.SkyBlue;
                     paint.IsStroke = true;
                     paint.StrokeWidth = 2;
@@ -47,7 +50,7 @@ public class KmoniLayer : ForeGroundLayer
                 {
                     var color = SKColors.Red.WithAlpha(120);
                     // S波を描画する
-                    var radius = (float)Wave![1000 + point.Depth].GetRadius(elapsed);
+                    var radius = Wave.GetSRadius(point.Depth, elapsed);
                     paint.Shader = SKShader.CreateRadialGradient(
                         center,       // 中心座標
                         radius * scale * 50,  // 円の半径

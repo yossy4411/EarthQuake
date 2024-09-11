@@ -1,73 +1,83 @@
-﻿using Parquet;
-using Parquet.Data;
-using Parquet.Schema;
+﻿using MessagePack;
 
-namespace EarthQuake.Core.Animation
+namespace EarthQuake.Core.Animation;
+
+/// <summary>
+/// 線形補間された波の半径を保存するクラス
+/// </summary>
+/// <param name="time"></param>
+[MessagePackObject]
+public class InterpolatedWaveData
 {
-    public class InterpolatedWaveData
-    {
-        public float Start { get; }
-        public int End { get; }
-        private readonly float last;
-        private readonly float[] values;
-        private readonly float lastInclination;
-        public InterpolatedWaveData(Array data)
-        {
-            Start = (float)((double?)data.GetValue(0) ?? 0);
-            var doubles = new double?[data.Length];
-            data.CopyTo(doubles, 0);
-            float[] data2 = [..from d in doubles where d.HasValue && d!.Value != 0 select (float)d!.Value];
-            values = data2[2..];
-            lastInclination =  (data2[^1] - data2[^2]) / 4;
-            last = data2[^1];
-            End = values.Length - 1;
-        }
-        public double GetRadius(double seconds)
-        {
-            var secondsPass = seconds - Start;
-            var index = (int)(secondsPass * 4);
-            double result;
-            if (index == -1)
-            {
-                result = values[0] * 4 * (secondsPass % 0.25f);
-            }
-            else if (seconds <= Start) return 0;
-            else if (index >= End)
-            {
-                double index2 = index - End;
-                result = last + index2 * lastInclination;
-            }
-            else
-            {
-                
-                var value = values[index];
-                var next = values[index + 1];
-                result = value * (1 - 4 * (secondsPass % 0.25f)) + next * 4 * (secondsPass % 0.25f);
+    [Key("radius")]
+    public float[] Radius { get; init; }
+    [Key("wave")]
+    public Dictionary<int, PSWave[]> Waves { get; init; }
 
-            }
-            return result / Earth * 360;
-        }
-        public const int Earth = 40075;
-    }
-    public class PSWave : Dictionary<int, InterpolatedWaveData>
+    private float GetRadius(int depth, float seconds, bool isPWave)
     {
-        public static async Task<PSWave> LoadAsync(Stream stream)
+        if (!Waves.TryGetValue(depth, out var values)) return 0;
+        switch (values.Length)
         {
-            PSWave values = [];
-            using MemoryStream memoryStream = new();
-            await stream.CopyToAsync(memoryStream);
-            using var reader = await ParquetReader.CreateAsync(memoryStream);
-            for (var i = 0; i < reader.RowGroupCount; i++)
+            case 0:
             {
-                using var rowGroupReader = reader.OpenRowGroupReader(i);
-
-                foreach (var df in reader.Schema.GetDataFields())
+                return 0;
+            }
+            case 1:
+            {
+                return 0;
+            }
+            default:
+            {
+                if (seconds <= values[0].PTime) return 0;
+                for (var i = 0; i < values.Length - 1; i++)
                 {
-                    var columnData = await rowGroupReader.ReadColumnAsync(df);
-                    values.Add(int.Parse(columnData.Field.Name), new InterpolatedWaveData(columnData.Data));
+                    if (isPWave)
+                    {
+                        if (!(values[i].PTime <= seconds) || !(seconds <= values[i + 1].PTime)) continue;
+                        var t = (seconds - values[i].PTime) / (values[i + 1].PTime - values[i].PTime);
+                        return Radius[i] * (1 - t) + Radius[i + 1] * t;
+                    }
+                    else
+                    {
+                        if (!(values[i].STime <= seconds) || !(seconds <= values[i + 1].STime)) continue;
+                        var t = (seconds - values[i].STime) / (values[i + 1].STime - values[i].STime);
+                        return Radius[i] * (1 - t) + Radius[i + 1] * t;
+                    }
                 }
+                return isPWave ? (values[^1].PTime - seconds) * (Radius[^1] - Radius[^2]) + Radius[^2] 
+                    : (values[^1].STime - seconds) * (Radius[^1] - Radius[^2]) + Radius[^2];
             }
-            return values;
         }
     }
+
+    /// <summary>
+    /// P波の半径を取得する
+    /// </summary>
+    /// <param name="depth">震源の深さ</param>
+    /// <param name="seconds">経過時間</param>
+    /// <returns>半径</returns>
+    public float GetPRadius(int depth, float seconds) => GetRadius(depth, seconds, true) / Earth * 360;
+    
+    /// <summary>
+    /// S波の半径を取得する
+    /// </summary>
+    /// <param name="depth">震源の深さ</param>
+    /// <param name="seconds">経過時間</param>
+    /// <returns>半径</returns>
+    public float GetSRadius(int depth, float seconds) => GetRadius(depth, seconds, false) / Earth * 360;
+
+    private const int Earth = 40075;
+}
+/// <summary>
+/// P波、S波の時間軸を保存するクラス
+/// </summary>
+[MessagePackObject]
+public class PSWave
+{
+    [Key(0)]
+    public float PTime { get; init; }
+    [Key(1)]
+    public float STime { get; init; }
+    
 }
