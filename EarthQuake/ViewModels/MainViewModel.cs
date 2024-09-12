@@ -16,7 +16,7 @@ using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
-using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
 using MessagePack;
 

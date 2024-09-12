@@ -1,24 +1,32 @@
-﻿using SkiaSharp;
+﻿using EarthQuake.Map.Tiles.Request;
+using SkiaSharp;
 
 namespace EarthQuake.Map.Tiles;
 
 public class RasterTilesController(string url) : MapTilesController<RasterTile>(url)
-{ 
-    
-
-    private static async Task<SKImage?> LoadBitmapFromUrlAsync(HttpClient webClient, string url)
+{
+    private class RasterTileRequest(SKPoint point, TilePoint tilePoint, string url) : MapTileRequest(point, tilePoint, url)
     {
-        var response = await webClient.GetAsync(url);
+        public override object GetAndParse(Stream data) => new RasterTile(Point, Zoom, SKImage.FromEncodedData(data));
+    }
 
-        if (!response.IsSuccessStatusCode) return null;
-        await using var network = await response.Content.ReadAsStreamAsync();
-        return SKImage.FromEncodedData(network);
-    }
-    private protected override async Task<RasterTile> GetTile(HttpClient client, SKPoint point, TilePoint point1)
+    private protected override MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint)
     {
-        var bitmap = await LoadBitmapFromUrlAsync(client, GenerateUrl(Url, point1.X, point1.Y, point1.Z));
-        return new RasterTile(point, MathF.Pow(2, point1.Z), bitmap);
+        return new RasterTileRequest(point, tilePoint, GenerateUrl(Url, tilePoint))
+        {
+            Finished = (request, result) =>
+            {
+                if (request is not RasterTileRequest req || result is not RasterTile tile) return;
+                lock (Tiles)
+                {
+                    Tiles.Put(req.TilePoint, tile);
+                }
+            }
+        };
     }
+
+    private protected override bool RequestExists(MapRequest request, TilePoint tilePoint) =>
+        request is RasterTileRequest req && req.TilePoint == tilePoint;
 }
 
 public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image);

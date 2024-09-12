@@ -1,5 +1,6 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using SkiaSharp;
 
 namespace EarthQuake.Map.Layers;
