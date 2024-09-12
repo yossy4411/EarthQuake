@@ -5,7 +5,7 @@ using Mapbox.Vector.Tile;
 using SkiaSharp;
 using MVectorTileFeature = Mapbox.Vector.Tile.VectorTileFeature;
 
-namespace EarthQuake.Map.Tiles;
+namespace EarthQuake.Map.Tiles.Vector;
 
 public abstract class VectorTileFeature
 {

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
 
-namespace EarthQuake.Map.Tiles;
+namespace EarthQuake.Map.Tiles.Vector;
 
 public class VectorMapStyles
 {

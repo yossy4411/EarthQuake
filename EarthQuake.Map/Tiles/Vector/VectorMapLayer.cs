@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace EarthQuake.Map.Tiles;
+namespace EarthQuake.Map.Tiles.Vector;
 
 public abstract class VectorTileMapLayer (
     VectorMapLayerType type,
