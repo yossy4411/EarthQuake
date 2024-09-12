@@ -9,14 +9,14 @@ namespace EarthQuake.Core.Animation;
 [MessagePackObject]
 public class InterpolatedWaveData
 {
-    [Key("radius")]
-    public float[] Radius { get; init; }
-    [Key("wave")]
-    public Dictionary<int, PSWave[]> Waves { get; init; }
+    [Key("radius")] public float[] Radius { get; init; } = [];
+
+    [Key("wave")] public Dictionary<int, PSWave[]> Waves { get; init; } = [];
 
     private float GetRadius(int depth, float seconds, bool isPWave)
     {
         if (!Waves.TryGetValue(depth, out var values)) return 0;
+        if (seconds <= (isPWave ? values[0].PTime : values[0].STime)) return 0;
         switch (values.Length)
         {
             case 0:
