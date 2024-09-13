@@ -29,4 +29,11 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
         request is RasterTileRequest req && req.TilePoint == tilePoint;
 }
 
-public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image);
+public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image) : IDisposable
+{
+    public void Dispose()
+    {
+        Image?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

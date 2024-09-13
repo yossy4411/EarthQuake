@@ -31,4 +31,16 @@ public class VectorTilesController(string url, VectorMapStyles styles) : MapTile
         return request is VectorTileRequest req && req.TilePoint == tilePoint;
     }
 }
-public record VectorTile(SKPoint LeftTop, float Zoom, VectorTileFeature[]? Vertices);
+
+public record VectorTile(SKPoint LeftTop, float Zoom, VectorTileFeature[]? Vertices) : IDisposable
+{
+    public void Dispose()
+    {
+        if (Vertices is null) return;
+        foreach (var vertex in Vertices)
+        {
+            vertex.Dispose();
+        }
+        GC.SuppressFinalize(this);
+    }
+}

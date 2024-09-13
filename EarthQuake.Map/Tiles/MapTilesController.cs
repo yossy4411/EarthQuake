@@ -43,18 +43,25 @@ namespace EarthQuake.Map.Tiles
             {
                 if (_cache.Count >= capacity)
                 {
-                    // キャッシュが満杯: 最後の要素（LRU）を削除
-                    var lru = _lruList.Last;
-                    if (lru != null)
-                    {
-                        _cache.Remove(lru.Value.key);
-                        _lruList.RemoveLast();
-                    }
+                    RemoveCache();
                 }
                 // 新しいデータを追加
                 var newNode = new LinkedListNode<(T1 key, T2 value)>((key, value));
                 _lruList.AddFirst(newNode);
                 _cache[key] = newNode;
+            }
+        }
+
+        private void RemoveCache()
+        {
+            // キャッシュが満杯: 最後の要素（LRU）を削除
+            var lru = _lruList.Last;
+            if (lru is null) return;
+            _cache.Remove(lru.Value.key);
+            _lruList.RemoveLast();
+            if (lru.Value.value is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
         }
     }

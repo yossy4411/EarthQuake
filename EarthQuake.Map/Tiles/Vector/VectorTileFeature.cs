@@ -1,5 +1,4 @@
 ﻿using EarthQuake.Core;
-using EarthQuake.Map.Layers;
 using LibTessDotNet;
 using Mapbox.Vector.Tile;
 using SkiaSharp;
@@ -7,10 +6,19 @@ using MVectorTileFeature = Mapbox.Vector.Tile.VectorTileFeature;
 
 namespace EarthQuake.Map.Tiles.Vector;
 
-public abstract class VectorTileFeature
+public abstract class VectorTileFeature : IDisposable
 {
-    public virtual SKObject? Geometry { get; }
+    public virtual SKObject? Geometry { get; } = null;
     public VectorTileMapLayer Layer { get; init; } = null!;
+
+    public virtual void Dispose()
+    {
+        if (Geometry is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+        GC.SuppressFinalize(this);
+    }
 }
 
 public class VectorFillFeature : VectorTileFeature
@@ -23,14 +31,12 @@ public class VectorFillFeature : VectorTileFeature
         foreach (var feature in features)
         {
             if (feature.Geometry.Count <= 0) return;
-            foreach (var coordinates in feature.Geometry)
+            foreach (var coords in feature.Geometry.Select(coordinates => from v in coordinates 
+                         let coord = v.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
+                         let pos = GeomTransform.Translate(coord.Longitude, coord.Latitude)
+                         select new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 })))
             {
-                tess.AddContour(coordinates.Select(x =>
-                {
-                    var coord = x.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u);
-                    var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude);
-                    return new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 });
-                }).ToArray());
+                tess.AddContour(coords.ToList());
             }
         }
         tess.Tessellate(WindingRule.Positive);
@@ -78,6 +84,15 @@ public class VectorSymbolFeature : VectorTileFeature
             let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
             let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
             select (SKTextBlob.Create(text, font), skPoint)).ToArray();
+    }
+    
+    public override void Dispose()
+    {
+        foreach (var (textBlob, _) in Points)
+        {
+            textBlob?.Dispose();
+        }
+        GC.SuppressFinalize(this);
     }
     
 }
