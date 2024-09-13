@@ -52,13 +52,13 @@ public class MainViewModel : ViewModelBase
     public MainViewModel() 
     {
         {
-            PolygonsSet? calculated;
+            /*PolygonsSet? calculated;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/japan.mpk.lz4", UriKind.Absolute)))
             {
                 calculated = Serializer.Deserialize<PolygonsSet>(stream);
-            }
+            }*/
 
-            _land = new LandLayer(calculated.Filling) { AutoFill = true };
+            _land = new LandLayer((CalculatedPolygons?)null) { AutoFill = true };
             CountriesLayer world;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {

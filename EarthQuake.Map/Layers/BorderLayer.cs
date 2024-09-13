@@ -9,7 +9,7 @@ namespace EarthQuake.Map.Layers
     /// 地物の境界線を描画するレイヤー
     /// </summary>
     /// <param name="polygons">ポリゴン</param>
-    public class BorderLayer(CalculatedBorders? polygons) : MapLayer
+    public class BorderLayer(PolygonFeatures? polygons) : MapLayer
     {
         private SKPath[][] buffer = [];
         private SKPoint[][][]? data = polygons?.Points;
