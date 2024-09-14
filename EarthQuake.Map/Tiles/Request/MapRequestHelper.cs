@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net;
 
 namespace EarthQuake.Map.Tiles.Request;
 
@@ -19,6 +20,8 @@ public static class MapRequestHelper
     public static void AddRequest(MapRequest request)
     {
         Requests.Add(request);
+        Debug.WriteLine($"Request Added: #{Requests.Count}");
+        Debug.WriteLine($"Request Added: {request}");
     }
 
     public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
@@ -38,9 +41,16 @@ public static class MapRequestHelper
                     {
                         case MapTileRequest tileRequest:
                         {
-                            var bytes = await _client.GetStreamAsync(tileRequest.Url);
-                            var result = tileRequest.GetAndParse(bytes);
-                            tileRequest.Finished?.Invoke(tileRequest, result);
+                            var response = await _client.GetAsync(tileRequest.Url);
+                            var code = response.StatusCode;
+                            if (code is HttpStatusCode.OK or HttpStatusCode.Accepted or HttpStatusCode.NotModified)
+                            {
+                                var stream = await response.Content.ReadAsStreamAsync();
+                                var result = tileRequest.GetAndParse(stream);
+                                tileRequest.Finished?.Invoke(tileRequest, result);
+                                break;
+                            }
+                            tileRequest.Finished?.Invoke(tileRequest, null);
                             break;
                         }
                     }
