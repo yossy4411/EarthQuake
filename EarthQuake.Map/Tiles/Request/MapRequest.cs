@@ -2,7 +2,7 @@
 
 public abstract class MapRequest
 {
-    public MapRequestCallback? Finished { get; set; }
+    public MapRequestCallback? Finished { get; init; }
 }
 
 public delegate void MapRequestCallback(MapRequest request, object? result);

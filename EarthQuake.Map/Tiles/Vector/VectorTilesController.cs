@@ -7,7 +7,7 @@ public class VectorTilesController(string url, VectorMapStyles styles) : MapTile
 {
     private class VectorTileRequest(SKPoint point, TilePoint tilePoint, string url, VectorMapStyles styles) : MapTileRequest(point, tilePoint, url)
     {
-        public override object GetAndParse(Stream data) =>
+        public override object GetAndParse(Stream? data) => data is null ? new VectorTile(Point, Zoom, null) :
             new VectorTile(Point, Zoom, styles.ParsePaths(data, TilePoint));
     }
 
@@ -28,7 +28,7 @@ public class VectorTilesController(string url, VectorMapStyles styles) : MapTile
 
     private protected override bool RequestExists(MapRequest request, TilePoint tilePoint)
     {
-        return request is VectorTileRequest req && req.TilePoint == tilePoint;
+        return request is VectorTileRequest req && req.TilePoint.Equals(tilePoint);
     }
 }
 
