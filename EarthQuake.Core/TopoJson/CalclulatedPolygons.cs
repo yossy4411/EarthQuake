@@ -76,6 +76,10 @@ public class Transform(SKPoint scale, SKPoint translate)
     {
         return new SKPoint(x * Scale.X + Translate.X, y * Scale.Y + Translate.Y);
     }
+    public SKPoint ToPoint(IntPoint point)
+    {
+        return new SKPoint(point.X * Scale.X + Translate.X, point.Y * Scale.Y + Translate.Y);
+    }
 }
 
 

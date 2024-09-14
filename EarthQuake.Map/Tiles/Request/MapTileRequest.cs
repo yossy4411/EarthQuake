@@ -8,5 +8,9 @@ public abstract class MapTileRequest(SKPoint point, TilePoint tilePoint, string 
     public TilePoint TilePoint { get; } = tilePoint;
     public string Url { get; } = url;
     protected float Zoom => MathF.Pow(2, TilePoint.Z);
-    public abstract object GetAndParse(Stream data);
+    public abstract object GetAndParse(Stream? data);
+    public override string ToString()
+    {
+        return Url;
+    }
 }

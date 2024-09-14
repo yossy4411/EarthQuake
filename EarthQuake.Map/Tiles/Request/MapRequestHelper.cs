@@ -50,7 +50,13 @@ public static class MapRequestHelper
                                 tileRequest.Finished?.Invoke(tileRequest, result);
                                 break;
                             }
-                            tileRequest.Finished?.Invoke(tileRequest, null);
+                            tileRequest.Finished?.Invoke(tileRequest, tileRequest.GetAndParse(null));
+                            break;
+                        }
+                        case FileTileRequest fileTileRequest:
+                        {
+                            var result = fileTileRequest.GetAndParse();
+                            fileTileRequest.Finished?.Invoke(fileTileRequest, result);
                             break;
                         }
                     }

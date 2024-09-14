@@ -4,37 +4,19 @@ using EarthQuake.Core.TopoJson;
 using EarthQuake.Map.Colors;
 using SkiaSharp;
 using System.Diagnostics;
+using EarthQuake.Map.Tiles;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(CalculatedPolygons? polygons) : MapLayer
+    public class LandLayer(PolygonsSet? polygons, string layerName) : MapLayer
     {
         public bool Draw { get; set; } = true;
         private SKColor[]? colors;
-        private SKPoint[][][]? data = polygons?.Points;
-        private SKVertices[][] buffer = [];
-        private readonly string[]? names = polygons?.Names;
+        private readonly string[]? names = polygons?.Filling[layerName].Names;
+        private FileTilesController? fileTilesController = polygons is null ? null : new FileTilesController(polygons, layerName);
         public bool AutoFill { get; init; }
-        private readonly bool copy;
-        public LandLayer(LandLayer copySource) : this(polygons: null)
-        {
-            copy = true;
-            names = copySource.names;
-            buffer = copySource.buffer;
-        }
         private protected override void Initialize()
         {
-            var sw = Stopwatch.StartNew();
-
-            if (copy || data is null) return;
-            buffer = data.Select(p =>
-                p.Select(x =>
-                        SKVertices.CreateCopy(SKVertexMode.Triangles, x.Select(GeomTransform.Translate).ToArray(),
-                            null))
-                    .ToArray()).ToArray();
-            data = null;
-            sw.Stop();
-            Debug.WriteLine($"{GetType().Name}: {sw.ElapsedMilliseconds}ms");
         }
         public void SetInfo(PQuakeData quakeData)
         {
@@ -58,27 +40,16 @@ namespace EarthQuake.Map.Layers
 
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-
-            var index = GetIndex(scale);
+            // 表示テスト
+            // var index = GetIndex(scale);
             if (!Draw) return;
             using SKPaint paint = new();
-            var polygons = buffer[index];
-            for (var i = 0; i < polygons.Length; i++)
-            {
-                var poly = polygons[i];
-                if (AutoFill)
-                {
-                    paint.Color = colors?[i] ?? SKColors.DarkGreen;
-                }
-                else
-                {
-                    if (colors?[i] is null) continue;
-                    paint.Color = colors[i];
-                }
-
-                canvas.DrawVertices(poly, SKBlendMode.SrcOver, paint);
-            }
-
+            var polygon = fileTilesController?.TryGetTile(0, 0);
+            if (polygon is null) return;
+            paint.IsAntialias = true;
+            paint.Color = SKColors.Black;
+            paint.Style = SKPaintStyle.Fill;
+            canvas.DrawVertices(polygon, SKBlendMode.SrcOver, paint);
         }
         
     }
