@@ -1,10 +1,8 @@
-﻿using EarthQuake.Core;
-using EarthQuake.Core.EarthQuakes.P2PQuake;
+﻿using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map.Colors;
 using SkiaSharp;
-using System.Diagnostics;
-using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.File;
 
 namespace EarthQuake.Map.Layers
 {
@@ -13,7 +11,7 @@ namespace EarthQuake.Map.Layers
         public bool Draw { get; set; } = true;
         private SKColor[]? colors;
         private readonly string[]? names = polygons?.Filling[layerName].Names;
-        private FileTilesController? fileTilesController = polygons is null ? null : new FileTilesController(polygons, layerName);
+        private readonly FileTilesController? fileTilesController = polygons is null ? null : new FileTilesController(polygons, layerName);
         public bool AutoFill { get; init; }
         private protected override void Initialize()
         {

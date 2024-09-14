@@ -1,4 +1,5 @@
 ﻿using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using Mapbox.Vector.Tile;
 
 

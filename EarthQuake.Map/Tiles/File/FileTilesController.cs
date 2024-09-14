@@ -4,7 +4,7 @@ using EarthQuake.Map.Tiles.Request;
 using LibTessDotNet;
 using SkiaSharp;
 
-namespace EarthQuake.Map.Tiles;
+namespace EarthQuake.Map.Tiles.File;
 
 public class FileTilesController(PolygonsSet file, string layerName)
 {

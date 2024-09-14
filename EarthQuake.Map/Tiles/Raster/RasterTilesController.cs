@@ -1,7 +1,7 @@
 ﻿using EarthQuake.Map.Tiles.Request;
 using SkiaSharp;
 
-namespace EarthQuake.Map.Tiles;
+namespace EarthQuake.Map.Tiles.Raster;
 
 public class RasterTilesController(string url) : MapTilesController<RasterTile>(url)
 {
