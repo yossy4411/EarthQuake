@@ -18,6 +18,7 @@ namespace EarthQuake.Map.Layers
         }
         public void SetInfo(PQuakeData quakeData)
         {
+            fileTilesController.ClearCaches();
             if (names is null || quakeData.Points is null) return;
             colors = new SKColor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -39,15 +40,20 @@ namespace EarthQuake.Map.Layers
         internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             // 表示テスト
-            // var index = GetIndex(scale);
+            var zoom = GetIndex(scale);
             if (!Draw) return;
             using SKPaint paint = new();
-            var polygon = fileTilesController?.TryGetTile(0, 0);
-            if (polygon is null) return;
             paint.IsAntialias = true;
-            paint.Color = SKColors.Black;
             paint.Style = SKPaintStyle.Fill;
-            canvas.DrawVertices(polygon, SKBlendMode.SrcOver, paint);
+            if (fileTilesController is null) return;
+            if (colors is null) return;
+            for (var i = 0; i < colors.Length; i++)
+            {
+                paint.Color = colors[i];
+                if (paint.Color == SKColors.Empty) continue;
+                var tile = fileTilesController.TryGetTile(zoom, i);
+                if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
+            }
         }
         
     }

@@ -36,6 +36,19 @@ public class FileTilesController(PolygonsSet file, string layerName)
 
         return null;
     }
+    
+    public void ClearCaches()
+    {
+        lock (Tiles)
+        {
+            foreach (var (_, value) in Tiles)
+            {
+                value.Dispose();
+            }
+            Tiles.Clear();
+        }
+    }
+    
     private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform) : FileTileRequest
     {
         public override SKVertices GetAndParse()

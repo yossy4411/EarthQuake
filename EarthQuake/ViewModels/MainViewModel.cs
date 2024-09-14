@@ -58,7 +58,7 @@ public class MainViewModel : ViewModelBase
                 calculated = Serializer.Deserialize<PolygonsSet>(stream);
             }
 
-            _land = new LandLayer(calculated, "eew") { AutoFill = true };
+            _land = new LandLayer(calculated, "scity");
             CountriesLayer world;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
