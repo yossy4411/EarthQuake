@@ -176,7 +176,11 @@ namespace EarthQuake.Map.Tiles
         {
             return GenerateUrl(source, tilePoint.X, tilePoint.Y, tilePoint.Z);
         }
+
+        public delegate bool Generated();
         
+        public Generated? OnGenerated;
+
     }
     
 }

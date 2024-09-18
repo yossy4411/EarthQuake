@@ -9,12 +9,14 @@ namespace EarthQuake.Map.Layers;
 /// ベクトルタイルを描画するレイヤー
 /// </summary>
 /// <param name="styles"></param>
-public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
+public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer, ICacheableLayer
 {
     private VectorTilesController? _controller;
     private VectorMapStyles? _styles = styles;
+    private int _zoom = -1;
+    private TilePoint _point;
 
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         if (_controller is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
@@ -93,6 +95,29 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
     private protected override void Initialize()
     {
         _controller = new VectorTilesController(url, _styles!);
+        _controller.OnUpdate += () => IsUpdated = true;
         _styles = null; // 参照を解放
+    }
+
+    public bool IsUpdated { get; set; } = true;
+    
+    public bool IsReloadRequired(float scale, SKRect bounds)
+    {
+        var zoom = (int)MathF.Log2(scale) + 5;
+        // ズームが変わったか
+        if (_zoom != zoom)
+        {
+            _zoom = zoom;
+            return true;
+        }
+        var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
+        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
+        // 表示範囲のタイルが変わったか
+        if (_point != point)
+        {
+            _point = point;
+            return true;
+        }
+        return false;
     }
 }
