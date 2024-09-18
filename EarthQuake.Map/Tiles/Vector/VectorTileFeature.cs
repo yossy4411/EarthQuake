@@ -31,12 +31,21 @@ public class VectorFillFeature : VectorTileFeature
         foreach (var feature in features)
         {
             if (feature.Geometry.Count <= 0) return;
-            foreach (var coords in feature.Geometry.Select(coordinates => from v in coordinates 
-                         let coord = v.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
-                         let pos = GeomTransform.Translate(coord.Longitude, coord.Latitude)
-                         select new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 })))
+            foreach (var coordinates in feature.Geometry)
             {
-                tess.AddContour(coords.ToList());
+                var contourVertices = new List<ContourVertex>(); // 結果を格納するリスト
+                foreach (var v in coordinates)
+                {
+                    // coord を計算
+                    var coord = v.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u);
+                    // pos を計算
+                    var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude);
+        
+                    // 新しい ContourVertex をリストに追加
+                    contourVertices.Add(new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 }));
+                }
+                // 生成された頂点を tess に追加
+                tess.AddContour(contourVertices);
             }
         }
         tess.Tessellate(WindingRule.Positive);

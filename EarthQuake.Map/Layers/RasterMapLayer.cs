@@ -8,7 +8,7 @@ namespace EarthQuake.Map.Layers;
 public class RasterMapLayer(string source) : MapLayer
 {
     private readonly RasterTilesController _controller = new(source);
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
         RasterTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 6, out var point);

@@ -37,7 +37,7 @@ namespace EarthQuake.Map.Layers
         public static int GetIndex(float scale)
         => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), 5));
 
-        internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+        public override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             // 表示テスト
             var zoom = GetIndex(scale);

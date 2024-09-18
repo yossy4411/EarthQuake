@@ -8,7 +8,7 @@ public class KmoniLayer : ForeGroundLayer
 {
     private readonly List<EewPoint> points = [];
     public InterpolatedWaveData? Wave { get; set; }
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         using SKPaint paint = new();
         paint.IsAntialias = true;

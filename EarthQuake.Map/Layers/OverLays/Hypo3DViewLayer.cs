@@ -12,7 +12,7 @@ public class Hypo3DViewLayer : ForeGroundLayer
 {
     private readonly List<Epicenter> points = [];
     public float Rotation { get; set; }
-    internal override void Render(SKCanvas canvas, float scale, SKRect selected)
+    public override void Render(SKCanvas canvas, float scale, SKRect selected)
     {
         using SKPaint paint = new();
             

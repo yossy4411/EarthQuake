@@ -8,7 +8,7 @@ namespace EarthQuake.Map.Layers;
 public class CountriesLayer(WorldPolygonSet world) : MapLayer
 {
     private SKPoint[]? data = world.Polygons;
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         using SKPaint paint = new();
         paint.Color = SKColors.Green;

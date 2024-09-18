@@ -103,7 +103,7 @@ namespace EarthQuake.Map.Layers
         }
 
         private static int GetIndex(float scale) => LandLayer.GetIndex(scale);
-        internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+        public override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             var index = GetIndex(scale);
             using var paint = new SKPaint();
