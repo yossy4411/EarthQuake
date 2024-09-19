@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using EarthQuake.Core;
+﻿using EarthQuake.Core;
 using SkiaSharp;
 using System.Diagnostics;
 using EarthQuake.Map.Tiles.Request;
@@ -68,6 +67,7 @@ namespace EarthQuake.Map.Tiles
 
     public abstract class MapTilesController<T>(string url) where T : class
     {
+        public Action? OnUpdate;
         public const int ImageSize = 256;
         private protected readonly string Url = url;
         private protected readonly LRUCache<TilePoint, T> Tiles = new(256);
@@ -85,7 +85,7 @@ namespace EarthQuake.Map.Tiles
             GetXyzTile(screen.X, screen.Y, zoom, out var x, out var y, out var z);
             point = new TilePoint(Math.Max(0, x), Math.Max(0, y), z);
         }
-        private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
+        /*private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
         {
             GetXyzTile(screenX, screenY, zoom, out x, out y, out z);
 
@@ -96,7 +96,7 @@ namespace EarthQuake.Map.Tiles
 
             left = lonDeg;
             top = latDeg;
-        }
+        }*/
         private static void GetTileLeftTop(int x, int y, int z, out double left, out double top)
         {
             var n = Math.Pow(2, z);
@@ -176,10 +176,6 @@ namespace EarthQuake.Map.Tiles
         {
             return GenerateUrl(source, tilePoint.X, tilePoint.Y, tilePoint.Z);
         }
-
-        public delegate bool Generated();
-        
-        public Generated? OnGenerated;
 
     }
     

@@ -1,5 +1,4 @@
-﻿using EarthQuake.Core;
-using EarthQuake.Map.Layers;
+﻿using EarthQuake.Map.Layers;
 using EarthQuake.Map.Layers.OverLays;
 using SkiaSharp;
 
@@ -9,7 +8,7 @@ namespace EarthQuake.Map;
 public class MapViewController
 {
     private readonly IEnumerable<MapLayer> _mapLayers = [];
-    private readonly IEnumerable<ICacheableLayer> cacheableLayers;
+    private readonly IEnumerable<CacheableLayer> cacheableLayers = [];
     private SKPicture? cached;
     public MapLayer[] MapLayers
     {
@@ -19,10 +18,19 @@ public class MapViewController
             {
                 item.Update();
             }
-            cacheableLayers = value.OfType<ICacheableLayer>();
-            _mapLayers = value.Where(x => x is not ICacheableLayer);
+            cacheableLayers = value.OfType<CacheableLayer>();
+            foreach (var cacheableLayer in cacheableLayers)
+            {
+                cacheableLayer.OnUpdated += () =>
+                {
+                    OnUpdated?.Invoke();
+                };
+            }
+            _mapLayers = value.Where(x => x is not CacheableLayer);
         }
     }
+
+    public Action? OnUpdated;
 
     public void RenderBase(SKCanvas canvas, float scale, SKRect bounds)
     {
@@ -36,7 +44,6 @@ public class MapViewController
             {
                 cacheableLayer.IsUpdated = false;
                 cacheableLayer.Render(c, scale, bounds);
-                
             }
             cached = recorder.EndRecording();
         }

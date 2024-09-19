@@ -5,7 +5,6 @@ namespace EarthQuake.Map.Tiles.Vector;
 
 public class VectorTilesController(string url, VectorMapStyles styles) : MapTilesController<VectorTile>(url)
 {
-    public event Action? OnUpdate;
     private class VectorTileRequest(SKPoint point, TilePoint tilePoint, string url, VectorMapStyles styles) : MapTileRequest(point, tilePoint, url)
     {
         public override object GetAndParse(Stream? data) => data is null ? new VectorTile(Point, Zoom, null) :

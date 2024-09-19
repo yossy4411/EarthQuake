@@ -4,6 +4,8 @@ using Avalonia.Input;
 using Avalonia.Media;
 using EarthQuake.Map;
 using System;
+using System.Diagnostics;
+using Avalonia.Threading;
 using SkiaSharp;
 using Newtonsoft.Json.Bson;
 
@@ -16,7 +18,25 @@ namespace EarthQuake.Canvas
             public SKPoint Translate { get; set; } = new();
             public float Scale { get; set; } = 1f;
         }
-        public MapViewController? Controller { get; set; }
+
+        public MapViewController? Controller
+        {
+            get => controller;
+            set
+            {
+                controller = value;
+                if (controller is not null)
+                {
+                    // 描画スレッドでInvalidateVisualを呼び出す。(誤ったスレッドで呼び出すと例外が発生するため)
+                    controller.OnUpdated += () =>
+                    {
+                        Dispatcher.UIThread.Post(InvalidateVisual);
+                        Debug.WriteLine($"InvalidateVisual for Canvas [{Name}]");
+                    };
+                }
+            }
+        }
+
         public static readonly DirectProperty<MapCanvas, MapViewController?> ControllerProperty =
             AvaloniaProperty.RegisterDirect<MapCanvas, MapViewController?>(
                 nameof(Controller),
@@ -42,6 +62,7 @@ namespace EarthQuake.Canvas
 
                 );
         private protected bool pressed;
+        private MapViewController? controller;
 
         public override void Render(ImmediateDrawingContext context)
         {

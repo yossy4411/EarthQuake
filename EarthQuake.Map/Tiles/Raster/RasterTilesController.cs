@@ -21,6 +21,7 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
                 {
                     Tiles.Put(req.TilePoint, tile);
                 }
+                OnUpdate?.Invoke();
             }
         };
     }

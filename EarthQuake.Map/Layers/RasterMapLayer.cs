@@ -5,10 +5,9 @@ using SkiaSharp;
 
 namespace EarthQuake.Map.Layers;
 
-public class RasterMapLayer(string source) : MapLayer, ICacheableLayer
+public class RasterMapLayer(string source) : CacheableLayer
 {
     private RasterTilesController? _controller;
-    private int _zoom = -1;
     private TilePoint _point;
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
@@ -39,27 +38,18 @@ public class RasterMapLayer(string source) : MapLayer, ICacheableLayer
 
     private protected override void Initialize()
     {
-        _controller = new RasterTilesController(source);
-        _controller.OnGenerated += () => IsUpdated = true;
-    }
-    public bool IsUpdated { get; set; }
-    public bool IsReloadRequired(float scale, SKRect bounds)
-    {
-        var zoom = (int)MathF.Log2(scale) + 5;
-        // ズームが変わったか
-        if (_zoom != zoom)
+        _controller = new RasterTilesController(source)
         {
-            _zoom = zoom;
-            return true;
-        }
+            OnUpdate = HandleUpdated
+        };
+    }
+    public override bool IsReloadRequired(float scale, SKRect bounds)
+    {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
         RasterTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
         // 表示範囲のタイルが変わったか
-        if (_point != point)
-        {
-            _point = point;
-            return true;
-        }
-        return false;
+        if (_point == point) return false;
+        _point = point;
+        return true;
     }
 }
