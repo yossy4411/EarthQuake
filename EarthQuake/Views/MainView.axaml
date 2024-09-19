@@ -53,27 +53,12 @@
       <TabItem Header="Kmoni">
         <DockPanel Name="KmoniPanel">
           <Panel>
-            <local:MapCanvasPair 
-              x:Name="Kmoni"
-              Controller="{Binding Controller1}"
-              Translation="{Binding SyncTranslation}"
-              ClipToBounds="True"
-              VerticalAlignment="Stretch"
-              HorizontalAlignment="Stretch"
-              DockPanel.Dock="Top">
-              <local:MapCanvasPair.BackgroundCanvas>
-                <local:MapCanvas Name="KmoniMap"
-                             VerticalAlignment="Stretch"
-                             HorizontalAlignment="Stretch"
-                             ClipToBounds="True"/>
-              </local:MapCanvasPair.BackgroundCanvas>
-              <local:MapCanvasPair.ForegroundCanvas>
-                <local:OverlayCanvas x:Name="KmoniFg"
-                                     VerticalAlignment="Stretch"
-                                     HorizontalAlignment="Stretch"
-                                     ClipToBounds="True"/>
-              </local:MapCanvasPair.ForegroundCanvas>
-            </local:MapCanvasPair>
+            <local:MapCanvas x:Name="Kmoni"
+                         VerticalAlignment="Stretch"
+                         Controller="{Binding Controller1}"
+                          Translation="{Binding SyncTranslation}"
+                         HorizontalAlignment="Stretch"
+                         ClipToBounds="True"/>
             <Border Classes="license"
                     VerticalAlignment="Bottom"
                     HorizontalAlignment="Right"/>
@@ -83,24 +68,12 @@
       </TabItem>
       <TabItem Header="Info">
         <Panel>
-          <local:MapCanvasPair x:Name="Info"
-                               VerticalAlignment="Stretch"
-                               HorizontalAlignment="Stretch"
-                               Controller="{Binding Controller2}"
-                               Translation="{Binding SyncTranslation}"
-                               ClipToBounds="True">
-            <local:MapCanvasPair.BackgroundCanvas>
-              <local:MapCanvas VerticalAlignment="Stretch"
-                               HorizontalAlignment="Stretch"
-                               ClipToBounds="True"/>
-            </local:MapCanvasPair.BackgroundCanvas>
-            <local:MapCanvasPair.ForegroundCanvas>
-              <local:OverlayCanvas VerticalAlignment="Stretch"
-                                   HorizontalAlignment="Stretch"
-                                   ClipToBounds="True"/>
-            </local:MapCanvasPair.ForegroundCanvas>
-          </local:MapCanvasPair>
-          
+          <local:MapCanvas x:Name="Info"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch"
+                           Controller="{Binding Controller2}"
+                           Translation="{Binding SyncTranslation}"
+                           ClipToBounds="True"/>
           <Grid VerticalAlignment="Stretch" ColumnDefinitions="0.7*,0.3*" RowDefinitions="*,0.6*,0.2*">
             <Button Command="{Binding Update}" Grid.Column="1"
                     Grid.Row="0">更新</Button>

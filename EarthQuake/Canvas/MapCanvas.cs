@@ -80,7 +80,7 @@ namespace EarthQuake.Canvas
                 canvas.Translate(Translate + Center);
                 canvas.Scale(Scale);
 
-                Controller?.RenderBase(canvas, Scale, region);
+                Controller?.Render(canvas, Scale, region);
             }
 
             

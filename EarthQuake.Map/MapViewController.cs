@@ -32,7 +32,7 @@ public class MapViewController
 
     public Action? OnUpdated;
 
-    public void RenderBase(SKCanvas canvas, float scale, SKRect bounds)
+    public void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         if (cacheableLayers.Any(x => x.IsUpdated || x.IsReloadRequired(scale, bounds)))
         {
@@ -51,22 +51,21 @@ public class MapViewController
         {
             canvas.DrawPicture(cached);
         }
+        // Background
         foreach (var layer in _mapLayers)
         {
             if (layer is ForeGroundLayer) continue;
             layer.Render(canvas, scale, bounds);
         }
-    }
-    public void RenderForeGround(SKCanvas canvas, float scale, SKRect bounds, object? param = null)
-    {
-        foreach (var layer in _mapLayers)
+        // Foreground
+        using (new SKAutoCanvasRestore(canvas))
         {
-            if (layer is not ForeGroundLayer fore) continue;
-            if (fore is Hypo3DViewLayer hypo)
-                hypo.Render(canvas, scale, param as SKRect? ?? SKRect.Empty);
-            else
-                fore.Render(canvas, scale, bounds);
-
+            canvas.Scale(1 / scale);
+            foreach (var layer in _mapLayers)
+            {
+                if (layer is not ForeGroundLayer) continue;
+                layer.Render(canvas, scale, bounds);
+            }
         }
     }
 }

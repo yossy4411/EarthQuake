@@ -59,7 +59,7 @@ public partial class MainWindow
             canvas.Translate(Translate + Center);
             canvas.Scale(Scale);
 
-            Controller?.RenderBase(canvas, Scale, region);
+            Controller?.Render(canvas, Scale, region);
         }
     }
 

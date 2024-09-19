@@ -92,15 +92,13 @@ namespace EarthQuake.Canvas
                         view.RotateXDegrees(Rotation);
                         view.ApplyToCanvas(canvas);
                     }
-                    Controller?.RenderBase(canvas, Scale, region);
+                    Controller?.Render(canvas, Scale, region);
                 }
             }
             using (new SKAutoCanvasRestore(canvas))
             {
                 canvas.Translate(Offset);
                 canvas.Scale(Scale);
-                
-                Controller?.RenderForeGround(canvas, Scale, region, Selected);
                 if (selecting)
                 {
                     using SKPaint paint = new() { StrokeWidth = 2, PathEffect = SKPathEffect.CreateDash([7,3], 0), Style = SKPaintStyle.Stroke };
