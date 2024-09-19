@@ -74,14 +74,10 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer, ICac
                             if (layer is null) continue;
                             paint.Color = layer.TextColor;
                             paint.Style = SKPaintStyle.Fill;
-                            foreach (var (text, skPoint) in symbolFeature.Points)
+                            foreach (var text in symbolFeature.Points)
                             {
-                                using (new SKAutoCanvasRestore(canvas))
-                                {
-                                    canvas.Translate(skPoint);
-                                    canvas.Scale(layer.FontSize　/ scale / 16f);
-                                    canvas.DrawText(text, 0, 0, paint);
-                                }
+                                canvas.DrawText(text, 0, 0, paint);
+                                
                             }
                             break;
                         }

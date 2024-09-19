@@ -85,11 +85,10 @@ public class VectorSymbolLayer(string source, SKColor textColor, SKTypeface font
     : VectorTileMapLayer(VectorMapLayerType.Symbol, source, filter)
 {
     public SKColor TextColor { get; } = textColor;
-    public float FontSize { get; } = fontSize;
-    private readonly SKFont _fontStyle = fontStyle.ToFont(fontSize);
     public override VectorTileFeature CreateFeature(IEnumerable<Mapbox.Vector.Tile.VectorTileFeature> features, TilePoint point)
     {
-        return new VectorSymbolFeature(features, point, _fontStyle, fieldKey) { Layer = this };
+        var font = fontStyle.ToFont(fontSize / point.Z);
+        return new VectorSymbolFeature(features, point, font, fieldKey) { Layer = this };
     }
 }
 

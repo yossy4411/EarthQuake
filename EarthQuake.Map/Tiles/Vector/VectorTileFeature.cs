@@ -80,7 +80,7 @@ public class VectorLineFeature : VectorTileFeature
 
 public class VectorSymbolFeature : VectorTileFeature
 {
-    public (SKTextBlob?,SKPoint)[] Points { get; }
+    public SKTextBlob[] Points { get; }
     public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, SKFont font, string? fieldKey = "name")
     {
         if (fieldKey is null)
@@ -92,12 +92,13 @@ public class VectorSymbolFeature : VectorTileFeature
             let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
             let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
             let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
-            select (SKTextBlob.Create(text, font), skPoint)).ToArray();
+            let blob = SKTextBlob.Create(text, font, skPoint)
+            select blob).ToArray();
     }
     
     public override void Dispose()
     {
-        foreach (var (textBlob, _) in Points)
+        foreach (var textBlob in Points)
         {
             textBlob?.Dispose();
         }
