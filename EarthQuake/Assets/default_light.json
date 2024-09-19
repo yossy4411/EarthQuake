@@ -14,13 +14,6 @@
   "glyphs": "https://maps.gsi.go.jp/xyz/noto-jp/{fontstack}/{range}.pbf",
   "layers": [
     {
-      "id": "boundary",
-      "type": "line",
-      "source": "gsi",
-      "source-layer": "boundary",
-      "paint": {"line-color": "#444"}
-    },
-    {
       "id": "water-sea",
       "type": "fill",
       "source": "gsi",
@@ -82,6 +75,17 @@
       "source": "gsi",
       "source-layer": "road",
       "filter": ["all", ["==", "ftCode", 2701], ["==", "motorway", 1]],
+      "paint": {
+        "line-color": "#28BC17",
+        "line-width": {"stops": [[8, 3], [12, 4], [17, 7]]}
+      }
+    },
+    {
+      "id": "exp-3",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": ["all", ["==", "ftCode", 2703], ["==", "motorway", 1]],
       "paint": {
         "line-color": "#28BC17",
         "line-width": {"stops": [[8, 3], [12, 4], [17, 7]]}
@@ -193,6 +197,26 @@
         "text-offset": [0.4, 0]
       },
       "paint": {"text-color": "rgba(51, 50, 50, 1)"}
+    },
+    {
+      "id": "road-1",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "road",
+      "filter": [
+        "all",
+        ["in", "ftCode", 2701, 2702],
+        ["!=", "motorway", 1],
+        ["==", "rdCtg", 0]
+      ],
+      "paint": {"line-color": "rgba(246, 177, 124, 1)", "line-width": 2}
+    },
+    {
+      "id": "boundary",
+      "type": "line",
+      "source": "gsi",
+      "source-layer": "boundary",
+      "paint": {"line-color": "#444"}
     }
   ],
   "id": "xcb5icc"
