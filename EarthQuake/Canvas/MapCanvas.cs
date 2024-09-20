@@ -44,7 +44,7 @@ namespace EarthQuake.Canvas
                 (o, value) => o.Controller = value,
                 null
                 );
-        public virtual SKColor Background => SKColors.LightBlue;
+        public virtual SKColor Background => SKColors.White;
         private Point _scrollOffset;
         private protected SKPoint Offset => Translate + Center;
 
