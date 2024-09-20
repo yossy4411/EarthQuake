@@ -35,7 +35,7 @@ public class MainViewModel : ViewModelBase
     private readonly ObservationsLayer _foreground;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
-    public readonly Hypo3DViewLayer Hypo;
+    public readonly HypoViewLayer Hypo;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
 
     public bool IsPoints
@@ -48,7 +48,6 @@ public class MainViewModel : ViewModelBase
         }
     }
     
-    public double Rotation { get => Hypo.Rotation; set => Hypo.Rotation = (float)value; }
     public MainViewModel() 
     {
         {
@@ -80,13 +79,13 @@ public class MainViewModel : ViewModelBase
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
 
-            Hypo = new Hypo3DViewLayer();
+            Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [map, grid, _kmoni]
+                MapLayers = [world, map, grid, _kmoni]
             };
             Controller2 = new MapViewController
             {

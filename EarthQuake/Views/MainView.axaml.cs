@@ -58,12 +58,6 @@ public partial class MainView : UserControl
         Loading.IsVisible = false;
     }
 
-    private void Slider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-    {
-        Selection.Rotation = (float)Slider.Value;
-        Selection.InvalidateVisual();
-    }
-
     private void Update_Epicenters(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (DateStart.SelectedDate.HasValue && DateEnd.SelectedDate.HasValue)

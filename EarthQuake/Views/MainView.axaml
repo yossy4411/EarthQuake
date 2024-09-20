@@ -127,9 +127,10 @@
                                     DockPanel.Dock="Top"
                                     Translation="{Binding SyncTranslation}"
                                     ClipToBounds="True"/>
-            <StackPanel VerticalAlignment="Bottom">
+            <DockPanel VerticalAlignment="Bottom">
               <Border VerticalAlignment="Bottom"
-                      HorizontalAlignment="Right">
+                      HorizontalAlignment="Right"
+                      DockPanel.Dock="Top">
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -180,33 +181,31 @@
                   </Button>
                 </Grid>
               </Border>
-              <Grid HorizontalAlignment="Stretch" ColumnDefinitions="1*,1*" RowDefinitions="Auto,Auto,Auto">
-                <TextBlock Grid.Column="0" Grid.Row="1">開始日</TextBlock>
-                <TextBlock Grid.Column="1" Grid.Row="1">終了日</TextBlock>
-                <CalendarDatePicker x:Name="DateStart"
-                                    Grid.Column="0"
-                                    Grid.Row="2"
-                                    HorizontalAlignment="Stretch"/>
-                <CalendarDatePicker x:Name="DateEnd"
-                                    Grid.Column="1"
-                                    Grid.Row="2"
-                                    Background="Transparent"
-                                    HorizontalAlignment="Stretch"/>
-              </Grid>
-              <DockPanel>
-                <Button x:Name="UpdateEpic"
-                        DockPanel.Dock="Right"
-                        VerticalAlignment="Stretch">
+              <Border DockPanel.Dock="Bottom">
+                <Grid HorizontalAlignment="Stretch" 
+                      ColumnDefinitions="1*,1*,Auto" 
+                      RowDefinitions="Auto,Auto"
+                      Margin="5">
+                  <TextBlock Grid.Column="0" Grid.Row="0">開始日</TextBlock>
+                  <TextBlock Grid.Column="1" Grid.Row="0">終了日</TextBlock>
+                  <CalendarDatePicker x:Name="DateStart"
+                                      Grid.Column="0"
+                                      Grid.Row="1"
+                                      HorizontalAlignment="Stretch"/>
+                  <CalendarDatePicker x:Name="DateEnd"
+                                      Grid.Column="1"
+                                      Grid.Row="1"
+                                      Background="Transparent"
+                                      HorizontalAlignment="Stretch"/>
+                  <Button x:Name="UpdateEpic"
+                          DockPanel.Dock="Right"
+                          VerticalAlignment="Stretch"
+                          Grid.Row="1"
+                          Grid.Column="2">
                   <TextBlock VerticalAlignment="Stretch">更新</TextBlock></Button>
-                <Slider Minimum="0"
-                        DockPanel.Dock="Left"
-                        Maximum="90"
-                        Value="{Binding Rotation}"
-                        VerticalAlignment="Stretch"
-                        ValueChanged="Slider_ValueChanged"
-                        x:Name="Slider"/>
-              </DockPanel>
-            </StackPanel>
+                </Grid>
+              </Border>
+            </DockPanel>
           </Panel>
         </DockPanel>
       </TabItem>
