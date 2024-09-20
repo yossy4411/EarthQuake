@@ -1,5 +1,6 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using SkiaSharp;
 
 namespace EarthQuake.Map.Layers;
@@ -8,12 +9,13 @@ namespace EarthQuake.Map.Layers;
 /// ベクトルタイルを描画するレイヤー
 /// </summary>
 /// <param name="styles"></param>
-public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
+public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
 {
     private VectorTilesController? _controller;
     private VectorMapStyles? _styles = styles;
+    private TilePoint _point;
 
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         if (_controller is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
@@ -71,14 +73,10 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
                             if (layer is null) continue;
                             paint.Color = layer.TextColor;
                             paint.Style = SKPaintStyle.Fill;
-                            foreach (var (text, skPoint) in symbolFeature.Points)
+                            foreach (var text in symbolFeature.Points)
                             {
-                                using (new SKAutoCanvasRestore(canvas))
-                                {
-                                    canvas.Translate(skPoint);
-                                    canvas.Scale(layer.FontSize　/ scale / 16f);
-                                    canvas.DrawText(text, 0, 0, paint);
-                                }
+                                canvas.DrawText(text, 0, 0, paint);
+                                
                             }
                             break;
                         }
@@ -91,7 +89,20 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : MapLayer
 
     private protected override void Initialize()
     {
-        _controller = new VectorTilesController(url, _styles!);
+        _controller = new VectorTilesController(url, _styles!)
+        {
+            OnUpdate = HandleUpdated
+        };
         _styles = null; // 参照を解放
+    }
+    
+    public override bool IsReloadRequired(float scale, SKRect bounds)
+    {
+        var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
+        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
+        // 表示範囲のタイルが変わったか
+        if (_point == point) return false;
+        _point = point;
+        return true;
     }
 }

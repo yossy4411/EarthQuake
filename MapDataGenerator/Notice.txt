@@ -1,0 +1,3 @@
+﻿The file "world_land.json" is the map data file.
+This data has been processed from Natural Earth data, which is public domain.
+The data is available at https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/

@@ -14,7 +14,7 @@ public class ObservationsLayer : ForeGroundLayer
     private SKPoint hypo;
     private SKPoint[]? oPoints;
     private Scale[]? oColors;
-    public IList<Station>? Stations { get; init; }
+    public IEnumerable<Station>? Stations { get; set; }
     public bool DrawStations { get; set; }
 
     public static SKPath HypoPath 
@@ -58,7 +58,7 @@ public class ObservationsLayer : ForeGroundLayer
         oPoints = quakeData.Points.Select(x => Stations.FirstOrDefault(v => v.Name == x.Addr)?.GetSKPoint() ?? new()).ToArray();
         oColors = quakeData.Points.Select(x => x.Scale).ToArray();
     }
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         SKPoint scale2 = new(hypo.X * scale, hypo.Y * scale);
         using SKPaint paint = new();

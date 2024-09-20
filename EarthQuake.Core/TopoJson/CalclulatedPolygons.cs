@@ -5,56 +5,89 @@ using SkiaSharp;
 
 namespace EarthQuake.Core.TopoJson;
 
-    
+
 [MessagePackObject]
-public class CalculatedPolygons(string[] names, SKPoint[][][] points)
+public class PolygonFeatures(string[] names, int[][][] indices)
 {
     [Key(0)]
     public string[] Names { get; } = names;
-    [Key(1)]
-    public SKPoint[][][] Points { get; } = points;
-}
-
-[MessagePackObject]
-public class CalculatedBorders(string[] names, SKPoint[][][] points, int[][][] indices)
-{
-    [Key(0)]
-    public string[] Names { get; } = names;
-
-    [Key(1)]
-    public SKPoint[][][] Points { get; } = points;
         
-    [Key(2)]
+    [Key(1)]
     public int[][][] Indices { get; } = indices;
 }
 
 [MessagePackObject]
-public class PolygonsSet(CalculatedPolygons filling, Dictionary<string, SubPolygon> subPolygons, CalculatedBorders border)
+public class PolygonsSet(Dictionary<string, PolygonFeatures> filling, PointsSet points)
 {
     [Key(0)]
-    public CalculatedPolygons Filling { get; } = filling;
+    public Dictionary<string, PolygonFeatures> Filling { get; } = filling;
+    
     [Key(1)]
-    public Dictionary<string, SubPolygon> SubPolygons { get; } = subPolygons;
-    [Key(2)]
-    public CalculatedBorders Border { get; } = border;
+    public PointsSet Points { get; } = points;
 }
 
 [MessagePackObject] 
-public class SubPolygon(string[] names, int[][] indices)
+public readonly struct IntPoint(int x, int y)
 {
     [Key(0)]
-    public string[] Names { get; } = names;
+    public int X { get; } = x;
+
     [Key(1)]
-    public int[][] Indices { get; } = indices;
+    public int Y { get; } = y;
+    
+    public static IntPoint operator +(IntPoint a, IntPoint b) => new(a.X + b.X, a.Y + b.Y);
+    
+    public static IntPoint operator -(IntPoint a, IntPoint b) => new(a.X - b.X, a.Y - b.Y);
+    
+    public static IntPoint operator *(IntPoint a, int b) => new(a.X * b, a.Y * b);
+    
+    public static SKPoint operator *(IntPoint a, float b) => new(a.X * b, a.Y * b);
+    
+    public static SKPoint operator *(IntPoint a, SKPoint b) => new(a.X * b.X, a.Y * b.Y);
+    
+    public void Deconstruct(out int x, out int y)
+    {
+        x = X;
+        y = Y;
+    }
+    
+    public static implicit operator SKPoint(IntPoint point) => new(point.X, point.Y);
 }
 
 [MessagePackObject]
-public class WorldPolygonSet(SKPoint[][]? polygons/*, SKPoint[][] borders*/)
+public class PointsSet(IntPoint[][] points, Transform transform)
 {
     [Key(0)]
-    public SKPoint[][]? Polygons { get; } = polygons;
-    /*[Key(1)]
-    public SKPoint[][] Borders { get; } = borders;*/
+    public IntPoint[][] Points { get; } = points;
+    
+    [Key(1)]
+    public Transform Transform { get; } = transform;
+}
+
+[MessagePackObject]
+public class Transform(SKPoint scale, SKPoint translate)
+{
+    [Key(0)]
+    public SKPoint Scale { get; } = scale;
+    
+    [Key(1)]
+    public SKPoint Translate { get; } = translate;
+    public SKPoint ToPoint(int x, int y)
+    {
+        return new SKPoint(x * Scale.X + Translate.X, y * Scale.Y + Translate.Y);
+    }
+    public SKPoint ToPoint(IntPoint point)
+    {
+        return new SKPoint(point.X * Scale.X + Translate.X, point.Y * Scale.Y + Translate.Y);
+    }
+}
+
+
+[MessagePackObject]
+public class WorldPolygonSet(SKPoint[]? polygons/*, SKPoint[][] borders*/)
+{
+    [Key(0)]
+    public SKPoint[]? Polygons { get; } = polygons;
 }
 
 public static class Serializer
@@ -96,11 +129,6 @@ public static class Serializer
                 Formatter = typeof(T) == typeof(SKPoint) ? (IMessagePackFormatter<T>)SkPointFormatter : null;
             }
         }
-
-
-        
-
-        
     }
     private static readonly IFormatterResolver Resolver = 
         CompositeResolver.Create(new SkiaSharpResolver(), StandardResolver.Instance);

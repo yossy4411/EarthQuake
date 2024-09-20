@@ -13,7 +13,7 @@ public abstract class MapLayer
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EarthQuake.Map.Assets.NotoSansJP-Regular.ttf");
         return SKTypeface.FromStream(stream);
     }
-    internal abstract void Render(SKCanvas canvas, float scale, SKRect bounds);
+    public abstract void Render(SKCanvas canvas, float scale, SKRect bounds);
     private protected abstract void Initialize();
     public void Update()
     {

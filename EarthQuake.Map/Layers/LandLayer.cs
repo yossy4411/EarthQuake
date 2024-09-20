@@ -1,60 +1,24 @@
-﻿using EarthQuake.Core;
-using EarthQuake.Core.EarthQuakes.P2PQuake;
+﻿using EarthQuake.Core.EarthQuakes.P2PQuake;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map.Colors;
 using SkiaSharp;
-using System.Diagnostics;
+using EarthQuake.Map.Tiles.File;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(CalculatedPolygons? polygons) : MapLayer
+    public class LandLayer(PolygonsSet? polygons, string layerName) : MapLayer
     {
         public bool Draw { get; set; } = true;
         private SKColor[]? colors;
-        private SKPoint[][][]? data = polygons?.Points;
-        private SKVertices[][] buffer = [];
-        private readonly string[]? names = polygons?.Names;
+        private readonly string[]? names = polygons?.Filling[layerName].Names;
+        private readonly FileTilesController? fileTilesController = polygons is null ? null : new FileTilesController(polygons, layerName);
         public bool AutoFill { get; init; }
-        private readonly bool copy;
-        public LandLayer(LandLayer copySource) : this(polygons: null)
-        {
-            copy = true;
-            names = copySource.names;
-            buffer = copySource.buffer;
-        }
         private protected override void Initialize()
         {
-            var sw = Stopwatch.StartNew();
-
-            if (copy || data is null) return;
-            buffer = new SKVertices[data.Length][];
-            for (var i = 0; i < data.Length; i++)
-            {
-                // ズームレベルごとに実行される
-                var p = data[i];
-                var polygons = new SKVertices[p.Length];
-                for (var j = 0; j < p.Length; j++)
-                {
-                    
-                    var points = p[j];
-                    var skPoints = new SKPoint[points.Length];
-                    for (var k = 0; k < points.Length; k++)
-                    {
-                        skPoints[k] = GeomTransform.Translate(points[k]);
-                    }
-
-
-                    polygons[j] = SKVertices.CreateCopy(SKVertexMode.Triangles, skPoints, null);
-                }
-
-                buffer[i] = polygons;
-            }
-            data = null;
-            sw.Stop();
-            Debug.WriteLine($"{GetType().Name}: {sw.ElapsedMilliseconds}ms");
         }
         public void SetInfo(PQuakeData quakeData)
         {
+            fileTilesController.ClearCaches();
             if (names is null || quakeData.Points is null) return;
             colors = new SKColor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -73,29 +37,23 @@ namespace EarthQuake.Map.Layers
         public static int GetIndex(float scale)
         => Math.Max(0, Math.Min((int)(-Math.Log(scale * 2, 3) + 3.3), 5));
 
-        internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+        public override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
-
-            var index = GetIndex(scale);
+            // 表示テスト
+            var zoom = GetIndex(scale);
             if (!Draw) return;
             using SKPaint paint = new();
-            var polygons = buffer[index];
-            for (var i = 0; i < polygons.Length; i++)
+            paint.IsAntialias = true;
+            paint.Style = SKPaintStyle.Fill;
+            if (fileTilesController is null) return;
+            if (colors is null) return;
+            for (var i = 0; i < colors.Length; i++)
             {
-                var poly = polygons[i];
-                if (AutoFill)
-                {
-                    paint.Color = colors?[i] ?? SKColors.DarkGreen;
-                }
-                else
-                {
-                    if (colors?[i] is null) continue;
-                    paint.Color = colors[i];
-                }
-
-                canvas.DrawVertices(poly, SKBlendMode.SrcOver, paint);
+                paint.Color = colors[i];
+                if (paint.Color == SKColors.Empty) continue;
+                var tile = fileTilesController.TryGetTile(zoom, i);
+                if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
             }
-
         }
         
     }

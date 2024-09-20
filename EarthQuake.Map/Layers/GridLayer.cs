@@ -11,7 +11,7 @@ public class GridLayer : MapLayer
         
     }
 
-    internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+    public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         using var paint = new SKPaint();
         paint.Color = SKColors.Gray;

@@ -5,6 +5,7 @@ using EarthQuake.Core.TopoJson;
 using EarthQuake.Map;
 using EarthQuake.Map.Layers;
 using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 
@@ -58,7 +59,7 @@ public partial class MainWindow
             canvas.Translate(Translate + Center);
             canvas.Scale(Scale);
 
-            Controller?.RenderBase(canvas, Scale, region);
+            Controller?.Render(canvas, Scale, region);
         }
     }
 

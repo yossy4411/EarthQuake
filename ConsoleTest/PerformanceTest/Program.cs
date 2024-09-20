@@ -1,17 +1,14 @@
-﻿using EarthQuake.Map.Tiles;
-using Mapbox.Vector.Tile;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
-using var file = new FileStream("3244.pbf", FileMode.Open, FileAccess.Read); // https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/13/7189/3244.pbf
+var text = File.ReadAllText("data.json");
+var token = JsonConvert.DeserializeObject<JToken>(text);
+if (token is null)
+{
+    Console.WriteLine("Failed to parse JSON");
+    return;
+}
 
-
-using var styleFile = new FileStream("gsi.json", FileMode.Open, FileAccess.Read); // 地理院地図のスタイルファイル
-using var styleReader = new StreamReader(styleFile);
-var styles = VectorMapStyles.LoadGLJson(styleReader);
-
-var l = styles.ParsePaths(file, new TilePoint(7189, 3244, 13));
-
-var first = l[0];
-
-
-_ = first;
+Console.WriteLine("The URL is:");
+Console.WriteLine(token["url"]?.ToObject<string>());

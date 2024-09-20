@@ -24,7 +24,6 @@ namespace EarthQuake.Canvas
         private float _endX;
         private float _endY;
         public event EventHandler<SelectionEventArgs>? OnSelected;
-        public float Rotation { get; set; } = 0;
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
 
@@ -79,28 +78,17 @@ namespace EarthQuake.Canvas
             canvas.ClipRect(clipRect);
             canvas.Clear(SKColors.LightBlue);
             var region = new SKRect(-Offset.X / Scale, -Offset.Y / Scale, (float)(-Offset.X + Bounds.Width) / Scale, (float)(-Offset.Y + Bounds.Height) / Scale);
-            if (Rotation < 89)
+            using (new SKAutoCanvasRestore(canvas))
             {
-                using (new SKAutoCanvasRestore(canvas))
-                {
 
-                    canvas.Translate(Offset);
-                    canvas.Scale(Scale);
-                    if (Rotation != 0)
-                    {
-                        using var view = new SK3dView();
-                        view.RotateXDegrees(Rotation);
-                        view.ApplyToCanvas(canvas);
-                    }
-                    Controller?.RenderBase(canvas, Scale, region);
-                }
+                canvas.Translate(Offset);
+                canvas.Scale(Scale);
+                Controller?.Render(canvas, Scale, region);
             }
             using (new SKAutoCanvasRestore(canvas))
             {
                 canvas.Translate(Offset);
                 canvas.Scale(Scale);
-                
-                Controller?.RenderForeGround(canvas, Scale, region, Selected);
                 if (selecting)
                 {
                     using SKPaint paint = new() { StrokeWidth = 2, PathEffect = SKPathEffect.CreateDash([7,3], 0), Style = SKPaintStyle.Stroke };

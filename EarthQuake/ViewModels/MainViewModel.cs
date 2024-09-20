@@ -16,8 +16,9 @@ using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
-using EarthQuake.Map.Tiles;
+using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
+using MessagePack;
 
 namespace EarthQuake.ViewModels;
 
@@ -30,12 +31,11 @@ public class MainViewModel : ViewModelBase
     private static MapSource MapTilesBase => MapSource.GsiVector;
     private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
-    private readonly List<Station> _stations;
+    private IEnumerable<Station>? _stations;
     private readonly ObservationsLayer _foreground;
     private readonly LandLayer _land;
     private readonly KmoniLayer _kmoni;
-    public readonly Hypo3DViewLayer Hypo;
-    private PSWave? wave;
+    public readonly HypoViewLayer Hypo;
     public MapCanvas.MapCanvasTranslation SyncTranslation { get; set; } = new();
 
     public bool IsPoints
@@ -48,7 +48,6 @@ public class MainViewModel : ViewModelBase
         }
     }
     
-    public double Rotation { get => Hypo.Rotation; set => Hypo.Rotation = (float)value; }
     public MainViewModel() 
     {
         {
@@ -58,7 +57,7 @@ public class MainViewModel : ViewModelBase
                 calculated = Serializer.Deserialize<PolygonsSet>(stream);
             }
 
-            _land = new LandLayer(calculated.Filling) { AutoFill = true };
+            _land = new LandLayer(calculated, "scity");
             CountriesLayer world;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
@@ -71,20 +70,22 @@ public class MainViewModel : ViewModelBase
                 var styles = VectorMapStyles.LoadGLJson(streamReader);
                 map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
             }
-            var grid = new GridLayer();
-            _kmoni = new KmoniLayer();
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.csv")))
+            InterpolatedWaveData wave;
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.mpk", UriKind.Absolute)))
             {
-                _stations = Station.GetStations(stream);
+                wave = MessagePackSerializer.Deserialize<InterpolatedWaveData>(stream);
             }
 
-            Hypo = new Hypo3DViewLayer();
+            var grid = new GridLayer();
+            _kmoni = new KmoniLayer { Wave = wave };
+
+            Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
-            _foreground = new ObservationsLayer { Stations = _stations };
+            _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [map, grid],
+                MapLayers = [world, map, grid, _kmoni]
             };
             Controller2 = new MapViewController
             {
@@ -128,9 +129,10 @@ public class MainViewModel : ViewModelBase
     }
     private async void InitializeAsync()
     {
-        await using var parquet = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.parquet"));
-        wave = await PSWave.LoadAsync(parquet);
-        _kmoni.Wave = wave;
+        await using var stations = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.parquet"));
+        _stations = await Station.GetStationsFromParquet(stations);
+        _foreground.Stations = _stations;
+        
     }
     public async Task Update()
     {
@@ -145,7 +147,7 @@ public class MainViewModel : ViewModelBase
     {
         var quakeData = Data[index]; // 震源・震度情報
         
-        quakeData.SortPoints(_stations);
+        quakeData.SortPoints(_stations!);
         _land.SetInfo(quakeData);
                 
         _foreground.SetData(quakeData);

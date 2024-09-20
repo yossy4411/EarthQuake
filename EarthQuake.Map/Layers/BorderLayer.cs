@@ -9,10 +9,10 @@ namespace EarthQuake.Map.Layers
     /// 地物の境界線を描画するレイヤー
     /// </summary>
     /// <param name="polygons">ポリゴン</param>
-    public class BorderLayer(CalculatedBorders? polygons) : MapLayer
+    public class BorderLayer(PolygonFeatures? polygons) : MapLayer
     {
         private SKPath[][] buffer = [];
-        private SKPoint[][][]? data = polygons?.Points;
+        private SKPoint[][][]? data = [];
         private readonly int[][][]? indices = polygons?.Indices;
         private readonly bool copy;
         public BorderLayer(BorderLayer copySource) : this(polygons: null)
@@ -103,7 +103,7 @@ namespace EarthQuake.Map.Layers
         }
 
         private static int GetIndex(float scale) => LandLayer.GetIndex(scale);
-        internal override void Render(SKCanvas canvas, float scale, SKRect bounds)
+        public override void Render(SKCanvas canvas, float scale, SKRect bounds)
         {
             var index = GetIndex(scale);
             using var paint = new SKPaint();

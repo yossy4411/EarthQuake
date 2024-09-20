@@ -31,7 +31,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake
             Points = [.. Points.OrderByDescending(x=>(int)x.Scale)
                 .ThenBy(x=>{
                     var station =stations.Where(v=>v.Name.StartsWith(x.Addr)).FirstOrDefault();
-                    return station is not null && EarthQuake.Hypocenter is not null ? (station.Latitude - EarthQuake.Hypocenter.Latitude) * (station.Latitude - EarthQuake.Hypocenter.Latitude) + (station.Longitude - EarthQuake.Hypocenter.Longitude) * (station.Longitude - EarthQuake.Hypocenter.Longitude) : 1000;
+                    return station is not null && EarthQuake.Hypocenter is not null ? (station.Lat - EarthQuake.Hypocenter.Latitude) * (station.Lat - EarthQuake.Hypocenter.Latitude) + (station.Lon - EarthQuake.Hypocenter.Longitude) * (station.Lon - EarthQuake.Hypocenter.Longitude) : 1000;
                     })
                 ];
             

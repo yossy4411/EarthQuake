@@ -1,6 +1,7 @@
 ﻿using EarthQuake.Core;
 using SkiaSharp;
 using System.Diagnostics;
+using EarthQuake.Map.Tiles.Request;
 
 namespace EarthQuake.Map.Tiles
 {
@@ -9,8 +10,8 @@ namespace EarthQuake.Map.Tiles
     /// </summary>
     /// <typeparam name="T1">Key</typeparam>
     /// <typeparam name="T2">Value</typeparam>
-    /// <param name="capacity"></param>
-    public class LRUCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
+    /// <param name="capacity">最大保存量</param>
+    internal class LRUCache<T1, T2>(int capacity) where T1 : IEquatable<T1>
     {
         private readonly Dictionary<T1, LinkedListNode<(T1 key, T2 value)>> _cache = [];
         private readonly LinkedList<(T1 key, T2 value)> _lruList = [];
@@ -41,13 +42,7 @@ namespace EarthQuake.Map.Tiles
             {
                 if (_cache.Count >= capacity)
                 {
-                    // キャッシュが満杯: 最後の要素（LRU）を削除
-                    var lru = _lruList.Last;
-                    if (lru != null)
-                    {
-                        _cache.Remove(lru.Value.key);
-                        _lruList.RemoveLast();
-                    }
+                    RemoveCache();
                 }
                 // 新しいデータを追加
                 var newNode = new LinkedListNode<(T1 key, T2 value)>((key, value));
@@ -55,50 +50,28 @@ namespace EarthQuake.Map.Tiles
                 _cache[key] = newNode;
             }
         }
+
+        private void RemoveCache()
+        {
+            // キャッシュが満杯: 最後の要素（LRU）を削除
+            var lru = _lruList.Last;
+            if (lru is null) return;
+            _cache.Remove(lru.Value.key);
+            _lruList.RemoveLast();
+            if (lru.Value.value is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 
-    public abstract class MapTilesController<T>
+    public abstract class MapTilesController<T>(string url) where T : class
     {
+        public Action? OnUpdate;
         public const int ImageSize = 256;
-        private protected readonly string Url;
-        private readonly LRUCache<TilePoint, T> _tiles = new(100);
-        private readonly List<MapTileRequest> _requests = [];
-        private readonly Task[] _tasks = new Task[1];
-        protected MapTilesController(string url)
-        {
-            Url = url;
-            for (var i = 0; i < _tasks.Length; i++)
-            {
-                _tasks[i] = Task.Run(Handle);
-            }
-        }
-        private async Task Handle()
-        {
-            HttpClient client = new();
-            while (true)
-            {
-                if (_requests.Count <= 0) continue;
-                try
-                {
-                    var req = _requests[0];
-                    var tile = await GetTile(client, 
-                        req.Point, 
-                        req.TilePoint);
-                    _tiles.Put(req.TilePoint, tile);
-                        
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.StackTrace);
-                }
-                finally
-                {
-                    _requests.RemoveAt(0);
-                }
-            }
-        }
-
-        private protected abstract Task<T> GetTile(HttpClient client, SKPoint point, TilePoint point1);
+        private protected readonly string Url = url;
+        private protected readonly LRUCache<TilePoint, T> Tiles = new(256);
+        
         private static void GetXyzTile(double screenX, double screenY, int zoom, out int x, out int y, out int z)
         {
             z = Math.Min(18, Math.Max(0, zoom));
@@ -112,7 +85,7 @@ namespace EarthQuake.Map.Tiles
             GetXyzTile(screen.X, screen.Y, zoom, out var x, out var y, out var z);
             point = new TilePoint(Math.Max(0, x), Math.Max(0, y), z);
         }
-        private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
+        /*private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
         {
             GetXyzTile(screenX, screenY, zoom, out x, out y, out z);
 
@@ -123,7 +96,7 @@ namespace EarthQuake.Map.Tiles
 
             left = lonDeg;
             top = latDeg;
-        }
+        }*/
         private static void GetTileLeftTop(int x, int y, int z, out double left, out double top)
         {
             var n = Math.Pow(2, z);
@@ -134,14 +107,15 @@ namespace EarthQuake.Map.Tiles
             left = lonDeg;
             top = latDeg;
         }
+        /*
         /// <summary>
         /// 緯度・経度からタイルを取得します。
         /// </summary>
         /// <param name="lon">経度</param>
         /// <param name="lat">緯度</param>
         /// <param name="zoom">ズームレベル</param>
-        /// <param name="tile"></param>
-        /// <param name="tilePoint"></param>
+        /// <param name="tile">出力</param>
+        /// <param name="tilePoint">その位置</param>
         /// <returns></returns>
         public bool TryGetTile(double lon, double lat, int zoom, out T? tile, out TilePoint tilePoint)
         {
@@ -152,13 +126,14 @@ namespace EarthQuake.Map.Tiles
             tilePoint = new TilePoint(x, y, z);
             return GetTile(ref tile, tilePoint, left, top);
         }
+        */
         
         /// <summary>
         /// タイルの位置(XYZ)からタイルを取得します。
         /// </summary>
         /// <param name="tilePoint">タイルの位置</param>
-        /// <param name="tile"></param>
-        /// <returns></returns>
+        /// <param name="tile">出力のタイル</param>
+        /// <returns>タイルが存在したかどうか</returns>
         public bool TryGetTile(TilePoint tilePoint, out T? tile)
         {
             tile = default;
@@ -171,15 +146,14 @@ namespace EarthQuake.Map.Tiles
             {
                 var leftTop = GeomTransform.Translate(left, top);
 
-                if (_tiles.TryGet(point, out var value))
+                if (Tiles.TryGet(point, out var value))
                 {
                     return (tile = value) is not null;
                 }
 
-                if (_requests.Any(x => x.TilePoint == point)) return false;
+                if (MapRequestHelper.Any(req => RequestExists(req, point))) return false;
                 {
-                    _requests.RemoveAll(x => x.TilePoint.Z != point.Z);
-                    _requests.Add(new MapTileRequest(leftTop, point));
+                    MapRequestHelper.AddRequest(GenerateRequest(leftTop, point));
                 }
                 return false;
             } catch (Exception ex)
@@ -189,13 +163,20 @@ namespace EarthQuake.Map.Tiles
             }
         }
         
-        private protected static string GenerateUrl(string source, int x, int y, int zoom)
+        private protected abstract MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint);
+        
+        private protected abstract bool RequestExists(MapRequest request, TilePoint tilePoint);
+        
+        private static string GenerateUrl(string source, int x, int y, int zoom)
         {
             return source.Replace("{x}", x.ToString()).Replace("{y}", y.ToString()).Replace("{z}", zoom.ToString());
         }
         
-        private record MapTileRequest(SKPoint Point, TilePoint TilePoint);
-        
+        private protected static string GenerateUrl(string source, TilePoint tilePoint)
+        {
+            return GenerateUrl(source, tilePoint.X, tilePoint.Y, tilePoint.Z);
+        }
+
     }
     
 }

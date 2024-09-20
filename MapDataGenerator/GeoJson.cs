@@ -37,8 +37,10 @@ public class GeoJson
             {
 
                 var coordinates = Coordinates[vertex];
-                var result = coordinates[0].Select(x => x).Select(point => new ContourVertex { Position = new Vec3((float) point[0], (float) point[1], 0) }).ToList();
-                tess.AddContour(result);
+                foreach (var contourVertices in coordinates.Select(x => x.Select(point => new ContourVertex { Position = new Vec3((float) point[0], (float) point[1], 0) }).ToList()))
+                {
+                    tess.AddContour(contourVertices);
+                }
             }
         }
     }

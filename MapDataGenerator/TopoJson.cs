@@ -17,85 +17,11 @@ namespace MapDataGenerator
         {
             return Transform.ToPoint(x, y);
         }
-        // ReSharper disable once MemberCanBePrivate.Global
+
         public Transform Transform { get; set; } = new();
         public Dictionary<string, Layer> Objects { get; set; } = [];
-        public MapData? GetLayer(string layerName)
-        {
-            var layer = Objects.GetValueOrDefault(layerName);
-            if (layer is null || Detailer is null)
-            {
-                return null;
-            }
-            return new MapData(Detailer, layer);
-        }
-        public SKPoint[][][]? Detailer { get; set; }
     }
-    public class MapData
-    {
-        private readonly Layer? _layer;
-        private readonly SKPoint[][][] _arcs;
-        public int Simplify = 0;
-        public enum PolygonType : byte
-        {
-            None = 1,
-            Coast = 2,
-            Pref = 4,
-            Area = 8,
-            City = 16
-        }
-        internal MapData(SKPoint[][][] arcs, Layer? layer)
-        {
-
-            _layer = layer;
-            _arcs = arcs;
-        }
-        public void AddVertex(Tess tess, int[] contours)
-        {
-            List<ContourVertex> result = [];
-            foreach (var index in contours)
-            {
-                var index1 = RealIndex(index);
-                var coords = _arcs[Simplify][index1];
-                var poi = coords.Select(x => new ContourVertex { Position = new Vec3(x.X, x.Y, 0) });
-                result.AddRange(index >= 0 ? poi : poi.Reverse());
-            }
-            tess.AddContour(result);
-        }
-        
-        public SKPoint[] GetLine(int index)
-        {
-            var index1 = index >= 0 ? index : -index - 1;
-            var coords = _arcs[Simplify][index1];
-            return index >= 0 ? [..coords] : [..coords.Reverse()];
-        }
-
-        public SKPath ToPath(Feature feature)
-        {
-            SKPath path = new();
-            foreach (var arc in feature.Arcs)
-            {
-                List<SKPoint> result = [];
-                foreach (var index in arc[0])
-                {
-                    var index1 = RealIndex(index);
-                    var coords = _arcs[^1][index1].ToList();
-                    if (index < 0)
-                    {
-                        coords.Reverse();
-                    }
-                    result.AddRange(coords);
-                }
-                path.AddPoly(result.ToArray());
-            }
-
-            return path;
-        }
-        public static int RealIndex(int value) => GeomTransform.RealIndex(value);
-
-        public string LayerName => _layer?.Name ?? string.Empty;
-        public Feature[]? Geometries => _layer?.Geometries;
-    }
+    
     public class Transform
     {
         public double[] Scale { get; set; } = [0, 0];
