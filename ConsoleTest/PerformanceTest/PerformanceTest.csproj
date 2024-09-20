@@ -9,7 +9,6 @@
 
     <ItemGroup>
       <PackageReference Include="mapbox-vector-tile" Version="5.0.2" />
-      <PackageReference Include="Mapbox.VectorTile" Version="1.0.4-alpha2" />
       <PackageReference Include="SkiaSharp" Version="2.88.8" />
     </ItemGroup>
 
