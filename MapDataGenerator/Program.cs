@@ -98,14 +98,14 @@ void GenerateTopoJson()
 
     Console.WriteLine("1. Parsing arcs data...");
     
-    var points = topo.ParseArcs(Enumerable.Range(0, 6).Select(x => x switch { 0 => 0.0f, 1 => 0.5f, _ => (x - 1) * x }).ToArray());
+    var points = topo.ParseArcs();
     
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine("Done.");
     Console.ResetColor();
     
     Console.WriteLine("2. Generate a filling layer");
-    Console.WriteLine("Please enter the name of the layer that becomes the base of filling.");
+    Console.WriteLine("All layers will be calculated.");
     Dictionary<string, PolygonFeatures> filling = [];
     foreach (var (key, value) in topo.Objects)
     {
@@ -319,49 +319,31 @@ internal static class TopoJsonGenerator
     /// </summary>
     /// <param name="topo"></param>
     /// <param name="detailLevels"></param>
-    internal static IntPoint[][][] ParseArcs(this TopoJson topo, float[] detailLevels)
+    internal static IntPoint[][] ParseArcs(this TopoJson topo)
     {
-        var detailer = new IntPoint[detailLevels.Length][][];
-        Console.WriteLine("Counting the number of arcs to calculate...");
-        var total = topo.Arcs.Length * detailLevels.Length;
+        var total = topo.Arcs.Length;
         var count = 0;
-        for (var i3 = 0; i3 < detailLevels.Length; i3++)
+        var detail = new IntPoint[topo.Arcs.Length][];
+        for (var i2 = 0; i2 < topo.Arcs.Length; i2++)
         {
-            var detailLevel = detailLevels[i3];
-            Console.WriteLine($"Calculating detail level: {detailLevel}");
-            var detail = new IntPoint[topo.Arcs.Length][];
-            for (var i2 = 0; i2 < topo.Arcs.Length; i2++)
+            var arc = topo.Arcs[i2];
+            List<IntPoint> points = [];
+            int x = arc[0][0], y = arc[0][1];
+            points.Add(new IntPoint(x, y));
+            for (var i = 1; i < arc.Length; i++)
             {
-                var arc = topo.Arcs[i2];
-                List<IntPoint> points = [];
-                int x = arc[0][0], y = arc[0][1];
-                var sPoint = topo.ToPoint(x, y);
+                var coord = arc[i];
+                x += coord[0];
+                y += coord[1];
                 points.Add(new IntPoint(x, y));
-                for (var i = 1; i < arc.Length; i++)
-                {
-                    var coord = arc[i];
-                    x += coord[0];
-                    y += coord[1];
-                    var point = topo.ToPoint(x, y);
-
-                    if (detailLevel != 0 &&
-                        !(SKPoint.Distance(sPoint, point) * 50 >= detailLevel || i == arc.Length - 1))
-                        continue;
-                    sPoint = point;
-                    
-                    points.Add(new IntPoint(x, y));
-                }
-
-                detail[i2] = points.ToArray();
-                count++;
-                if (count % 1000 == 0) ProgressBar(count, total, $"Calculating detail level: {detailLevel})");
             }
 
-            Console.WriteLine();
-            detailer[i3] = detail;
+            detail[i2] = points.ToArray();
+            count++;
+            if (count % 1000 == 0) ProgressBar(count, total, $"Calculating arcs data...");
         }
 
-        return detailer;
+        return detail;
     }
     
     private static void ProgressBar(int current, int total, string message)

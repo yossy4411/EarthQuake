@@ -19,8 +19,8 @@ public class FileTilesController(PolygonsSet file, string layerName)
                 return tile;
             }
 
-            var request = new FillFileTileRequest(file.Points.Points[zoom], file.Filling[layerName].Indices[index],
-                file.Points.Transform)
+            var request = new FillFileTileRequest(file.Points.Points, file.Filling[layerName].Indices[index],
+                file.Points.Transform, zoom)
             {
                 Finished = (request, result) =>
                 {
@@ -49,7 +49,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
         }
     }
     
-    private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform) : FileTileRequest
+    private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform, int zoom) : FileTileRequest
     {
         public override SKVertices GetAndParse()
         {
@@ -59,8 +59,9 @@ public class FileTilesController(PolygonsSet file, string layerName)
             };
             foreach (var index in indices)
             {
-                var re = index.SelectMany(i => i >= 0 ? points[i].Select(ToVertex) :
-                    points[GeomTransform.RealIndex(i)].Select(ToVertex).Reverse()).ToList();
+                var re = index.SelectMany(i => i >= 0
+                    ? ToVertex(points[i], zoom)
+                    : Enumerable.Reverse(ToVertex(points[GeomTransform.RealIndex(i)], zoom))).ToList();
                 tess.AddContour(re);
             }
             tess.Tessellate(WindingRule.Positive);
@@ -72,11 +73,24 @@ public class FileTilesController(PolygonsSet file, string layerName)
             }
             return SKVertices.CreateCopy(SKVertexMode.Triangles, tessPoints, null);
         }
-
-        private ContourVertex ToVertex(IntPoint point)
+        
+        private List<ContourVertex> ToVertex(IntPoint[] intPoints, int zoomV)
         {
-            var screen = GeomTransform.Translate(transform.ToPoint(point));
-            return new ContourVertex(new Vec3(screen.X, screen.Y, 0));
+            var zoomFactor = zoomV * zoomV * 4f;  // 平方で計算
+            List<ContourVertex> list = new(intPoints.Length);
+            var last = GeomTransform.Translate(transform.ToPoint(intPoints[0]));
+            list.Add(new ContourVertex(new Vec3(last.X, last.Y, 0)));
+            for (var i = 1; i < intPoints.Length; i++)
+            {
+                var intPoint = intPoints[i];
+                var screen = GeomTransform.Translate(transform.ToPoint(intPoint));
+                var dx = screen.X - last.X;
+                var dy = screen.Y - last.Y;
+                if (dx * dx + dy * dy < zoomFactor && i != intPoints.Length - 1) continue;  // この距離以下は無視 (zoom が大きいほど無視する距離が大きくなる)
+                list.Add(new ContourVertex(new Vec3(screen.X, screen.Y, 0)));
+                last = screen;
+            }
+            return list;
         }
     }
 }

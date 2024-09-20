@@ -55,10 +55,10 @@ public readonly struct IntPoint(int x, int y)
 }
 
 [MessagePackObject]
-public class PointsSet(IntPoint[][][] points, Transform transform)
+public class PointsSet(IntPoint[][] points, Transform transform)
 {
     [Key(0)]
-    public IntPoint[][][] Points { get; } = points;
+    public IntPoint[][] Points { get; } = points;
     
     [Key(1)]
     public Transform Transform { get; } = transform;

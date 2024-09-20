@@ -33,7 +33,7 @@ public class VectorFillFeature : VectorTileFeature
             if (feature.Geometry.Count <= 0) return;
             foreach (var coordinates in feature.Geometry)
             {
-                var contourVertices = new List<ContourVertex>(); // 結果を格納するリスト
+                var contourVertices = new List<ContourVertex>(coordinates.Count); // 結果を格納するリスト
                 foreach (var v in coordinates)
                 {
                     // coord を計算
@@ -100,7 +100,7 @@ public class VectorSymbolFeature : VectorTileFeature
     {
         foreach (var textBlob in Points)
         {
-            textBlob?.Dispose();
+            textBlob.Dispose();
         }
         GC.SuppressFinalize(this);
     }
