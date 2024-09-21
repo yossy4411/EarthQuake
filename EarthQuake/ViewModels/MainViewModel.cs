@@ -111,7 +111,7 @@ public class MainViewModel : ViewModelBase
         for (var i = 0; i <= days; i++)
         {
             var dateTime = start.AddDays(i);
-            var data = await Epicenters.GetDatas(
+            var data = await Epicenters.GetData(
                 $"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson");
             if (data is not null)
             {

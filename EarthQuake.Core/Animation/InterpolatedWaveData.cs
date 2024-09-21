@@ -45,7 +45,9 @@ public class InterpolatedWaveData
                         return Radius[i] * (1 - t) + Radius[i + 1] * t;
                     }
                 }
-                return isPWave ? (values[^1].PTime - seconds) * (Radius[^1] - Radius[^2]) + Radius[^2] 
+
+                return isPWave
+                    ? (values[^1].PTime - seconds) * (Radius[^1] - Radius[^2]) + Radius[^2]
                     : (values[^1].STime - seconds) * (Radius[^1] - Radius[^2]) + Radius[^2];
             }
         }
@@ -58,7 +60,7 @@ public class InterpolatedWaveData
     /// <param name="seconds">経過時間</param>
     /// <returns>半径</returns>
     public float GetPRadius(int depth, float seconds) => GetRadius(depth, seconds, true) / Earth * 360;
-    
+
     /// <summary>
     /// S波の半径を取得する
     /// </summary>
@@ -69,15 +71,13 @@ public class InterpolatedWaveData
 
     private const int Earth = 40075;
 }
+
 /// <summary>
 /// P波、S波の時間軸を保存するクラス
 /// </summary>
 [MessagePackObject]
 public class PSWave
 {
-    [Key(0)]
-    public float PTime { get; init; }
-    [Key(1)]
-    public float STime { get; init; }
-    
+    [Key(0)] public float PTime { get; init; }
+    [Key(1)] public float STime { get; init; }
 }
