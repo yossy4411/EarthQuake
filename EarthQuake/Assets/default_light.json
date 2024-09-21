@@ -5,7 +5,7 @@
   "sources": {
     "gsi": {
       "type": "vector",
-      "tiles": ["https://map.okayugroup.com/tiles/{z}/{x}/{y}.pbf"],
+      "tiles": ["https://map.okayugroup.com/gsi-v/tiles/{z}/{x}/{y}.pbf"],
       "minzoom": 5,
       "maxzoom": 15
     }
