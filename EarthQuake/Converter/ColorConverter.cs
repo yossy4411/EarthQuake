@@ -3,6 +3,9 @@ using SkiaSharp;
 
 namespace EarthQuake.Converter;
 
+/// <summary>
+/// カラーフォーマットを変換する拡張メソッド
+/// </summary>
 public static class ColorConverter
 {
     public static IBrush GetBrush(this SKColor color)
