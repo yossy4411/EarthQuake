@@ -8,6 +8,7 @@ namespace EarthQuake.Map.Tiles.File;
 
 public class FileTilesController(PolygonsSet file, string layerName)
 {
+    public Action? OnUpdate { get; set; }
     private Dictionary<(int, int), SKVertices> Tiles { get; } = new();
     
     public SKVertices? TryGetTile(int zoom, int index)
@@ -29,6 +30,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
                     {
                         Tiles.Add((zoom, index), vertices);
                     }
+                    OnUpdate?.Invoke();
                 }
             };
             MapRequestHelper.AddRequest(request);

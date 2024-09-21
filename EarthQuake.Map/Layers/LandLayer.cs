@@ -6,15 +6,23 @@ using EarthQuake.Map.Tiles.File;
 
 namespace EarthQuake.Map.Layers
 {
-    public class LandLayer(PolygonsSet? polygons, string layerName) : MapLayer
+    public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
     {
         public bool Draw { get; set; } = true;
         private SKColor[]? colors;
         private readonly string[]? names = polygons?.Filling[layerName].Names;
-        private readonly FileTilesController? fileTilesController = polygons is null ? null : new FileTilesController(polygons, layerName);
+
+        private FileTilesController? fileTilesController;
         public bool AutoFill { get; init; }
+        private int scale = -1;
         private protected override void Initialize()
         {
+            fileTilesController = polygons is null
+                ? null
+                : new FileTilesController(polygons, layerName)
+                {
+                    OnUpdate = HandleUpdated
+                };
         }
         public void SetInfo(PQuakeData quakeData)
         {
@@ -29,6 +37,8 @@ namespace EarthQuake.Map.Layers
                 else if (AutoFill) colors[i] = SKColors.DarkGreen;
                 else colors[i] = SKColors.Empty;
             }
+            scale = -1;
+            HandleUpdated();
         }
         public void Reset()
         {
@@ -55,6 +65,12 @@ namespace EarthQuake.Map.Layers
                 if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
             }
         }
-        
+
+        public override bool IsReloadRequired(float zoom, SKRect bounds)
+        {
+            if (scale == GetIndex(zoom)) return false;
+            scale = GetIndex(zoom);
+            return true;
+        }
     }
 }

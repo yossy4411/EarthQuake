@@ -97,10 +97,10 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
         _styles = null; // 参照を解放
     }
     
-    public override bool IsReloadRequired(float scale, SKRect bounds)
+    public override bool IsReloadRequired(float zoom, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
-        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
+        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(zoom) + 5, out var point);
         // 表示範囲のタイルが変わったか
         if (_point == point) return false;
         _point = point;
