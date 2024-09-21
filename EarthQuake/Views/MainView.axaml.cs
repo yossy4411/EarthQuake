@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Interactivity;
 
 namespace EarthQuake.Views; 
 public partial class MainView : UserControl
@@ -68,5 +69,10 @@ public partial class MainView : UserControl
         {
             Debug.WriteLine("Date is not set or invalid.");
         }
+    }
+
+    private void Button_OnClick(object? sender, RoutedEventArgs e)
+    {
+        EpSplit.IsPaneOpen = !EpSplit.IsPaneOpen;
     }
 }

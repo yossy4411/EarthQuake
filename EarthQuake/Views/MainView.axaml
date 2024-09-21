@@ -9,206 +9,221 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="EarthQuake.Views.MainView"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <vm:MainViewModel/>
-  </Design.DataContext>
-  <UserControl.Styles>
-    <Style Selector="Border">
-      <Setter Property="Background" Value="{Binding BgBrush}"/>
-      <Setter Property="Margin" Value="5"/>
-      <Setter Property="CornerRadius" Value="5"/>
-    </Style>
-    <Style Selector="Border.license">
-      <Setter Property="Child">
-        <Setter.Value>
-          <Template>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="マップタイル:"
-                         Foreground="Black"
-                         FontSize="12"
-                         Margin="5"/>
-              <Button Command="{Binding OpenLicenseLink}"
-                      Background="Transparent"
-                      BorderThickness="0"
-                      Margin="5"
-                      Padding="0">
-                <TextBlock Text="{Binding MapTilesBase.Name}"
-                           Tag="license"
-                           Foreground="Blue"
-                           TextDecorations="Underline"
-                           FontSize="12"/>
-              </Button>
-            </StackPanel>
-          </Template>
-        </Setter.Value>
-      </Setter>
-    </Style>
-  </UserControl.Styles>
-  <UserControl.Resources>
-    <converter:QuakeListConverter x:Key="QConvert"/>
-  </UserControl.Resources>
-  <Panel>
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="Border">
+            <Setter Property="Background" Value="{Binding BgBrush}" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+        <Style Selector="Border.license">
+            <Setter Property="Child">
+                <Setter.Value>
+                    <Template>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="マップタイル:"
+                                       Foreground="Black"
+                                       FontSize="12"
+                                       Margin="5" />
+                            <Button Command="{Binding OpenLicenseLink}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Margin="5"
+                                    Padding="0">
+                                <TextBlock Text="{Binding MapTilesBase.Name}"
+                                           Tag="license"
+                                           Foreground="Blue"
+                                           TextDecorations="Underline"
+                                           FontSize="12" />
+                            </Button>
+                        </StackPanel>
+                    </Template>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+    <UserControl.Resources>
+        <converter:QuakeListConverter x:Key="QConvert" />
+    </UserControl.Resources>
+    <Panel>
 
-    <TabControl TabStripPlacement="Left">
-      <TabItem Header="Kmoni">
-        <DockPanel Name="KmoniPanel">
-          <Panel>
-            <local:MapCanvas x:Name="Kmoni"
-                         VerticalAlignment="Stretch"
-                         Controller="{Binding Controller1}"
-                          Translation="{Binding SyncTranslation}"
-                         HorizontalAlignment="Stretch"
-                         ClipToBounds="True"/>
-            <Border Classes="license"
-                    VerticalAlignment="Bottom"
-                    HorizontalAlignment="Right"/>
-          </Panel>
-            
-        </DockPanel>
-      </TabItem>
-      <TabItem Header="Info">
-        <Panel>
-          <local:MapCanvas x:Name="Info"
-                           VerticalAlignment="Stretch"
-                           HorizontalAlignment="Stretch"
-                           Controller="{Binding Controller2}"
-                           Translation="{Binding SyncTranslation}"
-                           ClipToBounds="True"/>
-          <Grid VerticalAlignment="Stretch" ColumnDefinitions="0.7*,0.3*" RowDefinitions="*,0.6*,0.2*">
-            <Button Command="{Binding Update}" Grid.Column="1"
-                    Grid.Row="0">更新</Button>
-            <ScrollViewer Grid.Column="1" 
-                          Grid.Row="1"
-                          VerticalAlignment="Stretch">
-                <ListBox x:Name="Quakes"
-                         VerticalAlignment="Stretch"
-                         HorizontalAlignment="Stretch" 
-                         Background="{Binding BgBrush}"
-                         ItemsSource="{Binding Data, Mode=TwoWay}"
-                         SelectionChanged="ListBox_SelectionChanged"
-                         CornerRadius="4">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate>
-                      <Decorator Child="{Binding Converter={StaticResource QConvert}}"/>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>  
-                
-              </ScrollViewer>
-            <Border Grid.Row="2"
-                    Grid.Column="1">
-              <CheckBox IsChecked="{Binding IsPoints}" Content="観測点を描画"/>
-            </Border>
-          </Grid>
-          <Border x:Name="Loading"
-                  VerticalAlignment="Center"
-                  HorizontalAlignment="Center"
-                  Padding="5"
-                  IsVisible="False">
-            <TextBlock VerticalAlignment="Stretch"
-                       HorizontalAlignment="Stretch"
-                       Text="読み込み中です…"
-                       FontSize="18"
-                       FontWeight="Bold"/>
-          </Border>
-         
-        </Panel>
-      </TabItem>
-      <TabItem Header="Epicenters">
-        <DockPanel>
-          <views:StatisticsPanel x:Name="Statistics"
-                                 DockPanel.Dock="Right"
-                                 Width="250"/>
-          <Panel DockPanel.Dock="Left">
-            <local:SelectableCanvas x:Name="Selection"
-                                    Controller="{Binding Controller3}"
-                                    VerticalAlignment="Stretch"
-                                    HorizontalAlignment="Stretch"
-                                    DockPanel.Dock="Top"
-                                    Translation="{Binding SyncTranslation}"
-                                    ClipToBounds="True"/>
-            <DockPanel VerticalAlignment="Bottom">
-              <Border VerticalAlignment="Bottom"
-                      HorizontalAlignment="Right"
-                      DockPanel.Dock="Top">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                  </Grid.RowDefinitions>
-                  <TextBlock Text="データ取得元:"
-                              Foreground="Black"
-                              FontSize="12"
-                              Margin="5"
-                              Grid.Row="0"
-                              Grid.Column="0"/>
-                  <Button Command="{Binding OpenJmaHypoLink}"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          Margin="5"
-                          Padding="0"
-                          Grid.Row="0"
-                          Grid.Column="1">
-                    <TextBlock Text="気象庁 震央分布図"
-                                Tag="license"
-                                Foreground="Blue"
-                                TextDecorations="Underline"
-                                FontSize="12"/>
-                  </Button>
-                    
-                  <TextBlock Text="マップタイル:"
-                              Foreground="Black"
-                              FontSize="12"
-                              Margin="5"
-                              Grid.Row="1"
-                              Grid.Column="0"/>
-                  <Button Command="{Binding OpenLicenseLink}"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          Margin="5"
-                          Padding="0"
-                          Grid.Row="1"
-                          Grid.Column="1">
-                    <TextBlock Text="{Binding MapTiles2.Name}"
-                                Tag="license"
-                                Foreground="Blue"
-                                TextDecorations="Underline"
-                                FontSize="12"/>
-                  </Button>
-                </Grid>
-              </Border>
-              <Border DockPanel.Dock="Bottom">
-                <Grid HorizontalAlignment="Stretch" 
-                      ColumnDefinitions="1*,1*,Auto" 
-                      RowDefinitions="Auto,Auto"
-                      Margin="5">
-                  <TextBlock Grid.Column="0" Grid.Row="0">開始日</TextBlock>
-                  <TextBlock Grid.Column="1" Grid.Row="0">終了日</TextBlock>
-                  <CalendarDatePicker x:Name="DateStart"
-                                      Grid.Column="0"
-                                      Grid.Row="1"
-                                      HorizontalAlignment="Stretch"/>
-                  <CalendarDatePicker x:Name="DateEnd"
-                                      Grid.Column="1"
-                                      Grid.Row="1"
-                                      Background="Transparent"
-                                      HorizontalAlignment="Stretch"/>
-                  <Button x:Name="UpdateEpic"
-                          DockPanel.Dock="Right"
+        <TabControl TabStripPlacement="Left">
+            <TabItem Header="K">
+                <DockPanel Name="KmoniPanel">
+                    <Panel>
+                        <local:MapCanvas x:Name="Kmoni"
+                                         VerticalAlignment="Stretch"
+                                         Controller="{Binding Controller1}"
+                                         Translation="{Binding SyncTranslation}"
+                                         HorizontalAlignment="Stretch"
+                                         ClipToBounds="True" />
+                        <Border Classes="license"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Right" />
+                    </Panel>
+
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="In">
+                <Panel>
+                    <local:MapCanvas x:Name="Info"
+                                     VerticalAlignment="Stretch"
+                                     HorizontalAlignment="Stretch"
+                                     Controller="{Binding Controller2}"
+                                     Translation="{Binding SyncTranslation}"
+                                     ClipToBounds="True" />
+                    <Grid ColumnDefinitions="6*,5,4*"
                           VerticalAlignment="Stretch"
-                          Grid.Row="1"
-                          Grid.Column="2">
-                  <TextBlock VerticalAlignment="Stretch">更新</TextBlock></Button>
-                </Grid>
-              </Border>
-            </DockPanel>
-          </Panel>
-        </DockPanel>
-      </TabItem>
-    </TabControl>
-  </Panel>
+                          HorizontalAlignment="Stretch">
+                        <Border Grid.Column="0" x:Name="Loading"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Padding="5"
+                                IsVisible="False">
+                            <TextBlock VerticalAlignment="Stretch"
+                                       HorizontalAlignment="Stretch"
+                                       Text="読み込み中です…"
+                                       FontSize="18"
+                                       FontWeight="Bold" />
+                        </Border>
+                        <GridSplitter Grid.Column="1"
+                                      ResizeDirection="Columns"
+                                      Background="Black">
+                        </GridSplitter>
+                        <Border Grid.Column="2"
+                                Padding="5">
+                            <ScrollViewer>
+                                <StackPanel>
+                                    <Button Command="{Binding Update}">
+                                        最新の情報に更新
+                                    </Button>
+                                    <CheckBox IsChecked="{Binding IsPoints}" Content="観測点を描画" />
+                                    <ScrollViewer VerticalAlignment="Stretch">
+                                        <ListBox x:Name="Quakes"
+                                                 VerticalAlignment="Stretch"
+                                                 HorizontalAlignment="Stretch"
+                                                 Height="300"
+                                                 Background="{Binding BgBrush}"
+                                                 ItemsSource="{Binding Data, Mode=TwoWay}"
+                                                 SelectionChanged="ListBox_SelectionChanged"
+                                                 CornerRadius="4">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Decorator Child="{Binding Converter={StaticResource QConvert}}" />
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+
+                                    </ScrollViewer>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Panel>
+            </TabItem>
+            <TabItem Header="Ep">
+                <SplitView x:Name="EpSplit"
+                           IsPaneOpen="True"
+                           PanePlacement="Right"
+                           OpenPaneLength="300"
+                           DisplayMode="CompactOverlay"
+                           CompactPaneLength="30">
+                    <SplitView.Pane>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Top"
+                                    Click="Button_OnClick">
+                                ＜
+                            </Button>
+                            <views:StatisticsPanel x:Name="Statistics"
+                                                   DockPanel.Dock="Bottom"
+                                                   Width="250" />
+                        </DockPanel>
+                    </SplitView.Pane>
+                    <Panel DockPanel.Dock="Left">
+                        <local:SelectableCanvas x:Name="Selection"
+                                                Controller="{Binding Controller3}"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalAlignment="Stretch"
+                                                DockPanel.Dock="Top"
+                                                Translation="{Binding SyncTranslation}"
+                                                ClipToBounds="True" />
+                        <DockPanel VerticalAlignment="Bottom">
+                            <Border VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Right"
+                                    DockPanel.Dock="Top">
+                                <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
+                                    <TextBlock Text="データ取得元:"
+                                               Foreground="Black"
+                                               FontSize="12"
+                                               Margin="5"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <Button Command="{Binding OpenJmaHypoLink}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Margin="5"
+                                            Padding="0"
+                                            Grid.Row="0"
+                                            Grid.Column="1">
+                                        <TextBlock Text="気象庁 震央分布図"
+                                                   Tag="license"
+                                                   Foreground="Blue"
+                                                   TextDecorations="Underline"
+                                                   FontSize="12" />
+                                    </Button>
+
+                                    <TextBlock Text="マップタイル:"
+                                               Foreground="Black"
+                                               FontSize="12"
+                                               Margin="5"
+                                               Grid.Row="1"
+                                               Grid.Column="0" />
+                                    <Button Command="{Binding OpenLicenseLink}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Margin="5"
+                                            Padding="0"
+                                            Grid.Row="1"
+                                            Grid.Column="1">
+                                        <TextBlock Text="{Binding MapTiles2.Name}"
+                                                   Tag="license"
+                                                   Foreground="Blue"
+                                                   TextDecorations="Underline"
+                                                   FontSize="12" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                            <Border DockPanel.Dock="Bottom">
+                                <Grid HorizontalAlignment="Stretch"
+                                      ColumnDefinitions="1*,1*,Auto"
+                                      RowDefinitions="Auto,Auto"
+                                      Margin="5">
+                                    <TextBlock Grid.Column="0" Grid.Row="0">開始日</TextBlock>
+                                    <TextBlock Grid.Column="1" Grid.Row="0">終了日</TextBlock>
+                                    <CalendarDatePicker x:Name="DateStart"
+                                                        Grid.Column="0"
+                                                        Grid.Row="1"
+                                                        HorizontalAlignment="Stretch" />
+                                    <CalendarDatePicker x:Name="DateEnd"
+                                                        Grid.Column="1"
+                                                        Grid.Row="1"
+                                                        Background="Transparent"
+                                                        HorizontalAlignment="Stretch" />
+                                    <Button x:Name="UpdateEpic"
+                                            DockPanel.Dock="Right"
+                                            VerticalAlignment="Stretch"
+                                            Grid.Row="1"
+                                            Grid.Column="2">
+                                        <TextBlock VerticalAlignment="Stretch">更新</TextBlock>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DockPanel>
+                    </Panel>
+                </SplitView>
+            </TabItem>
+        </TabControl>
+    </Panel>
 </UserControl>
