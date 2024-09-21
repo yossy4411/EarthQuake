@@ -29,7 +29,7 @@
         <TabItem Header="深さ">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">緯度経度と深さの相関図</TextBlock>
-            <canvas:StatisticsCanvas x:Name="a"
+            <canvas:StatisticsCanvas x:Name="A"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
                                      Type="0"
@@ -39,7 +39,7 @@
         <TabItem Header="規模">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">時間と地震の規模の相関図</TextBlock>
-            <canvas:StatisticsCanvas x:Name="b"
+            <canvas:StatisticsCanvas x:Name="B"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
                                      Type="1"
@@ -49,7 +49,7 @@
         <TabItem Header="震度">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">日毎の地震の最大震度のグラフ</TextBlock>
-            <canvas:StatisticsCanvas x:Name="c"
+            <canvas:StatisticsCanvas x:Name="C"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
                                      Type="2"

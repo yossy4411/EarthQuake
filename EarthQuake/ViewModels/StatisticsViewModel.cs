@@ -1,15 +1,8 @@
-﻿using EarthQuake.Core.GeoJson;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SkiaSharp;
 
-namespace EarthQuake.ViewModels
+namespace EarthQuake.ViewModels;
+
+public class StatisticsViewModel : ViewModelBase
 {
-    public class StatisticsViewModel : ViewModelBase
-    {
-        public SKRect Range { get; set; }
-    }
+    public SKRect Range { get; set; }
 }

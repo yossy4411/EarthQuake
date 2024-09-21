@@ -30,12 +30,10 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake
             _sorted = true;
             Points = [.. Points.OrderByDescending(x=>(int)x.Scale)
                 .ThenBy(x=>{
-                    var station =stations.Where(v=>v.Name.StartsWith(x.Addr)).FirstOrDefault();
+                    var station =stations.FirstOrDefault(v => v.Name.StartsWith(x.Addr));
                     return station is not null && EarthQuake.Hypocenter is not null ? (station.Lat - EarthQuake.Hypocenter.Latitude) * (station.Lat - EarthQuake.Hypocenter.Latitude) + (station.Lon - EarthQuake.Hypocenter.Longitude) * (station.Lon - EarthQuake.Hypocenter.Longitude) : 1000;
                     })
                 ];
-            
-
         }
         public static PQuakeData? TryParse(Response response)
         {

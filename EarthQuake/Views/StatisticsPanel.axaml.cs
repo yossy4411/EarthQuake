@@ -13,12 +13,12 @@ public partial class StatisticsPanel : UserControl
     {
         set
         {
-            a.Epicenters = value;
-            b.Epicenters = value;
-            c.Epicenters = value;
-            a.InvalidateVisual();
-            b.InvalidateVisual();
-            c.InvalidateVisual();
+            A.Epicenters = value;
+            B.Epicenters = value;
+            C.Epicenters = value;
+            A.InvalidateVisual();
+            B.InvalidateVisual();
+            C.InvalidateVisual();
         }
     }
     public SKRect Selected { get => viewModel.Range; set => viewModel.Range = value; }

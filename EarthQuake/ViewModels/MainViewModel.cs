@@ -40,15 +40,15 @@ public class MainViewModel : ViewModelBase
 
     public bool IsPoints
     {
-        get => _foreground.DrawStations; 
+        get => _foreground.DrawStations;
         set
         {
             _foreground.DrawStations = value;
             _land.Draw = !value;
         }
     }
-    
-    public MainViewModel() 
+
+    public MainViewModel()
     {
         {
             PolygonsSet? calculated;
@@ -64,12 +64,16 @@ public class MainViewModel : ViewModelBase
                 var geojson = Serializer.Deserialize<WorldPolygonSet>(stream);
                 world = new CountriesLayer(geojson);
             }
+
             VectorMapLayer map;
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute))) {
+            using (var stream =
+                   AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute)))
+            {
                 using var streamReader = new StreamReader(stream);
                 var styles = VectorMapStyles.LoadGLJson(streamReader);
                 map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
             }
+
             InterpolatedWaveData wave;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.mpk", UriKind.Absolute)))
             {
@@ -81,7 +85,7 @@ public class MainViewModel : ViewModelBase
 
             Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
-            RasterMapLayer tile = new(MapTiles2.TileUrl);  // 陰影起伏図
+            RasterMapLayer tile = new(MapTiles2.TileUrl); // 陰影起伏図
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
@@ -99,7 +103,7 @@ public class MainViewModel : ViewModelBase
         GC.Collect();
         InitializeAsync();
     }
-    
+
     public async void GetEpicenters(DateTime start, int days)
     {
         Hypo.ClearFeature();
@@ -107,16 +111,20 @@ public class MainViewModel : ViewModelBase
         for (var i = 0; i <= days; i++)
         {
             var dateTime = start.AddDays(i);
-            var data = await Epicenters.GetDatas($"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson");
+            var data = await Epicenters.GetDatas(
+                $"https://www.jma.go.jp/bosai/hypo/data/{dateTime:yyyy}/{dateTime:MM}/hypo{dateTime:yyyyMMdd}.geojson");
             if (data is not null)
             {
                 epicenters.Add(data.Features);
             }
         }
+
         Hypo.AddFeature(epicenters);
     }
+
     public static void OpenLicenseLink() => OpenLink(MapTilesBase.Link);
     public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
+
     private static void OpenLink(string uri)
     {
         ProcessStartInfo pi = new()
@@ -127,13 +135,14 @@ public class MainViewModel : ViewModelBase
 
         Process.Start(pi);
     }
+
     private async void InitializeAsync()
     {
         await using var stations = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/Stations.parquet"));
         _stations = await Station.GetStationsFromParquet(stations);
         _foreground.Stations = _stations;
-        
     }
+
     public async Task Update()
     {
         var data = await PBasicData.GetDatas<PQuakeData>("https://api.p2pquake.net/v2/history?codes=551&limit=100");
@@ -143,13 +152,16 @@ public class MainViewModel : ViewModelBase
             Data.AddRange(data);
         }
     }
+
     public void SetQInfo(int index)
     {
         var quakeData = Data[index]; // 震源・震度情報
-        
+        var sw = Stopwatch.StartNew();
         quakeData.SortPoints(_stations!);
+        sw.Stop();
+        Debug.WriteLine($"SortPoints: {sw.ElapsedMilliseconds}ms");
         _land.SetInfo(quakeData);
-                
+
         _foreground.SetData(quakeData);
     }
 }
