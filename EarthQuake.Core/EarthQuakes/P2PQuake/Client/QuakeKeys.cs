@@ -1,12 +1,5 @@
 ﻿using System.Security.Cryptography;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Buffers.Text;
-using System.Runtime.CompilerServices;
 
 namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
 {
@@ -121,7 +114,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         }
         public static bool CheckServerData(string signature, string time, string body)
         {
-            var hash = MD5.HashData(BufferedNetworkStream.SJIS.GetBytes(body));
+            var hash = MD5.HashData(BufferedNetworkStream.ShiftGis.GetBytes(body));
             var validate = Encoding.ASCII.GetBytes(time);
             return IsValidSignature([..validate.Concat(hash)], P2PServerPublicKey, signature) && DateTime.Now.CompareTo(DateTime.ParseExact(time, Format, null)) > 0;
         }
@@ -134,7 +127,7 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
             RSACryptoServiceProvider rsa = new();
             rsa.ImportParameters(rsaParams);
             var validate2 = Encoding.ASCII.GetBytes(time); 
-            var hash2 = MD5.HashData(BufferedNetworkStream.SJIS.GetBytes(body));
+            var hash2 = MD5.HashData(BufferedNetworkStream.ShiftGis.GetBytes(body));
             var datasignature = IsValidSignature([.. validate2.Concat(hash2)], rsa, dataSignature);
             var valid = DateTime.Now.CompareTo(DateTime.ParseExact(time, Format, null)) < 0;
             return keysignature && datasignature && valid;

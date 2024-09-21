@@ -13,7 +13,7 @@ public class Eew(string EventID, string Intensity, Hypocenter Hypocenter)
     public long EventID { get; set; } = long.Parse(EventID);
     public int Serial { get; set; }
     public Hypocenter Hypocenter { get; set; } = Hypocenter;
-    public Scale Intensity { get; set; } = Converter.FromString(Intensity);
+    public Scale Intensity { get; set; } = ScaleConverter.FromString(Intensity);
 }
 
 /// <summary>

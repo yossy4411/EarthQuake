@@ -47,6 +47,9 @@ namespace EarthQuake.Core.EarthQuakes.P2PQuake.Client
         {
             return new P2PeerEventArgs(e, PeerId);
         }
+
+        public event EventHandler<P2PEventArgs>? OnMessageReceived;
+
         public override void Close()
         {
             base.Close();

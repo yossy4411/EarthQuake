@@ -145,7 +145,7 @@ public class MainViewModel : ViewModelBase
 
     public async Task Update()
     {
-        var data = await PBasicData.GetDatas<PQuakeData>("https://api.p2pquake.net/v2/history?codes=551&limit=100");
+        var data = await PBasicData.GetData<PQuakeData>("https://api.p2pquake.net/v2/history?codes=551&limit=100");
         if (data is not null)
         {
             Data.Clear();

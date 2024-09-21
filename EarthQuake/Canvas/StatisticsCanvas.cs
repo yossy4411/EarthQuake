@@ -13,6 +13,9 @@ using EarthQuake.Map.Layers;
 
 namespace EarthQuake.Canvas;
 
+/// <summary>
+/// 震央分布の統計データを描画するキャンバス
+/// </summary>
 public class StatisticsCanvas : SkiaCanvasView
 {
     public enum StatisticType : byte
@@ -245,7 +248,7 @@ public class StatisticsCanvas : SkiaCanvasView
                                 path.LineTo(i * width / (length0 - 1), height - (count2[i, j - 1] * height / max));
                             }
 
-                            paint.Color = Core.EarthQuakes.Converter.FromInt(j).GetKiwi3Color();
+                            paint.Color = ScaleConverter.FromInt(j).GetKiwi3Color();
                             path.Close();
                             canvas.DrawPath(path, paint);
                         }

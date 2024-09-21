@@ -38,9 +38,9 @@ namespace P2PConsole
 
     public class DebugP2P : P2PClient
     {
-        protected override void OnRecieved(object? sender, P2PEventArgs e)
+        protected override void OnReceived(object? sender, P2PEventArgs e)
         {
-            base.OnRecieved(sender, e);
+            base.OnReceived(sender, e);
             if (e is P2PeerEventArgs e2)
                 Console.WriteLine($"Peer #{e2.PeerId} > {e2.Message}");
             else

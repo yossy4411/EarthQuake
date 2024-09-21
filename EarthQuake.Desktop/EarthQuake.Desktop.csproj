@@ -18,9 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Key.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="tsunami.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
