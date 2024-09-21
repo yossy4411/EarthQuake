@@ -85,7 +85,7 @@ public class MainViewModel : ViewModelBase
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [world, map, grid, _kmoni]
+                MapLayers = [world, map, grid]
             };
             Controller2 = new MapViewController
             {

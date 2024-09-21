@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Compression;
 using System.Net.Mime;
 using EarthQuake.Map.Layers;
 using Mapbox.Vector.Tile;
@@ -39,15 +40,21 @@ public class VectorMapStyles
     public VectorTileFeature[] ParsePaths(Stream stream, TilePoint point)
     {
         var layers = VectorTileParser.Parse(stream);
+        var zoom = MathF.Pow(2, point.Z);
         var dict = new Dictionary<string, VectorTileLayer>(layers.Select(x => new KeyValuePair<string, VectorTileLayer>(x.Name, x)));
         return Layers.Select(mapLayer =>
         {
             if (mapLayer.Source is null || point.Z < mapLayer.MinZoom || point.Z > mapLayer.MaxZoom || !dict.TryGetValue(mapLayer.Source, out var layer)) return null;
             var features =
-                layer.VectorTileFeatures.Where(v => mapLayer.IsVisible(new Dictionary<string, object>(v.Attributes)));
-            return mapLayer.CreateFeature(features, point);
+                layer.VectorTileFeatures.Where(v =>
+                    mapLayer.IsVisible(new Dictionary<string, object>(v.Attributes)
+                    {
+                        ["$type"] = v.GeometryType.ToString()
+                    }));
+            return mapLayer.CreateFeature(features, point, zoom);
         }).Where(m => m is not null).OfType<VectorTileFeature>().ToArray();
     }
+    
 
     private static SKColor ParseColor(string? value)
     {
@@ -66,6 +73,18 @@ public class VectorMapStyles
             var values = value[4..^1].Split(',');
             return new SKColor(byte.Parse(values[0]), byte.Parse(values[1]), byte.Parse(values[2]));
         }
+        if (value.StartsWith("hsla"))
+        {
+            // ex. hsla(120,100%,50%,0.8)
+            var values = value[5..^1].Split(',');
+            return SKColor.FromHsl(float.Parse(values[0]), float.Parse(values[1].TrimEnd('%')), float.Parse(values[2].TrimEnd('%')), (byte)(float.Parse(values[3]) * 255));
+        }
+        if (value.StartsWith("hsl"))
+        {
+            // ex. hsl(120,100%,50%)
+            var values = value[4..^1].Split(',');
+            return SKColor.FromHsl(float.Parse(values[0]), float.Parse(values[1].TrimEnd('%')), float.Parse(values[2].TrimEnd('%')));
+        }
         Debug.WriteLine("Unknown color format: " + value);
         return SKColor.Empty;
     }
@@ -77,26 +96,24 @@ public class VectorMapStyles
         var paintToken = jToken["paint"];
         var minZoom = jToken["minzoom"]?.ToObject<int>() ?? 0;
         var maxZoom = jToken["maxzoom"]?.ToObject<int>() ?? 22;
+        var id = jToken["id"]?.ToObject<string>()!;
         switch (jToken["type"]?.ToObject<string>())
         {
             case "fill":
                 var fillColorToken = paintToken!["fill-color"];
-                var fillColor = ParseColor(fillColorToken?.ToObject<string>());
-                return new VectorFillLayer(source, fillColor, vMapFilter) {MinZoom = minZoom, MaxZoom = maxZoom};
+                var fillColor = fillColorToken is JObject ? ParseColor(fillColorToken["stops"]?[1]?[1]?.ToObject<string>()) : ParseColor(fillColorToken?.ToObject<string>());
+                return new VectorFillLayer(source, fillColor, vMapFilter)
+                {
+                    MinZoom = minZoom, 
+                    MaxZoom = maxZoom,
+                    Id = id
+                };
             case "line":
                 var lineColorToken = paintToken!["line-color"];
                 var lineColor = lineColorToken is null ? SKColor.Empty : ParseColor(lineColorToken.ToObject<string>());
                 var lineWidthToken = paintToken["line-width"];
-                List<(float, float)> lineWidth;
-                if (lineWidthToken is JObject li)
-                {
-                    lineWidth = li["stops"]?.Select(x => x.ToObject<float[]>()).Select(x => (x![0], x[1])).ToList() ?? [];
-                }
-                else
-                {
-                    lineWidth = [(0, lineWidthToken?.ToObject<float>() ?? 1)];
-                }
-               
+                var lineWidth = ParseAnimation(lineWidthToken);
+
                 var strokeCap = paintToken["line-cap"]?.ToObject<string>() switch
                 {
                     "round" => SKStrokeCap.Round,
@@ -118,79 +135,52 @@ public class VectorMapStyles
                     StrokeJoin = strokeJoin,
                     PathEffect = pathEffect,
                     MinZoom = minZoom,
-                    MaxZoom = maxZoom
+                    MaxZoom = maxZoom,
+                    Id = id
                 };
             case "symbol":
                 var layoutToken = jToken["layout"];
-                var textSize = layoutToken?["text-size"]?.ToObject<float>() ?? 16;
+                var textSize = ParseAnimation(layoutToken?["text-size"], 16);
                 var textColorToken = paintToken?["text-color"]?.ToObject<string>();
                 var textColor = ParseColor(textColorToken);
-                // { "layout": { "text-field": ["get", "name"] } } みたいな形式になってるはずだから、2番目の要素を取得
-                var field = layoutToken?["text-field"]?[1]?.ToObject<string>();
+                // { "layout": { "text-field": ["get", "name"] } } みたいな形式か、 { "layout": { "text-field": "{name}" } } みたいな形式
+                var fieldToken = layoutToken?["text-field"];
+                var field = fieldToken is JArray ? fieldToken?[1]?.ToObject<string>() : fieldToken?.ToObject<string>()?.Replace("{", "").Replace("}", "");
                 return new VectorSymbolLayer(source, textColor, MapLayer.Font, textSize, field, vMapFilter)
                 {
                     MinZoom = minZoom,
-                    MaxZoom = maxZoom
+                    MaxZoom = maxZoom,
+                    Id = id
                 };
             default:
                 return null;
         }
     }
 
+    private static List<(float, float)> ParseAnimation(JToken? lineWidthToken, float defaultValue = 1)
+    {
+        return lineWidthToken is JObject li
+            ? li["stops"]?.Select(x => x.ToObject<float[]>()).Select(x => (x![0], x[1])).ToList() ?? []
+            : [(0, lineWidthToken?.ToObject<float>() ?? defaultValue)];
+
+    }
+
     private static VectorMapFilter? GetFilter(JToken jToken)
     {
         if (jToken["filter"] is not JArray token) return null;
+        if (token.Count < 2) return null;
         if (token[1] is not JArray)
         {
-            var key = token[1].ToObject<string>()!;
-            switch (token[0].ToObject<string>())
-            {
-                case "==":
-                {
-                    var value = ParseValue(token[2]);
-                    return dictionary => dictionary.TryGetValue(key, out var v) && CompareValue(value, v);
-                }
-                case "!=":
-                {
-                    var value = ParseValue(token[2]);
-                    return dictionary => dictionary.TryGetValue(key, out var v) && !CompareValue(value, v);
-                }
-                case "in":
-                {
-                    var values = token.Skip(2).Select(ParseValue).ToArray();
-                    return dictionary => dictionary.TryGetValue(key, out var v) && values.Any(x => CompareValue(x, v));
-                }
-            }
-
-            return null;
+            return GetOneFilter(token);
         }
         List<VectorMapFilter> filterList = [];
         for (var i = 1; i < token.Count; i++)
         {
             var token1 = (JArray)token[i];
-            var key = token1[1].ToObject<string>()!;
-            switch (token1[0].ToObject<string>())
+            var filter = GetOneFilter(token1);
+            if (filter is not null)
             {
-                case "==":
-                {
-                    var value = ParseValue(token1[2]);
-                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && CompareValue(value, v));
-                    break;
-                }
-                case "!=":
-                {
-                    var value = ParseValue(token1[2]);
-                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && !CompareValue(value, v));
-                    break;
-                }
-                case "in":
-                {
-                    var values = token1.Skip(2).Select(ParseValue).ToArray();
-                    filterList.Add(dictionary => dictionary.TryGetValue(key, out var v) && values.Any(x => CompareValue(x, v)));
-                    break;
-                }
-                default:
-                    continue;
+                filterList.Add(filter);
             }
         }
         if (filterList.Count == 0) return _ => false;
@@ -199,7 +189,45 @@ public class VectorMapStyles
         return dictionary => filterList.Any(x => x(dictionary));
         
     }
-    
+
+    private static VectorMapFilter? GetOneFilter(JArray token)
+    {
+        var key = token[1].ToObject<string>()!;
+        switch (token[0].ToObject<string>())
+        {
+            case "==":
+            {
+                var value = ParseValue(token[2]);
+                return dictionary => dictionary.TryGetValue(key, out var v) && CompareValue(value, v);
+            }
+            case "!=":
+            {
+                var value = ParseValue(token[2]);
+                return dictionary => dictionary.TryGetValue(key, out var v) && !CompareValue(value, v);
+            }
+            case "in":
+            {
+                var values = token.Skip(2).Select(ParseValue).ToArray();
+                return dictionary => dictionary.TryGetValue(key, out var v) && values.Any(x => CompareValue(x, v));
+            }
+            case "!in":
+            {
+                var values = token.Skip(2).Select(ParseValue).ToArray();
+                return dictionary => dictionary.TryGetValue(key, out var v) && values.All(x => !CompareValue(x, v));
+            }
+            case "has":
+            {
+                return dictionary => dictionary.ContainsKey(key);
+            }
+            case "!has":
+            {
+                return dictionary => !dictionary.ContainsKey(key);
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// 値を展開します
     /// </summary>

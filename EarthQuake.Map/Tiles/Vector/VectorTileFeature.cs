@@ -19,6 +19,12 @@ public abstract class VectorTileFeature : IDisposable
         }
         GC.SuppressFinalize(this);
     }
+
+    private protected static uint GetFactor(TilePoint point)
+    {
+        return point.Z < 8 ? 16384u : 4096u; // 地理院地図の場合
+        // return 4096u; // Mapbox の場合
+    }
 }
 
 public class VectorFillFeature : VectorTileFeature
@@ -37,7 +43,7 @@ public class VectorFillFeature : VectorTileFeature
                 foreach (var v in coordinates)
                 {
                     // coord を計算
-                    var coord = v.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u);
+                    var coord = v.ToPosition(point.X, point.Y, point.Z, GetFactor(point));
                     // pos を計算
                     var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude);
         
@@ -70,7 +76,7 @@ public class VectorLineFeature : VectorTileFeature
         {
             foreach (var points in feature.Geometry)
             {
-                path.AddPoly(points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u))
+                path.AddPoly(points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, GetFactor(point)))
                              .Select(coord => GeomTransform.Translate(coord.Longitude, coord.Latitude)).ToArray(), false);
             }
         }
@@ -80,7 +86,7 @@ public class VectorLineFeature : VectorTileFeature
 
 public class VectorSymbolFeature : VectorTileFeature
 {
-    public SKTextBlob[] Points { get; }
+    public SKTextBlob?[] Points { get; }
     public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, SKFont font, string? fieldKey = "name")
     {
         if (fieldKey is null)
@@ -89,18 +95,18 @@ public class VectorSymbolFeature : VectorTileFeature
             return;
         }
         Points = (from feature in features
-            let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, point.Z < 8 ? 16384u : 4096u)
+            let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, GetFactor(point))
             let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
             let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
             let blob = SKTextBlob.Create(text, font, skPoint)
             select blob).ToArray();
     }
-    
+
     public override void Dispose()
     {
         foreach (var textBlob in Points)
         {
-            textBlob.Dispose();
+            textBlob?.Dispose();
         }
         GC.SuppressFinalize(this);
     }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
 
 namespace EarthQuake.Map.Tiles.Request;
@@ -45,7 +46,17 @@ public static class MapRequestHelper
                             var code = response.StatusCode;
                             if (code is HttpStatusCode.OK or HttpStatusCode.Accepted or HttpStatusCode.NotModified)
                             {
-                                var stream = await response.Content.ReadAsStreamAsync();
+                                Stream? stream;
+                                if (response.Content.Headers.ContentEncoding.Contains("gzip"))
+                                {
+                                    // GZip圧縮されている場合
+                                    stream = new GZipStream(await response.Content.ReadAsStreamAsync(), CompressionMode.Decompress);
+                                }
+                                else
+                                {
+                                    stream = await response.Content.ReadAsStreamAsync();
+                                }
+
                                 var result = tileRequest.GetAndParse(stream);
                                 tileRequest.Finished?.Invoke(tileRequest, result);
                                 break;

@@ -1,14 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using EarthQuake.Map.Tiles.Vector;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
-var text = File.ReadAllText("data.json");
-var token = JsonConvert.DeserializeObject<JToken>(text);
-if (token is null)
-{
-    Console.WriteLine("Failed to parse JSON");
-    return;
-}
-
-Console.WriteLine("The URL is:");
-Console.WriteLine(token["url"]?.ToObject<string>());
+using var stream = File.OpenRead("osm.json");
+using var reader = new StreamReader(stream);
+var style = VectorMapStyles.LoadGLJson(reader);
+Console.WriteLine(style.Name);

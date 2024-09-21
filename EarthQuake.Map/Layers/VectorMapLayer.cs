@@ -75,6 +75,7 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
                             paint.Style = SKPaintStyle.Fill;
                             foreach (var text in symbolFeature.Points)
                             {
+                                if (text is null) continue;
                                 canvas.DrawText(text, 0, 0, paint);
                                 
                             }
