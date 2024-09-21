@@ -76,19 +76,19 @@ public class FileTilesController(PolygonsSet file, string layerName)
         
         private List<ContourVertex> ToVertex(IntPoint[] intPoints, int zoomV)
         {
-            var zoomFactor = zoomV * zoomV * 4f;  // 平方で計算
+            var zoomFactor = 4f * zoomV * zoomV * zoomV;  // 平方で計算
             List<ContourVertex> list = new(intPoints.Length);
-            var last = GeomTransform.Translate(transform.ToPoint(intPoints[0]));
-            list.Add(new ContourVertex(new Vec3(last.X, last.Y, 0)));
-            for (var i = 1; i < intPoints.Length; i++)
+            var sub = SKPoint.Empty;
+            for (var i = 0; i < intPoints.Length; i++)
             {
                 var intPoint = intPoints[i];
                 var screen = GeomTransform.Translate(transform.ToPoint(intPoint));
-                var dx = screen.X - last.X;
-                var dy = screen.Y - last.Y;
-                if (dx * dx + dy * dy < zoomFactor && i != intPoints.Length - 1) continue;  // この距離以下は無視 (zoom が大きいほど無視する距離が大きくなる)
+                var dx = screen.X - sub.X;
+                var dy = screen.Y - sub.Y;
+                if (!(dx * dx + dy * dy > zoomFactor) && i != 0 && i != intPoints.Length - 1) continue;
+                // この距離以下は無視 (zoom が大きいほど無視する距離が大きくなる)
                 list.Add(new ContourVertex(new Vec3(screen.X, screen.Y, 0)));
-                last = screen;
+                sub = screen;
             }
             return list;
         }

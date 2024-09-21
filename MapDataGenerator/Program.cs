@@ -110,7 +110,7 @@ void GenerateTopoJson()
     foreach (var (key, value) in topo.Objects)
     {
         Console.WriteLine($"Calculating \"{key}\" layer...");
-        var a = value.Geometries.Select(x => x.Arcs.Select(y => y.SelectMany(z => z).ToArray()).ToArray()).ToArray();
+        var a = value.Geometries.Select(x => x.Arcs.SelectMany(y => y).ToArray()).ToArray();
         var names = value.Geometries.Select(x => x.Properties?.Name ?? "").ToArray();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Done.");
