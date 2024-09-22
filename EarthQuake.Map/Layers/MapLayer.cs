@@ -10,11 +10,14 @@ public abstract class MapLayer
 
     private static SKTypeface LoadFont()
     {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EarthQuake.Map.Assets.NotoSansJP-Regular.ttf");
+        using var stream = Assembly.GetExecutingAssembly()
+            .GetManifestResourceStream("EarthQuake.Map.Assets.NotoSansJP-Regular.ttf");
         return SKTypeface.FromStream(stream);
     }
+
     public abstract void Render(SKCanvas canvas, float scale, SKRect bounds);
     private protected abstract void Initialize();
+
     public void Update()
     {
         if (initialized) return;

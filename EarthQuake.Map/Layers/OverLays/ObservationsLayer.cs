@@ -17,8 +17,8 @@ public class ObservationsLayer : ForeGroundLayer
     public IEnumerable<Station>? Stations { get; set; }
     public bool DrawStations { get; set; }
 
-    public static SKPath HypoPath 
-    { 
+    public static SKPath HypoPath
+    {
         get
         {
             SKPoint[] points =
@@ -42,22 +42,27 @@ public class ObservationsLayer : ForeGroundLayer
             SKPath path = new();
             path.AddPoly(points);
             return path;
-        } 
+        }
     }
+
     private protected override void Initialize()
     {
     }
+
     public void SetData(PQuakeData quakeData)
     {
         if (quakeData.EarthQuake.Hypocenter is not null)
         {
-            hypo = GeomTransform.Translate(quakeData.EarthQuake.Hypocenter.Longitude, quakeData.EarthQuake.Hypocenter.Latitude);
+            hypo = GeomTransform.Translate(quakeData.EarthQuake.Hypocenter.Longitude,
+                quakeData.EarthQuake.Hypocenter.Latitude);
         }
 
         if (quakeData.Points is null || Stations is null) return;
-        oPoints = quakeData.Points.Select(x => Stations.FirstOrDefault(v => v.Name == x.Addr)?.GetSKPoint() ?? new()).ToArray();
+        oPoints = quakeData.Points.Select(x => Stations.FirstOrDefault(v => v.Name == x.Addr)?.GetSKPoint() ?? new())
+            .ToArray();
         oColors = quakeData.Points.Select(x => x.Scale).ToArray();
     }
+
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         SKPoint scale2 = new(hypo.X * scale, hypo.Y * scale);
@@ -74,6 +79,7 @@ public class ObservationsLayer : ForeGroundLayer
             paint.Color = SKColors.Red;
             canvas.DrawPath(HypoPath, paint);
         }
+
         paint.StrokeWidth = 4;
         if (oPoints is null || oColors is null || !DrawStations) return;
         for (var i = oPoints.Length - 1; i >= 0; i--)

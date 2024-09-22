@@ -3,11 +3,17 @@ using SkiaSharp;
 
 namespace EarthQuake.Map.Tiles.Raster;
 
+/// <summary>
+/// ラスタータイルを読み込むためのコントローラー
+/// </summary>
+/// <param name="url">ソースURL</param>
 public class RasterTilesController(string url) : MapTilesController<RasterTile>(url)
 {
-    private class RasterTileRequest(SKPoint point, TilePoint tilePoint, string url) : MapTileRequest(point, tilePoint, url)
+    private class RasterTileRequest(SKPoint point, TilePoint tilePoint, string url)
+        : MapTileRequest(point, tilePoint, url)
     {
-        public override object GetAndParse(Stream? data) => new RasterTile(Point, Zoom, data is null ? null : SKImage.FromEncodedData(data));
+        public override object GetAndParse(Stream? data) =>
+            new RasterTile(Point, Zoom, data is null ? null : SKImage.FromEncodedData(data));
     }
 
     private protected override MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint)
@@ -21,6 +27,7 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
                 {
                     Tiles.Put(req.TilePoint, tile);
                 }
+
                 OnUpdate?.Invoke();
             }
         };

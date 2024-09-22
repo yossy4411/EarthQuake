@@ -5,6 +5,9 @@ using System.Net;
 
 namespace EarthQuake.Map.Tiles.Request;
 
+/// <summary>
+/// マップリクエストの補助クラス
+/// </summary>
 public static class MapRequestHelper
 {
     private static readonly BlockingCollection<MapRequest> Requests = new(new ConcurrentQueue<MapRequest>());
@@ -17,7 +20,7 @@ public static class MapRequestHelper
             Tasks[i] = new MapRequestClient();
         }
     }
-    
+
     public static void AddRequest(MapRequest request)
     {
         Requests.Add(request);
@@ -26,7 +29,7 @@ public static class MapRequestHelper
     }
 
     public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
-    
+
 
     private class MapRequestClient
     {
@@ -50,7 +53,8 @@ public static class MapRequestHelper
                                 if (response.Content.Headers.ContentEncoding.Contains("gzip"))
                                 {
                                     // GZip圧縮されている場合
-                                    stream = new GZipStream(await response.Content.ReadAsStreamAsync(), CompressionMode.Decompress);
+                                    stream = new GZipStream(await response.Content.ReadAsStreamAsync(),
+                                        CompressionMode.Decompress);
                                 }
                                 else
                                 {
@@ -61,6 +65,7 @@ public static class MapRequestHelper
                                 tileRequest.Finished?.Invoke(tileRequest, result);
                                 break;
                             }
+
                             tileRequest.Finished?.Invoke(tileRequest, tileRequest.GetAndParse(null));
                             break;
                         }
@@ -78,12 +83,10 @@ public static class MapRequestHelper
                 }
             }
         }
-        
+
         public MapRequestClient()
         {
             Task.Run(Handle);
         }
-        
     }
-    
 }

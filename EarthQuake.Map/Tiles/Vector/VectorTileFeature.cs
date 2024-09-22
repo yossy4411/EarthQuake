@@ -8,7 +8,7 @@ namespace EarthQuake.Map.Tiles.Vector;
 
 public abstract class VectorTileFeature : IDisposable
 {
-    public virtual SKObject? Geometry { get; } = null;
+    public virtual SKObject? Geometry => null;
     public VectorTileMapLayer Layer { get; init; } = null!;
 
     public virtual void Dispose()

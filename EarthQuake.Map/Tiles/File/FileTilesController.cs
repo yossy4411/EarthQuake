@@ -6,11 +6,16 @@ using SkiaSharp;
 
 namespace EarthQuake.Map.Tiles.File;
 
+/// <summary>
+/// ファイルからタイルを読み込むためのコントローラー
+/// </summary>
+/// <param name="file">データ</param>
+/// <param name="layerName">データから読み込むレイヤー名</param>
 public class FileTilesController(PolygonsSet file, string layerName)
 {
     public Action? OnUpdate { get; set; }
     private Dictionary<(int, int), SKVertices> Tiles { get; } = new();
-    
+
     public SKVertices? TryGetTile(int zoom, int index)
     {
         lock (Tiles)
@@ -30,6 +35,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
                     {
                         Tiles.Add((zoom, index), vertices);
                     }
+
                     OnUpdate?.Invoke();
                 }
             };
@@ -38,7 +44,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
 
         return null;
     }
-    
+
     public void ClearCaches()
     {
         lock (Tiles)
@@ -47,11 +53,13 @@ public class FileTilesController(PolygonsSet file, string layerName)
             {
                 value.Dispose();
             }
+
             Tiles.Clear();
         }
     }
-    
-    private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform, int zoom) : FileTileRequest
+
+    private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform, int zoom)
+        : FileTileRequest
     {
         public override SKVertices GetAndParse()
         {
@@ -66,19 +74,21 @@ public class FileTilesController(PolygonsSet file, string layerName)
                     : Enumerable.Reverse(ToVertex(points[GeomTransform.RealIndex(i)], zoom))).ToList();
                 tess.AddContour(re);
             }
+
             tess.Tessellate(WindingRule.Positive);
             var tessPoints = new SKPoint[tess.ElementCount * 3];
             for (var j = 0; j < tessPoints.Length; j++)
-            { 
-                tessPoints[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
+            {
+                tessPoints[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X,
                     tess.Vertices[tess.Elements[j]].Position.Y);
             }
+
             return SKVertices.CreateCopy(SKVertexMode.Triangles, tessPoints, null);
         }
-        
+
         private List<ContourVertex> ToVertex(IntPoint[] intPoints, int zoomV)
         {
-            var zoomFactor = 4f * zoomV * zoomV * zoomV;  // 平方で計算
+            var zoomFactor = 4f * zoomV * zoomV * zoomV; // 平方で計算
             List<ContourVertex> list = new(intPoints.Length);
             var sub = SKPoint.Empty;
             for (var i = 0; i < intPoints.Length; i++)
@@ -92,6 +102,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
                 list.Add(new ContourVertex(new Vec3(screen.X, screen.Y, 0)));
                 sub = screen;
             }
+
             return list;
         }
     }

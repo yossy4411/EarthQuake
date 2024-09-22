@@ -1,6 +1,4 @@
-﻿using EarthQuake.Core.TopoJson;
-using EarthQuake.Map.Tiles.Request;
-using SkiaSharp;
+﻿using SkiaSharp;
 
 namespace EarthQuake.Map.Tiles.Request;
 

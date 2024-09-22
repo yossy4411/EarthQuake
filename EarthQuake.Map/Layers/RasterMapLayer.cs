@@ -9,6 +9,7 @@ public class RasterMapLayer(string source) : CacheableLayer
 {
     private RasterTilesController? _controller;
     private TilePoint _point;
+
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
@@ -20,20 +21,19 @@ public class RasterMapLayer(string source) : CacheableLayer
         w = Math.Min(w, zoom - point.X);
         for (var j = 0; j <= h; j++)
         {
-                
             for (var i = 0; i <= w; i++)
             {
                 if (!_controller!.TryGetTile(point.Add(i, j), out var tile) || tile!.Image is null) continue;
                 using (new SKAutoCanvasRestore(canvas))
                 {
                     var resizeX = 360f * GeomTransform.Zoom / RasterTilesController.ImageSize / tile.Zoom;
-                    var resizeY = (float)(GeomTransform.Height * 2) * GeomTransform.Zoom / RasterTilesController.ImageSize / tile.Zoom;
+                    var resizeY = (float)(GeomTransform.Height * 2) * GeomTransform.Zoom /
+                                  RasterTilesController.ImageSize / tile.Zoom;
                     canvas.Scale(resizeX, resizeY);
                     canvas.DrawImage(tile.Image, tile.LeftTop.X / resizeX, tile.LeftTop.Y / resizeY);
                 }
             }
         }
-
     }
 
     private protected override void Initialize()
@@ -43,6 +43,7 @@ public class RasterMapLayer(string source) : CacheableLayer
             OnUpdate = HandleUpdated
         };
     }
+
     public override bool IsReloadRequired(float zoom, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);

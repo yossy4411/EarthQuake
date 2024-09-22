@@ -3,12 +3,17 @@ using EarthQuake.Map.Tiles.Request;
 
 namespace EarthQuake.Map.Tiles.Vector;
 
+/// <summary>
+/// ベクトルタイルのコントローラー
+/// </summary>
+/// <param name="url"></param>
+/// <param name="styles"></param>
 public class VectorTilesController(string url, VectorMapStyles styles) : MapTilesController<VectorTile>(url)
 {
     private class VectorTileRequest(SKPoint point, TilePoint tilePoint, string url, VectorMapStyles styles) : MapTileRequest(point, tilePoint, url)
     {
-        public override object GetAndParse(Stream? data) => data is null ? new VectorTile(Point, Zoom, null) :
-            new VectorTile(Point, Zoom, styles.ParsePaths(data, TilePoint));
+        public override object GetAndParse(Stream? data) => data is null ? new VectorTile(null) :
+            new VectorTile(styles.ParsePaths(data, TilePoint));
     }
 
     private protected override MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint)
@@ -34,7 +39,7 @@ public class VectorTilesController(string url, VectorMapStyles styles) : MapTile
     }
 }
 
-public record VectorTile(SKPoint LeftTop, float Zoom, VectorTileFeature[]? Vertices) : IDisposable
+public record VectorTile(VectorTileFeature[]? Vertices) : IDisposable
 {
     public void Dispose()
     {

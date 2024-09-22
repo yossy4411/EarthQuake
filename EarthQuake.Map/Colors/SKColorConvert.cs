@@ -2,6 +2,9 @@
 
 namespace EarthQuake.Map.Colors;
 
+/// <summary>
+/// 色変換のための拡張メソッド。
+/// </summary>
 public static class ColorBrush
 {
     public static SKColor IncreaseBrightness(this SKColor color, int percentage)

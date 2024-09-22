@@ -5,11 +5,15 @@ using SkiaSharp;
 
 namespace EarthQuake.Map;
 
+/// <summary>
+/// マップビューのコントローラー
+/// </summary>
 public class MapViewController
 {
     private readonly IEnumerable<MapLayer> _mapLayers = [];
     private readonly IEnumerable<CacheableLayer> cacheableLayers = [];
     private SKPicture? cached;
+
     public MapLayer[] MapLayers
     {
         init
@@ -18,14 +22,13 @@ public class MapViewController
             {
                 item.Update();
             }
+
             cacheableLayers = value.OfType<CacheableLayer>();
             foreach (var cacheableLayer in cacheableLayers)
             {
-                cacheableLayer.OnUpdated += () =>
-                {
-                    OnUpdated?.Invoke();
-                };
+                cacheableLayer.OnUpdated += () => { OnUpdated?.Invoke(); };
             }
+
             _mapLayers = value.Where(x => x is not CacheableLayer);
         }
     }
@@ -45,18 +48,22 @@ public class MapViewController
                 cacheableLayer.IsUpdated = false;
                 cacheableLayer.Render(c, scale, bounds);
             }
+
             cached = recorder.EndRecording();
         }
+
         if (cached is not null)
         {
             canvas.DrawPicture(cached);
         }
+
         // Background
         foreach (var layer in _mapLayers)
         {
             if (layer is ForeGroundLayer) continue;
             layer.Render(canvas, scale, bounds);
         }
+
         // Foreground
         using (new SKAutoCanvasRestore(canvas))
         {

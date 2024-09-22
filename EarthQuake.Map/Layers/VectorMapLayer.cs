@@ -31,7 +31,6 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
         paint.Typeface = Font;
         for (var j = 0; j <= h; j++)
         {
-                
             for (var i = 0; i <= w; i++)
             {
                 if (!_controller.TryGetTile(point.Add(i, j), out var tile) || tile?.Vertices is null) continue;
@@ -77,13 +76,12 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
                             {
                                 if (text is null) continue;
                                 canvas.DrawText(text, 0, 0, paint);
-                                
                             }
+
                             break;
                         }
                     }
                 }
-                
             }
         }
     }
@@ -96,7 +94,7 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
         };
         _styles = null; // 参照を解放
     }
-    
+
     public override bool IsReloadRequired(float zoom, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);

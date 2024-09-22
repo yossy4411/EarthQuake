@@ -3,6 +3,9 @@ using SkiaSharp;
 
 namespace EarthQuake.Map.Colors;
 
+/// <summary>
+/// 震度配色
+/// </summary>
 public static class ScaleColor
 {
     private static SKColor[] DefaultColors =>
@@ -62,6 +65,12 @@ public static class ScaleColor
         new(160, 20, 50), // 震度6強
         new(90, 20, 70) // 震度7
     ];
+
+    /// <summary>
+    /// おかゆグループ独自のカラースキーム (非推奨)
+    /// </summary>
+    /// <param name="scale"></param>
+    /// <returns></returns>
     public static SKColor GetOriginalColor(this Scale scale)
     {
         return scale switch
@@ -81,6 +90,11 @@ public static class ScaleColor
         };
     }
 
+    /// <summary>
+    /// Kiwi monitor 3カラースキーム
+    /// </summary>
+    /// <param name="scale"></param>
+    /// <returns></returns>
     public static SKColor GetKiwi3Color(this Scale scale)
     {
         return scale switch
@@ -98,7 +112,12 @@ public static class ScaleColor
             _ => Kiwi3Colors[0]
         };
     }
-        
+
+    /// <summary>
+    /// Quarogカラースキーム
+    /// </summary>
+    /// <param name="scale"></param>
+    /// <returns></returns>
     public static SKColor GetQuarogColor(this Scale scale)
     {
         return scale switch
@@ -116,7 +135,7 @@ public static class ScaleColor
             _ => QuarogColors[0]
         };
     }
-        
+
     public static SKColor GetDefaultColor(this Scale scale)
     {
         return scale switch
@@ -135,7 +154,7 @@ public static class ScaleColor
             _ => DefaultColors[0]
         };
     }
-        
+
     public static SKColor GetColor(string tag, Scale scale)
     {
         return tag switch
