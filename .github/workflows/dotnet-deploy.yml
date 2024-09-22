@@ -8,9 +8,13 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_PATH: EarthQuake.Desktop/EarthQuake.Desktop.csproj
+  OUTPUT_PATH: ./publish
+
 jobs:
-  build-windows-x64:
-    runs-on: windows-latest
+  build-desktop:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -24,102 +28,23 @@ jobs:
         run: dotnet restore
 
       - name: Publish for Windows x64
-        run: dotnet publish --configuration Release --runtime win-x64 --self-contained -p:PublishSingleFile=true -o ./publish/winx64
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: winx64-publish
-          path: ./publish/winx64
-
-  build-windows-x86:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime win-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/winx64
+        
       - name: Publish for Windows x86
-        run: dotnet publish --configuration Release --runtime win-x86 --self-contained -p:PublishSingleFile=true -o ./publish/winx86
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: winx86-publish
-          path: ./publish/winx86
-
-  build-linux-x64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime win-x86 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/winx86
+        
       - name: Publish for Linux x64
-        run: dotnet publish --configuration Release --runtime linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish/linux64
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxx64
+        
+      - name: Publish for Linux ARM
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-arm --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxarm
+        
+      - name: Publish for macOS x64
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime osx-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/osxx64
+        
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux64-publish
-          path: ./publish/linux64
-
-  build-linux-arm:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Publish for Linux Arm
-        run: dotnet publish --configuration Release --runtime linux-arm --self-contained -p:PublishSingleFile=true -o ./publish/linuxarm
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linuxarm-publish
-          path: ./publish/linuxarm
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Publish for macOS
-        run: dotnet publish --configuration Release --runtime osx-x64 --self-contained -p:PublishSingleFile=true -o ./publish/osx
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: osx-publish
-          path: ./publish/osx
+          name: publish
+          path: ${{ env.OUTPUT_PATH }}
