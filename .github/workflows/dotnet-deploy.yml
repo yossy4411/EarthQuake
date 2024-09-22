@@ -25,7 +25,7 @@ jobs:
           dotnet-version: '8.x' # .NET 7 以上を指定
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore ${{ env.PROJECT_PATH }}
 
       - name: Publish for Windows x64
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime win-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/winx64
