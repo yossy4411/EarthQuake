@@ -24,7 +24,7 @@ public class Station
         set => Lon = (float?)value ?? default;
     }
 
-    public string Name { set; get; } = string.Empty;
+    public string? Name { set; get; } = string.Empty;
     public float Lat { get; private set; }
     public float Lon { get; private set; }
 

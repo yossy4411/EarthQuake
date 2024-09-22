@@ -34,7 +34,7 @@ public class PQuakeData() : PBasicData(551)
             .. Points.OrderByDescending(x => (int)x.Scale)
                 .ThenBy(x =>
                 {
-                    var station = stations.FirstOrDefault(v => v.Name.StartsWith(x.Addr));
+                    var station = stations.FirstOrDefault(v => v.Name is not null && v.Name.StartsWith(x.Addr));
                     return station is not null && EarthQuake.Hypocenter is not null
                         ? (station.Lat - EarthQuake.Hypocenter.Latitude) *
                           (station.Lat - EarthQuake.Hypocenter.Latitude) +
