@@ -1,0 +1,125 @@
+name: Publish .NET App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.x' # .NET 7 以上を指定
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish for Windows x64
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained -p:PublishSingleFile=true -o ./publish/winx64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: winx64-publish
+          path: ./publish/winx64
+
+  build-windows-x86:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish for Windows x86
+        run: dotnet publish --configuration Release --runtime win-x86 --self-contained -p:PublishSingleFile=true -o ./publish/winx86
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: winx86-publish
+          path: ./publish/winx86
+
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish for Linux x64
+        run: dotnet publish --configuration Release --runtime linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish/linux64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux64-publish
+          path: ./publish/linux64
+
+  build-linux-arm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish for Linux Arm
+        run: dotnet publish --configuration Release --runtime linux-arm --self-contained -p:PublishSingleFile=true -o ./publish/linuxarm
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linuxarm-publish
+          path: ./publish/linuxarm
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish for macOS
+        run: dotnet publish --configuration Release --runtime osx-x64 --self-contained -p:PublishSingleFile=true -o ./publish/osx
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: osx-publish
+          path: ./publish/osx
