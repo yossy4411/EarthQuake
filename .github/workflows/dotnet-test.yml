@@ -22,10 +22,11 @@ jobs:
           dotnet-version: '8.x'
           
       - name: Install .NET Workloads
-        run: dotnet workload restore
+        run: sudo dotnet workload install wasm-tools android ios
         
       - name: Restore dependencies
         run: dotnet restore
+        # ここでiOSなどのプロジェクトがビルドできない場合は、以下のようにプロジェクトを指定してビルドする
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
