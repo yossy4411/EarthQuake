@@ -34,7 +34,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github/workflows", ".github/workflows", "{E2733B0C-B2BD-4672-B7D8-B149B1F22D2A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnet-deploy.yml = .github\workflows\dotnet-deploy.yml
-		.github\workflows\dotnet-test.yml = .github\workflows\dotnet-test.yml
 	EndProjectSection
 EndProject
 Global
