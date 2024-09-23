@@ -33,7 +33,7 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet restore EarthQuake.Desktop/EarthQuake.Desktop.csproj
-          dotnet restore EarthQuake.Web/EarthQuake.Web.csproj
+          dotnet restore EarthQuake.Browser/EarthQuake.Browser.csproj
           dotnet restore EarthQuake.Android/EarthQuake.Android.csproj
 
       - name: Build Desktop App
@@ -43,10 +43,10 @@ jobs:
         run: dotnet test EarthQuake.Desktop/EarthQuake.Desktop.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
         
       - name: Build Web App
-        run: dotnet build EarthQuake.Web/EarthQuake.Web.csproj --configuration Release --no-restore
+        run: dotnet build EarthQuake.Browser/EarthQuake.Browser.csproj --configuration Release --no-restore
       
       - name: Test Web App
-        run: dotnet test EarthQuake.Web/EarthQuake.Web.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test EarthQuake.Browser/EarthQuake.Browser.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
         
       - name: Build Android App
         run: dotnet build EarthQuake.Android/EarthQuake.Android.csproj --configuration Release --no-restore
