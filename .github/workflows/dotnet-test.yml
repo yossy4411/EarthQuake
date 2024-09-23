@@ -21,14 +21,25 @@ jobs:
         with:
           dotnet-version: '8.x'
           
+      - name: Install Android SDK Manager
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+            curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
+          
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.dotnet
+          path: |
+            ~/.dotnet
+            ~/.nuget
+            
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}]
           
       - name: Install .NET Workloads
         run: dotnet workload install wasm-tools android
+        
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
         
       - name: Restore dependencies
         run: |
