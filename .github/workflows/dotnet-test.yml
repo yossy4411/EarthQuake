@@ -10,7 +10,8 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-latest　
+    # Windows環境では、Android/iOS自体のビルドはできないが、テストは可能
 
     steps:
       - name: Checkout repository
@@ -21,12 +22,18 @@ jobs:
         with:
           dotnet-version: '8.x'
           
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}]
+      # 依存関係をキャッシュすることで、ビルド時間を短縮
+          
       - name: Install .NET Workloads
         run: dotnet workload install wasm-tools android ios
         
       - name: Restore dependencies
         run: dotnet restore
-        # ここでiOSなどのプロジェクトがビルドできない場合は、以下のようにプロジェクトを指定してビルドする
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
