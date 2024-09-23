@@ -10,7 +10,7 @@
     <PackageReference Include="MessagePack" Version="2.5.172" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nyamikan.Asn1PKCS" Version="0.2.0" />
-    <PackageReference Include="Parquet.Net" Version="4.24.0" />
+    <PackageReference Include="Parquet.Net" Version="4.25.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 

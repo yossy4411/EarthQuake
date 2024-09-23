@@ -1,0 +1,97 @@
+name: Test .NET Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.x'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}]
+          
+      - name: Install .NET Workloads
+        run: dotnet workload install wasm-tools android
+        
+      - name: Restore dependencies
+        run: |
+          dotnet restore EarthQuake.Desktop/EarthQuake.Desktop.csproj
+          dotnet restore EarthQuake.Web/EarthQuake.Web.csproj
+          dotnet restore EarthQuake.Android/EarthQuake.Android.csproj
+
+      - name: Build Desktop App
+        run: dotnet build EarthQuake.Desktop/EarthQuake.Desktop.csproj --configuration Release --no-restore
+
+      - name: Test Desktop App
+        run: dotnet test EarthQuake.Desktop/EarthQuake.Desktop.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        
+      - name: Build Web App
+        run: dotnet build EarthQuake.Web/EarthQuake.Web.csproj --configuration Release --no-restore
+      
+      - name: Test Web App
+        run: dotnet test EarthQuake.Web/EarthQuake.Web.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        
+      - name: Build Android App
+        run: dotnet build EarthQuake.Android/EarthQuake.Android.csproj --configuration Release --no-restore
+        
+      - name: Test Android App
+        run: dotnet test EarthQuake.Android/EarthQuake.Android.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.trx
+  
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.x'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}]
+          
+      - name: Install .NET Workloads
+        run: dotnet workload install ios
+        
+      - name: Restore dependencies
+        run: dotnet restore EarthQuake.iOS/EarthQuake.iOS.csproj
+        
+      - name: Build iOS App
+        run: dotnet build EarthQuake.iOS/EarthQuake.iOS.csproj --configuration Release --no-restore
+        
+      - name: Test iOS App
+        run: dotnet test EarthQuake.iOS/EarthQuake.iOS.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.trx
