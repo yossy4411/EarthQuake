@@ -22,7 +22,7 @@ jobs:
           dotnet-version: '8.x'
           
       - name: Install .NET Workloads
-        run: sudo dotnet workload install wasm-tools android ios
+        run: dotnet workload install wasm-tools android ios
         
       - name: Restore dependencies
         run: dotnet restore
