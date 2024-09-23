@@ -31,7 +31,10 @@ jobs:
         run: dotnet workload install wasm-tools android
         
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          dotnet restore EarthQuake.Desktop/EarthQuake.Desktop.csproj
+          dotnet restore EarthQuake.Web/EarthQuake.Web.csproj
+          dotnet restore EarthQuake.Android/EarthQuake.Android.csproj
 
       - name: Build Desktop App
         run: dotnet build EarthQuake.Desktop/EarthQuake.Desktop.csproj --configuration Release --no-restore
@@ -79,7 +82,7 @@ jobs:
         run: dotnet workload install ios
         
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore EarthQuake.iOS/EarthQuake.iOS.csproj
         
       - name: Build iOS App
         run: dotnet build EarthQuake.iOS/EarthQuake.iOS.csproj --configuration Release --no-restore
