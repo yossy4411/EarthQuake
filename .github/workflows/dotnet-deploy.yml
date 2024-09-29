@@ -36,20 +36,57 @@ jobs:
       - name: Publish for Linux x64
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxx64
         
-      - name: Publish for Linux ARM
-        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-arm --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxarm
+      - name: Publish for Linux ARM32
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-arm --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxarm32
+        
+      - name: Publish for Linux ARM64
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime linux-arm64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/linuxarm64
         
       - name: Publish for macOS x64
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --runtime osx-x64 --self-contained -p:PublishSingleFile=true -o ${{ env.OUTPUT_PATH }}/osxx64
         
 
-      - name: Upload artifact
+      - name: Compress artifacts
+        run: |
+          zip -r ${{ env.OUTPUT_PATH }}/winx64.zip ${{ env.OUTPUT_PATH }}/winx64
+          zip -r ${{ env.OUTPUT_PATH }}/winx86.zip ${{ env.OUTPUT_PATH }}/winx86
+          zip -r ${{ env.OUTPUT_PATH }}/linuxx64.zip ${{ env.OUTPUT_PATH }}/linuxx64
+          zip -r ${{ env.OUTPUT_PATH }}/linuxarm32.zip ${{ env.OUTPUT_PATH }}/linuxarm32
+          zip -r ${{ env.OUTPUT_PATH }}/linuxarm64.zip ${{ env.OUTPUT_PATH }}/linuxarm64
+          zip -r ${{ env.OUTPUT_PATH }}/osxx64.zip ${{ env.OUTPUT_PATH }}/osxx64
+          
+      - name: Upload artifacts for Windows x64
         uses: actions/upload-artifact@v4
         with:
-          name: publish
-          path: |
-            ${{ env.OUTPUT_PATH }}/winx64
-            ${{ env.OUTPUT_PATH }}/winx86
-            ${{ env.OUTPUT_PATH }}/linuxx64
-            ${{ env.OUTPUT_PATH }}/linuxarm
-            ${{ env.OUTPUT_PATH }}/osxx64
+          name: EarthQuake-Desktop-Win64
+          path: ${{ env.OUTPUT_PATH }}/winx64.zip
+          
+      - name: Upload artifacts for Windows x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarthQuake-Desktop-Win86
+          path: ${{ env.OUTPUT_PATH }}/winx86.zip
+
+      - name: Upload artifacts for Linux x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarthQuake-Desktop-Linux64
+          path: ${{ env.OUTPUT_PATH }}/linuxx64.zip
+
+      - name: Upload artifacts for Linux ARM
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarthQuake-Desktop-LinuxARM32n
+          path: ${{ env.OUTPUT_PATH }}/linuxarm32.zip
+      
+      - name: Upload artifacts for Linux ARM64
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarthQuake-Desktop-LinuxARM64
+          path: ${{ env.OUTPUT_PATH }}/linuxarm64.zip
+    
+      - name: Upload artifacts for macOS x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarthQuake-Desktop-OSX64
+          path: ${{ env.OUTPUT_PATH }}/osxx64.zip
