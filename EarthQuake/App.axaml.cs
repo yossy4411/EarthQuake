@@ -1,4 +1,6 @@
-﻿using Avalonia;
+﻿using System;
+using System.Text;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 

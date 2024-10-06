@@ -16,6 +16,7 @@ using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
+using EarthQuake.Core.Controller;
 using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
 using MessagePack;
@@ -79,17 +80,25 @@ public class MainViewModel : ViewModelBase
             {
                 wave = MessagePackSerializer.Deserialize<InterpolatedWaveData>(stream);
             }
+            
+
 
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
-
+            
+            /*EEWController eewController = new();
+            eewController.OnReceived += eew =>
+            {
+                _kmoni.SetHypo(((float)eew.Hypocenter.Lat, (float)eew.Hypocenter.Lon), DateTimeOffset.FromUnixTimeMilliseconds(eew.Origin).UtcDateTime, (int)eew.Hypocenter.Depth);
+            };
+            Task.Run(eewController.ConnectAndLoopAsync);*/
             Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl); // 陰影起伏図
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [world, map, grid]
+                MapLayers = [world, map, grid , _kmoni]
             };
             Controller2 = new MapViewController
             {

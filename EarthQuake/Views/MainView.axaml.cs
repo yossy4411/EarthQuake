@@ -28,7 +28,7 @@ public partial class MainView : UserControl
         DateStart.SelectedDate = DateTime.Now.AddDays(-4).Date;
         DateEnd.SelectedDate = DateTime.Now.Date;
         UpdateEpic.Click += Update_Epicenters;
-        timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) }; // 30fpsで描画しちゃえ！(背景はキャッシュ済みなのでこのくらいなら大丈夫...なはず)
         timer.Tick += Timer_Elapsed;
         timer.Start();
     }
