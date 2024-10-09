@@ -26,8 +26,26 @@ public static class ScaleConverter
     /// 震度を画面表示用の文字列に変換
     /// </summary>
     /// <param name="scale">元の震度</param>
+    /// <param name="scaleOnly">震度部分のテキストのみを出力するか</param>
     /// <returns>文字列</returns>
-    public static string ToScreenString(this Scale scale) =>
+    public static string ToScreenString(this Scale scale, bool scaleOnly = false) =>
+        scaleOnly ?
+            scale switch
+            {
+                Scale.Scale1 => "1",
+                Scale.Scale2 => "2",
+                Scale.Scale3 => "3",
+                Scale.Scale4 => "4",
+                Scale.Scale5L => "5弱",
+                Scale.Scale5U => "≧5弱",
+                Scale.Scale5H => "5強",
+                Scale.Scale6L => "6弱",
+                Scale.Scale6H => "6強",
+                Scale.Scale7 => "7",
+                Scale.Scale8 => "≧7",
+                Scale.Unknown => "?",
+                _ => "エラー",
+            } :
         scale switch
         {
             Scale.Scale1 => "震度１",
