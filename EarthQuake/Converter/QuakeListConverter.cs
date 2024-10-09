@@ -18,7 +18,7 @@ public class QuakeListConverter : IValueConverter
     {
         DockPanel panel = new();
         if (value is not PQuakeData quakeData) return panel;
-        var color = quakeData.EarthQuake.MaxScale.GetKiwi3Color();
+        var color = quakeData.EarthQuake.MaxScale.GetColor();
         var rect = new Rectangle
         {
             Width = 30,

@@ -247,8 +247,8 @@ public class StatisticsCanvas : SkiaCanvasView
                             {
                                 path.LineTo(i * width / (length0 - 1), height - (count2[i, j - 1] * height / max));
                             }
-
-                            paint.Color = ScaleConverter.FromInt(j).GetKiwi3Color();
+                            var r = TryGetResource("ColorScheme" + j, null, out var color);
+                            paint.Color = ScaleConverter.FromInt(j).GetColor(r ? (color as string)! : "kiwi3");
                             path.Close();
                             canvas.DrawPath(path, paint);
                         }

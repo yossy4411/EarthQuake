@@ -8,7 +8,7 @@ namespace EarthQuake.Map.Colors;
 /// </summary>
 public static class ScaleColor
 {
-    private static SKColor[] DefaultColors =>
+    private static SKColor[] PrimaryColors =>
     [
         SKColors.LightGray, // 震度なし/不明/その他
         SKColors.DimGray, // 震度1
@@ -23,21 +23,11 @@ public static class ScaleColor
         SKColors.Indigo // 震度8(臨時)/震度7以上
     ];
 
-    private static SKColor[] OriginalColors =>
-    [
-        new(171, 171, 171), // 震度なし/不明/その他
-        new(125, 205, 226), // 震度1
-        new(81, 237, 209), // 震度2
-        new(140, 237, 80), // 震度3
-        new(255, 204, 40), // 震度4
-        new(255, 124, 34), // 震度5弱
-        new(255, 24, 0), // 震度5強
-        new(199, 0, 0), // 震度6弱
-        new(206, 12, 131), // 震度6強
-        new(114, 24, 125), // 震度7
-        new(92, 12, 12) // 震度8(臨時)/震度7以上
-    ];
-
+    /// <summary>
+    /// Kiwi Monitor カラースキーム 第3版
+    /// <br/>
+    /// 参考: https://kiwimonitor.amebaownd.com/posts/36819100
+    /// </summary>
     private static SKColor[] Kiwi3Colors =>
     [
         new(40, 70, 110), // 震度なし/不明/その他
@@ -52,6 +42,9 @@ public static class ScaleColor
         new(140, 0, 0) // 震度7
     ];
 
+    /// <summary>
+    /// Quarogカラースキーム
+    /// </summary>
     private static SKColor[] QuarogColors =>
     [
         new(70, 80, 90), // 震度なし/不明/その他
@@ -65,104 +58,93 @@ public static class ScaleColor
         new(160, 20, 50), // 震度6強
         new(90, 20, 70) // 震度7
     ];
+    
+    /// <summary>
+    /// テキスト配色
+    /// </summary>
+    private static SKColor[] ForegroundColors =>
+    [
+        // コントラストが強い色
+        SKColors.White, // 震度なし/不明/その他
+        SKColors.White, // 震度1
+        SKColors.White, // 震度2
+        SKColors.Black, // 震度3
+        SKColors.Black, // 震度4
+        SKColors.Black, // 震度5弱
+        SKColors.Black, // 震度5強
+        SKColors.White, // 震度6弱
+        SKColors.White, // 震度6強
+        SKColors.White, // 震度7
+        SKColors.White // 震度8(臨時)/震度7以上
+    ];
 
     /// <summary>
-    /// おかゆグループ独自のカラースキーム (非推奨)
+    /// 色を取得する
     /// </summary>
-    /// <param name="scale"></param>
+    /// <param name="scale">震度</param>
+    /// <param name="tag">カラースキーム</param>
     /// <returns></returns>
-    public static SKColor GetOriginalColor(this Scale scale)
-    {
-        return scale switch
-        {
-            Scale.Unknown => OriginalColors[0],
-            Scale.Scale1 => OriginalColors[1],
-            Scale.Scale2 => OriginalColors[2],
-            Scale.Scale3 => OriginalColors[3],
-            Scale.Scale4 => OriginalColors[4],
-            Scale.Scale5L => OriginalColors[5],
-            Scale.Scale5H => OriginalColors[6],
-            Scale.Scale6L => OriginalColors[7],
-            Scale.Scale6H => OriginalColors[8],
-            Scale.Scale7 => OriginalColors[9],
-            Scale.Scale8 => OriginalColors[10],
-            _ => OriginalColors[0]
-        };
-    }
-
-    /// <summary>
-    /// Kiwi monitor 3カラースキーム
-    /// </summary>
-    /// <param name="scale"></param>
-    /// <returns></returns>
-    public static SKColor GetKiwi3Color(this Scale scale)
-    {
-        return scale switch
-        {
-            Scale.Unknown => Kiwi3Colors[0],
-            Scale.Scale1 => Kiwi3Colors[1],
-            Scale.Scale2 => Kiwi3Colors[2],
-            Scale.Scale3 => Kiwi3Colors[3],
-            Scale.Scale4 => Kiwi3Colors[4],
-            Scale.Scale5L => Kiwi3Colors[5],
-            Scale.Scale5H => Kiwi3Colors[6],
-            Scale.Scale6L => Kiwi3Colors[7],
-            Scale.Scale6H => Kiwi3Colors[8],
-            Scale.Scale7 => Kiwi3Colors[9],
-            _ => Kiwi3Colors[0]
-        };
-    }
-
-    /// <summary>
-    /// Quarogカラースキーム
-    /// </summary>
-    /// <param name="scale"></param>
-    /// <returns></returns>
-    public static SKColor GetQuarogColor(this Scale scale)
-    {
-        return scale switch
-        {
-            Scale.Unknown => QuarogColors[0],
-            Scale.Scale1 => QuarogColors[1],
-            Scale.Scale2 => QuarogColors[2],
-            Scale.Scale3 => QuarogColors[3],
-            Scale.Scale4 => QuarogColors[4],
-            Scale.Scale5L => QuarogColors[5],
-            Scale.Scale5H => QuarogColors[6],
-            Scale.Scale6L => QuarogColors[7],
-            Scale.Scale6H => QuarogColors[8],
-            Scale.Scale7 => QuarogColors[9],
-            _ => QuarogColors[0]
-        };
-    }
-
-    public static SKColor GetDefaultColor(this Scale scale)
-    {
-        return scale switch
-        {
-            Scale.Unknown => DefaultColors[0],
-            Scale.Scale1 => DefaultColors[1],
-            Scale.Scale2 => DefaultColors[2],
-            Scale.Scale3 => DefaultColors[3],
-            Scale.Scale4 => DefaultColors[4],
-            Scale.Scale5L => DefaultColors[5],
-            Scale.Scale5H => DefaultColors[6],
-            Scale.Scale6L => DefaultColors[7],
-            Scale.Scale6H => DefaultColors[8],
-            Scale.Scale7 => DefaultColors[9],
-            Scale.Scale8 => DefaultColors[10],
-            _ => DefaultColors[0]
-        };
-    }
-
-    public static SKColor GetColor(string tag, Scale scale)
+    public static SKColor GetColor(this Scale scale, string tag = "kiwi3")
     {
         return tag switch
         {
-            "Original" or "original" or "o" => scale.GetOriginalColor(),
-            "Kiwi3" or "kiwi3" or "k" => scale.GetKiwi3Color(),
-            "Quarog" or "quarog" or "q" => scale.GetQuarogColor(),
-            _ => scale.GetDefaultColor()
+            "Kiwi3" or "kiwi3" or "k" => scale switch
+            {
+                Scale.Unknown => Kiwi3Colors[0],
+                Scale.Scale1 => Kiwi3Colors[1],
+                Scale.Scale2 => Kiwi3Colors[2],
+                Scale.Scale3 => Kiwi3Colors[3],
+                Scale.Scale4 => Kiwi3Colors[4],
+                Scale.Scale5L => Kiwi3Colors[5],
+                Scale.Scale5H => Kiwi3Colors[6],
+                Scale.Scale6L => Kiwi3Colors[7],
+                Scale.Scale6H => Kiwi3Colors[8],
+                Scale.Scale7 => Kiwi3Colors[9],
+                _ => Kiwi3Colors[0]
+            },
+            "Quarog" or "quarog" or "q" => scale switch
+            {
+                Scale.Unknown => QuarogColors[0],
+                Scale.Scale1 => QuarogColors[1],
+                Scale.Scale2 => QuarogColors[2],
+                Scale.Scale3 => QuarogColors[3],
+                Scale.Scale4 => QuarogColors[4],
+                Scale.Scale5L => QuarogColors[5],
+                Scale.Scale5H => QuarogColors[6],
+                Scale.Scale6L => QuarogColors[7],
+                Scale.Scale6H => QuarogColors[8],
+                Scale.Scale7 => QuarogColors[9],
+                _ => QuarogColors[0]
+            },
+            "Fore" or "Foreground" or "fore" or "foreground" or "fg" => scale switch
+            {
+                Scale.Unknown => ForegroundColors[0],
+                Scale.Scale1 => ForegroundColors[1],
+                Scale.Scale2 => ForegroundColors[2],
+                Scale.Scale3 => ForegroundColors[3],
+                Scale.Scale4 => ForegroundColors[4],
+                Scale.Scale5L => ForegroundColors[5],
+                Scale.Scale5H => ForegroundColors[6],
+                Scale.Scale6L => ForegroundColors[7],
+                Scale.Scale6H => ForegroundColors[8],
+                Scale.Scale7 => ForegroundColors[9],
+                _ => ForegroundColors[0]
+            },
+            _ => scale switch
+            {
+                Scale.Unknown => PrimaryColors[0],
+                Scale.Scale1 => PrimaryColors[1],
+                Scale.Scale2 => PrimaryColors[2],
+                Scale.Scale3 => PrimaryColors[3],
+                Scale.Scale4 => PrimaryColors[4],
+                Scale.Scale5L => PrimaryColors[5],
+                Scale.Scale5H => PrimaryColors[6],
+                Scale.Scale6L => PrimaryColors[7],
+                Scale.Scale6H => PrimaryColors[8],
+                Scale.Scale7 => PrimaryColors[9],
+                Scale.Scale8 => PrimaryColors[10],
+                _ => PrimaryColors[0]
+            }
         };
     }
 }

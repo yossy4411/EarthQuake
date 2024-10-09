@@ -85,7 +85,7 @@ public class ObservationsLayer : ForeGroundLayer
         for (var i = oPoints.Length - 1; i >= 0; i--)
         {
             var item = oPoints[i];
-            var color = oColors[i].GetKiwi3Color();
+            var color = oColors[i].GetColor();
             paint.Color = color.IncreaseBrightness(-30);
             paint.Style = SKPaintStyle.Stroke;
             canvas.DrawCircle(item.X * scale, item.Y * scale, 9, paint);
