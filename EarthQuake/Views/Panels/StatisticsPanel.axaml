@@ -6,7 +6,7 @@
              xmlns:cv="clr-namespace:EarthQuake.Converter.Statistics;assembly=EarthQuake"
              xmlns:canvas="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="EarthQuake.Views.StatisticsPanel"
+             x:Class="EarthQuake.Views.Panels.StatisticsPanel"
              x:DataType="vm:StatisticsViewModel">
   <UserControl.Resources>
     <cv:RectangleConverter x:Key="RConverter"/>

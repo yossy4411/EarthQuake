@@ -1,10 +1,10 @@
+using System.Collections.Generic;
 using Avalonia.Controls;
 using EarthQuake.Core.GeoJson;
 using EarthQuake.ViewModels;
 using SkiaSharp;
-using System.Collections.Generic;
 
-namespace EarthQuake.Views;
+namespace EarthQuake.Views.Panels;
 
 public partial class StatisticsPanel : UserControl
 {

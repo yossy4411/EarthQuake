@@ -40,7 +40,7 @@ public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
         {
             var name = names[i];
             var a = quakeData.Points.FirstOrDefault(x => x.Addr.StartsWith(name));
-            if (a is not null) colors[i] = a.Scale.GetKiwi3Color();
+            if (a is not null) colors[i] = a.Scale.GetColor();
             else if (AutoFill) colors[i] = SKColors.DarkGreen;
             else colors[i] = SKColors.Empty;
         }
