@@ -4,8 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:EarthQuake.ViewModels"
              xmlns:local="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
-             xmlns:views="clr-namespace:EarthQuake.Views"
-             xmlns:converter="clr-namespace:EarthQuake.Converter"
+             xmlns:controls="clr-namespace:EarthQuake.Controls;assembly=EarthQuake"
+             xmlns:panels="clr-namespace:EarthQuake.Views.Panels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="EarthQuake.Views.MainView"
              x:DataType="vm:MainViewModel">
@@ -14,9 +14,9 @@
     </Design.DataContext>
     <UserControl.Styles>
         <Style Selector="Border">
-            <Setter Property="Background" Value="{Binding BgBrush}" />
-            <Setter Property="Margin" Value="5" />
-            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="{Binding BgBrush}"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="CornerRadius" Value="5"/>
         </Style>
         <Style Selector="Border.license">
             <Setter Property="Child">
@@ -43,10 +43,8 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <StyleInclude Source="/Controls/EEWPanel.axaml"></StyleInclude>
     </UserControl.Styles>
-    <UserControl.Resources>
-        <converter:QuakeListConverter x:Key="QConvert" />
-    </UserControl.Resources>
     <Panel>
 
         <TabControl TabStripPlacement="Left">
@@ -59,9 +57,17 @@
                                          Translation="{Binding SyncTranslation}"
                                          HorizontalAlignment="Stretch"
                                          ClipToBounds="True" />
-                        <Border Classes="license"
-                                VerticalAlignment="Bottom"
-                                HorizontalAlignment="Right" />
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="6*,4*" VerticalAlignment="Stretch">
+                            <Border Grid.Column="1" Grid.Row="0">
+                                <ScrollViewer>
+                                    <StackPanel>
+                                        <controls:EEWPanel EEW="{Binding EEW}"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                            <Border Grid.Column="1" Grid.Row="1" Classes="license"/>
+                        </Grid>
+                        
                     </Panel>
 
                 </DockPanel>
@@ -136,7 +142,7 @@
                                     Click="Button_OnClick">
                                 ＜
                             </Button>
-                            <views:StatisticsPanel x:Name="Statistics"
+                            <panels:StatisticsPanel x:Name="Statistics"
                                                    DockPanel.Dock="Bottom"
                                                    Width="250" />
                         </DockPanel>

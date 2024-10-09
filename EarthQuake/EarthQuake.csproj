@@ -37,4 +37,5 @@
   <ItemGroup>
     <ProjectReference Include="..\EarthQuake.Map\EarthQuake.Map.csproj" />
   </ItemGroup>
+
 </Project>

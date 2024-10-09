@@ -17,6 +17,7 @@ using EarthQuake.Map.Layers.OverLays;
 using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
 using EarthQuake.Core.Controller;
+using EarthQuake.Core.EarthQuakes.OGSP;
 using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
 using MessagePack;
@@ -86,12 +87,12 @@ public class MainViewModel : ViewModelBase
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
             
-            /*EEWController eewController = new();
+            EEWController eewController = new();
             eewController.OnReceived += eew =>
             {
                 _kmoni.SetHypo(((float)eew.Hypocenter.Lat, (float)eew.Hypocenter.Lon), DateTimeOffset.FromUnixTimeMilliseconds(eew.Origin).UtcDateTime, (int)eew.Hypocenter.Depth);
             };
-            Task.Run(eewController.ConnectAndLoopAsync);*/
+            Task.Run(eewController.ConnectAndLoopAsync);
             Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
             RasterMapLayer tile = new(MapTiles2.TileUrl); // 陰影起伏図
@@ -133,6 +134,43 @@ public class MainViewModel : ViewModelBase
 
     public static void OpenLicenseLink() => OpenLink(MapTilesBase.Link);
     public static void OpenJmaHypoLink() => OpenLink("https://www.jma.go.jp/bosai/map.html#contents=hypo");
+
+    public static EEW EEW { get; } = new()
+    {
+        Announced = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        Hypocenter = new Hypocenter
+        {
+            Depth = 10,
+            Lat = 35.0,
+            Lon = 140.0,
+            Mag = 6.0,
+            MaxInt = Scale.Scale5L,
+            Name = "東京湾",
+        },
+        Origin = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        Assumption = false,
+        IsTraining = true,
+        IsFinal = false,
+        IsWarning = true,
+        IsCancel = false,
+        IsSea = true,
+        Serial = 1,
+        Title = "緊急地震速報(警報)",
+        Source = "おかゆグループ地震計プロジェクト 地震センター",
+        WarnArea =
+        [
+            new WarnArea
+            {
+                AreaCode = 350,
+                AreaName = "東京都23区",
+                MaxInt = Scale.Scale5L,
+                Type = "警報",
+                Arrival = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                MinInt = Scale.Scale4
+            }
+        ],
+        WarnAreaStr = ["東京都"]
+    };
 
     private static void OpenLink(string uri)
     {
