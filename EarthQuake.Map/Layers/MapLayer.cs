@@ -7,6 +7,7 @@ public abstract class MapLayer
 {
     private bool initialized;
     public static readonly SKTypeface Font = LoadFont();
+    public static readonly SKFont TextFont = new(Font, 16);
 
     private static SKTypeface LoadFont()
     {

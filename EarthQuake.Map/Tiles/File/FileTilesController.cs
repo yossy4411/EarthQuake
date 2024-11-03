@@ -33,7 +33,7 @@ public class FileTilesController(PolygonsSet file, string layerName)
                     if (request is not FileTileRequest || result is not SKVertices vertices) return;
                     lock (Tiles)
                     {
-                        Tiles.Add((zoom, index), vertices);
+                        Tiles[(zoom, index)] = vertices;   // ここでAddを使わないのは、すでに存在する場合は上書きするため ちなみにこの処理が正しいかは不明
                     }
 
                     OnUpdate?.Invoke();

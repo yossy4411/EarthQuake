@@ -19,6 +19,7 @@ using EarthQuake.Canvas;
 using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
 using MessagePack;
+using VectorTiles.Styles.MapboxGL;
 
 namespace EarthQuake.ViewModels;
 
@@ -66,11 +67,9 @@ public class MainViewModel : ViewModelBase
             }
 
             VectorMapLayer map;
-            using (var stream =
-                   AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/basic.json", UriKind.Absolute)))
             {
-                using var streamReader = new StreamReader(stream);
-                var styles = VectorMapStyles.LoadGLJson(streamReader);
+                var styles = MapboxStyle.LoadGLJson(stream);
                 map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
             }
 

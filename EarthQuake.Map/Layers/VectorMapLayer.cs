@@ -2,6 +2,7 @@
 using EarthQuake.Map.Tiles;
 using EarthQuake.Map.Tiles.Vector;
 using SkiaSharp;
+using VectorTiles.Styles;
 
 namespace EarthQuake.Map.Layers;
 
@@ -9,10 +10,10 @@ namespace EarthQuake.Map.Layers;
 /// ベクトルタイルを描画するレイヤー
 /// </summary>
 /// <param name="styles"></param>
-public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
+public class VectorMapLayer(VectorMapStyle styles, string url) : CacheableLayer
 {
     private VectorTilesController? _controller;
-    private VectorMapStyles? _styles = styles;
+    private VectorMapStyle? _styles = styles;
     private TilePoint _point;
 
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
@@ -25,7 +26,6 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
         var w = (int)Math.Ceiling(bounds.Width / GeomTransform.Zoom / (360f / zoom));
         h = Math.Min(h, zoom - point.Y);
         w = Math.Min(w, zoom - point.X);
-        var z = MathF.Log(scale, 2) + 5;
         using var paint = new SKPaint();
         paint.IsAntialias = true;
         paint.Typeface = Font;
@@ -40,9 +40,8 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
                     {
                         case VectorFillFeature feature:
                         {
-                            var layer = (VectorFillLayer?)feature.Layer;
-                            if (layer is null) continue;
-                            paint.Color = layer.FillColor;
+                            if (feature.Layer is not VectorFillStyleLayer layer) continue;
+                            paint.Color = feature.GetPropertyValue(layer.FillColor).ToSKColor();
                             paint.Style = SKPaintStyle.Fill;
                             if (feature.Geometry is not null)
                             {
@@ -53,12 +52,20 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
                         }
                         case VectorLineFeature lineFeature:
                         {
-                            var layer = (VectorLineLayer?)lineFeature.Layer;
-                            if (layer is null) continue;
-                            paint.Color = layer.LineColor;
-                            paint.StrokeWidth = layer.GetWidth(z) / scale;
+                            if (lineFeature.Layer is not VectorLineStyleLayer layer) continue;
+                            paint.Color = lineFeature.GetPropertyValue(layer.LineColor).ToSKColor();
+                            paint.StrokeWidth = lineFeature.GetPropertyValue(layer.LineWidth) / scale;
                             paint.Style = SKPaintStyle.Stroke;
-                            paint.PathEffect = layer.PathEffect;
+                            if (layer.DashArray is not null)
+                            {
+                                using var pathEffect = SKPathEffect.CreateDash(layer.DashArray.Select(x => x / scale).ToArray(), 1);
+                                paint.PathEffect = pathEffect;
+                            }
+                            else
+                            {
+                                paint.PathEffect = null;
+                            }
+
                             if (lineFeature.Geometry is not null)
                             {
                                 canvas.DrawPath(lineFeature.Geometry, paint);
@@ -68,15 +75,10 @@ public class VectorMapLayer(VectorMapStyles styles, string url) : CacheableLayer
                         }
                         case VectorSymbolFeature symbolFeature:
                         {
-                            var layer = (VectorSymbolLayer?)symbolFeature.Layer;
-                            if (layer is null) continue;
-                            paint.Color = layer.TextColor;
+                            if (symbolFeature.Layer is not VectorSymbolStyleLayer layer || symbolFeature.Text is null) continue;
+                            paint.Color = symbolFeature.GetPropertyValue(layer.TextColor).ToSKColor();
                             paint.Style = SKPaintStyle.Fill;
-                            foreach (var text in symbolFeature.Points)
-                            {
-                                if (text is null) continue;
-                                canvas.DrawText(text, 0, 0, paint);
-                            }
+                            canvas.DrawText(symbolFeature.Text, 0, 0, paint);
 
                             break;
                         }

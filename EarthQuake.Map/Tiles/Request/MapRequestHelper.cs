@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
+using EarthQuake.Map.Tiles.Vector;
 
 namespace EarthQuake.Map.Tiles.Request;
 
@@ -43,6 +44,16 @@ public static class MapRequestHelper
                 {
                     switch (req)
                     {
+                        case VectorTilesController.VectorTileRequest vectorTileRequest:
+                        {
+                            var (x, y, z) = vectorTileRequest.TilePoint;
+                            if (vectorTileRequest.PMReader is null) continue;
+                            var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
+                            if (response is null) continue;
+                            var result = vectorTileRequest.GetAndParse(response);
+                            vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
+                            break;
+                        }
                         case MapTileRequest tileRequest:
                         {
                             var response = await _client.GetAsync(tileRequest.Url);
