@@ -1,6 +1,9 @@
 ﻿using EarthQuake.Map.Layers;
 using EarthQuake.Map.Layers.OverLays;
+using EarthQuake.Map.Tiles.Vector;
 using SkiaSharp;
+using VectorTiles.Styles;
+using VectorTiles.Values;
 
 
 namespace EarthQuake.Map;
@@ -13,6 +16,11 @@ public class MapViewController
     private readonly IEnumerable<MapLayer> _mapLayers = [];
     private readonly IEnumerable<CacheableLayer> cacheableLayers = [];
     private SKPicture? cached;
+    
+    /// <summary>
+    /// キャッシュを使用するかどうか
+    /// </summary>
+    public bool UseCache { get; set; } = true;
 
     public MapLayer[] MapLayers
     {
@@ -40,30 +48,40 @@ public class MapViewController
     {
         _zoomCache["$zoom"] = new ConstFloatValue(MathF.Log2(zoom) + 5);
         canvas.Clear(Background?.BackgroundColor is not null
-            ? Background.BackgroundColor.GetValue(_zoomCache).ToColor().ToSKColor()
+            ? Background.BackgroundColor.GetValue(_zoomCache)!.ToColor().ToSKColor()
             : SKColors.Silver);
     }
 
     public void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
-        if (cacheableLayers.Any(x => x.IsUpdated || x.IsReloadRequired(scale, bounds)))
+        if (UseCache)
         {
-            cached?.Dispose();
-            cached = null;
-            using var recorder = new SKPictureRecorder();
-            using var c = recorder.BeginRecording(bounds);
-            foreach (var cacheableLayer in cacheableLayers)
+            if (cacheableLayers.Any(x => x.IsUpdated || x.IsReloadRequired(scale, bounds)))
             {
-                cacheableLayer.IsUpdated = false;
-                cacheableLayer.Render(c, scale, bounds);
+                cached?.Dispose();
+                cached = null;
+                using var recorder = new SKPictureRecorder();
+                using var c = recorder.BeginRecording(bounds);
+                foreach (var cacheableLayer in cacheableLayers)
+                {
+                    cacheableLayer.IsUpdated = false;
+                    cacheableLayer.Render(c, scale, bounds);
+                }
+
+                cached = recorder.EndRecording();
             }
 
-            cached = recorder.EndRecording();
+            if (cached is not null)
+            {
+                canvas.DrawPicture(cached);
+            }
         }
-
-        if (cached is not null)
+        else
         {
-            canvas.DrawPicture(cached);
+            foreach (var cacheableLayer in cacheableLayers)
+            {
+                cacheableLayer.Render(canvas, scale, bounds);
+            }
         }
 
         // Background
