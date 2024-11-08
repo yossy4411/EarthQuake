@@ -68,7 +68,7 @@ public class MainViewModel : ViewModelBase
 
             VectorBackgroundStyleLayer? bg;
             VectorMapLayer map;
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/light.json", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/dark.json", UriKind.Absolute)))
             {
                 var styles = MapboxStyle.LoadGLJson(stream);
                 map = new VectorMapLayer(styles);
