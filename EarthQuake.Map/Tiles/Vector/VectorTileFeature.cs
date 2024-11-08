@@ -2,36 +2,24 @@
 using LibTessDotNet;
 using SkiaSharp;
 using VectorTiles.Styles;
-using VectorTiles.Styles.Values;
 using VectorTiles.Values;
 using MVectorTileFeature = VectorTiles.Mvt.MapboxTile.Layer.Feature;
 
 namespace EarthQuake.Map.Tiles.Vector;
 
-public abstract class VectorTileFeature : IDisposable
+public abstract class VectorTileFeature(VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags)
 {
-    public virtual SKObject? Geometry => null;
-    internal VectorMapStyleLayer Layer { get; init; } = null!;
+    internal VectorMapStyleLayer? Layer { get; private set; } = layer;
+
+    public Dictionary<string, IConstValue?>? Tags { get; set; } = tags;
     
-    internal Dictionary<string, IConstValue?> Tags { get; init; } = null!;
-
-    public virtual void Dispose()
-    {
-        if (Geometry is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-        GC.SuppressFinalize(this);
-    }
-
-    public T? GetPropertyValue<T>(StyleProperty<T>? property) => property is null ? default : property.GetValue(Tags);
 }
 
 public class VectorFillFeature : VectorTileFeature
 {
-    public override SKVertices? Geometry { get; }
+    public SKPoint[]? Geometry { get; private set; }
 
-    public VectorFillFeature(MVectorTileFeature feature, TilePoint point)
+    public VectorFillFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer, tags)
     {
         var tess = new Tess();
         if (feature.Geometries.Count <= 0) return;
@@ -56,31 +44,27 @@ public class VectorFillFeature : VectorTileFeature
             points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
                 tess.Vertices[tess.Elements[j]].Position.Y);
         }
-        Geometry = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null);
+
+        Geometry = points;
     }
 }
 
 public class VectorLineFeature : VectorTileFeature
 {
-    public override SKPath? Geometry { get; }
+    public SKPoint[][] Geometry { get; private set; }
 
-    public VectorLineFeature(MVectorTileFeature feature, TilePoint point)
+    public VectorLineFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer,tags)
     {
-        var path = new SKPath();
-
-        foreach (var points in feature.Geometries)
-        {
-            path.AddPoly(points.Points.Select(a => GeomTransform.Translate(a.Lon, a.Lat)).ToArray(), false);
-        }
-        
-        Geometry = path;
+        Geometry = feature.Geometries.Select(p => p.Points.Select(a => GeomTransform.Translate(a.Lon, a.Lat)).ToArray())
+            .ToArray();
     }
 }
 
 public class VectorSymbolFeature : VectorTileFeature
 {
-    public SKTextBlob? Text { get; }
-    public VectorSymbolFeature(MVectorTileFeature feature, TilePoint point, SKFont font)
+    public string? Text { get; }
+    public SKPoint Point { get; }
+    public VectorSymbolFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer, tags)
     {
         var field = (Layer as VectorSymbolStyleLayer)?.TextField;
         if (field is null)
@@ -88,18 +72,9 @@ public class VectorSymbolFeature : VectorTileFeature
             Text = null;
             return;
         }
-
         var coord = feature.Geometries[0].Points[0];
-        var skPoint = GeomTransform.Translate(coord.Lon, coord.Lat);
+        Point = GeomTransform.Translate(coord.Lon, coord.Lat);
         var text = feature.Tags.GetValueOrDefault(field)?.ToString();
-        var blob = SKTextBlob.Create(text, font, skPoint);
-        Text = blob;
+        Text = text;
     }
-
-    public override void Dispose()
-    {
-        Text?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-    
 }

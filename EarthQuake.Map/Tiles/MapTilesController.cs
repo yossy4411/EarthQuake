@@ -5,12 +5,12 @@ using EarthQuake.Map.Tiles.Request;
 
 namespace EarthQuake.Map.Tiles;
 
-public abstract class MapTilesController<T>(string url) where T : class
+public abstract class MapTilesController<T>(string url, int capacity = 256) where T : class
 {
     public Action? OnUpdate;
     public const int ImageSize = 256;
     private protected readonly string Url = url;
-    private protected readonly LRUCache<TilePoint, T> Tiles = new(256);
+    private protected readonly LRUCache<TilePoint, T> Tiles = new(capacity);
 
     private static void GetXyzTile(double screenX, double screenY, int zoom, out int x, out int y, out int z)
     {

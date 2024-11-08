@@ -29,57 +29,72 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
         using var paint = new SKPaint();
         paint.IsAntialias = true;
         paint.Typeface = Font;
+        using var path = new SKPath();
+        var widthFactor = point.Z switch
+        {
+            < 8 => 1,
+            < 10 => 2,
+            < 12 => 8,
+            _ => 14
+        }; // ズームするほど太くなっていっちゃうから調整
         for (var j = 0; j <= h; j++)
         {
             for (var i = 0; i <= w; i++)
             {
                 if (!_controller.TryGetTile(point.Add(i, j), out var tile) || tile?.Vertices is null) continue;
-                foreach (var vectorTileFeature in tile.Vertices)
+                foreach (var feature in tile.Vertices)
                 {
-                    switch (vectorTileFeature)
+                    switch (feature)
                     {
-                        case VectorFillFeature feature:
+                        case VectorLineFeature line:
                         {
-                            if (feature.Layer is not VectorFillStyleLayer layer) continue;
-                            paint.Color = feature.GetPropertyValue(layer.FillColor).ToSKColor();
-                            paint.Style = SKPaintStyle.Fill;
-                            if (feature.Geometry is not null)
-                            {
-                                canvas.DrawVertices(feature.Geometry, SKBlendMode.SrcOver, paint);
-                            }
-
-                            break;
-                        }
-                        case VectorLineFeature lineFeature:
-                        {
-                            if (lineFeature.Layer is not VectorLineStyleLayer layer) continue;
-                            paint.Color = lineFeature.GetPropertyValue(layer.LineColor).ToSKColor();
-                            paint.StrokeWidth = lineFeature.GetPropertyValue(layer.LineWidth) / scale;
+                            if (feature.Layer is not VectorLineStyleLayer layer) continue;
+                            paint.Color = layer.LineColor is null ? SKColors.White : layer.LineColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
+                            paint.StrokeWidth =
+                                (layer.LineWidth is null ? 1 : layer.LineWidth.GetValue(feature.Tags)!.ToFloat()) / scale / widthFactor;
+                            paint.StrokeCap = SKStrokeCap.Round;
+                            paint.StrokeJoin = SKStrokeJoin.Round;
                             paint.Style = SKPaintStyle.Stroke;
+
                             if (layer.DashArray is not null)
                             {
-                                using var pathEffect = SKPathEffect.CreateDash(layer.DashArray.Select(x => x / scale).ToArray(), 1);
+                                using var pathEffect =
+                                    SKPathEffect.CreateDash(layer.DashArray.Select(x => x / scale).ToArray(), 1);
                                 paint.PathEffect = pathEffect;
                             }
                             else
                             {
                                 paint.PathEffect = null;
                             }
-
-                            if (lineFeature.Geometry is not null)
+                            
+                            
+                            foreach (var skPoints in line.Geometry)
                             {
-                                canvas.DrawPath(lineFeature.Geometry, paint);
+                                path.AddPoly(skPoints, false);
                             }
 
+                            canvas.DrawPath(path, paint);
+                            path.Reset();
                             break;
                         }
-                        case VectorSymbolFeature symbolFeature:
+                        case VectorFillFeature fill:
                         {
-                            if (symbolFeature.Layer is not VectorSymbolStyleLayer layer || symbolFeature.Text is null) continue;
-                            paint.Color = symbolFeature.GetPropertyValue(layer.TextColor).ToSKColor();
+                            if (feature.Layer is not VectorFillStyleLayer layer) continue;
+                            paint.Color = layer.FillColor is null ? SKColors.White : layer.FillColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
                             paint.Style = SKPaintStyle.Fill;
-                            canvas.DrawText(symbolFeature.Text, 0, 0, paint);
+                            using var vertices =
+                                SKVertices.CreateCopy(SKVertexMode.Triangles, fill.Geometry, null);
+                            canvas.DrawVertices(vertices, SKBlendMode.Src, paint);
+                            break;
+                        }
+                        case VectorSymbolFeature symbol:
+                        {
+                            if (feature.Layer is not VectorSymbolStyleLayer layer || symbol.Text is null) continue;
 
+                            paint.TextSize = (layer.TextSize is null ? 15 : layer.TextSize.GetValue(feature.Tags)!.ToFloat()) / scale;
+                            paint.Color = layer.TextColor is null ? SKColors.White : layer.TextColor!.GetValue(feature.Tags)!.ToColor().ToSKColor();
+                            paint.Style = SKPaintStyle.Fill;
+                            canvas.DrawText(symbol.Text, symbol.Point, paint);
                             break;
                         }
                     }

@@ -18,10 +18,13 @@ public class VectorTilesController : MapTilesController<VectorTile>
     /// </summary>
     /// <param name="url"></param>
     /// <param name="styles"></param>
-    public VectorTilesController(VectorMapStyle styles) : base(styles.Sources.Count == 0 || styles.Sources[0].Url is null ? "unknown url" : styles.Sources[0].Url!, 64)
+    public VectorTilesController(VectorMapStyle styles) : base(styles.Sources.Count == 0 || styles.Sources[0].Url is null ? "unknown url" : styles.Sources[0].Url!, 100)
     {
         styles1 = styles;
+        if (styles.Sources.Count == 0) return;
+        
         var s = styles.Sources[0].Url;
+        
         Task.Run(async () =>
         {
             if (s is not null && s.StartsWith("pmtiles://"))
@@ -65,15 +68,4 @@ public class VectorTilesController : MapTilesController<VectorTile>
     }
 }
 
-public record VectorTile(VectorTileFeature[]? Vertices) : IDisposable
-{
-    public void Dispose()
-    {
-        if (Vertices is null) return;
-        foreach (var vertex in Vertices)
-        {
-            vertex.Dispose();
-        }
-        GC.SuppressFinalize(this);
-    }
-}
+public record VectorTile(VectorTileFeature[]? Vertices);

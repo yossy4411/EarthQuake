@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using EarthQuake.Map.Layers;
 using SkiaSharp;
 using VectorTiles.Mvt;
 using VectorTiles.Styles;
@@ -38,16 +37,13 @@ public static class VectorMapSKParser
                 switch (styleLayer)
                 {
                     case VectorFillStyleLayer fillLayer:
-                        tileFeatures.Add(new VectorFillFeature(feature, point)
-                            { Layer = fillLayer, Tags = feature.Tags });
+                        tileFeatures.Add(new VectorFillFeature(feature, fillLayer, feature.Tags));
                         break;
                     case VectorLineStyleLayer lineLayer:
-                        tileFeatures.Add(new VectorLineFeature(feature, point)
-                            { Layer = lineLayer, Tags = feature.Tags });
+                        tileFeatures.Add(new VectorLineFeature(feature, lineLayer, feature.Tags));
                         break;
                     case VectorSymbolStyleLayer symbolLayer:
-                        tileFeatures.Add(new VectorSymbolFeature(feature, point, MapLayer.TextFont)
-                            { Layer = symbolLayer, Tags = feature.Tags });
+                        tileFeatures.Add(new VectorSymbolFeature(feature, symbolLayer, feature.Tags));
                         break;
                 }
             }
