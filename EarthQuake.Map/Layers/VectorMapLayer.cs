@@ -20,7 +20,7 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
     {
         if (_controller is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
-        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(scale) + 5, out var point);
+        VectorTilesController.GetXyzTile(origin, Math.Min(16, Math.Max(4, (int)Math.Log2(scale) + 5)), out var point);
         var zoom = (int)Math.Pow(2, point.Z);
         var h = (int)Math.Ceiling(bounds.Height / GeomTransform.Zoom / (GeomTransform.Height * 2f / zoom));
         var w = (int)Math.Ceiling(bounds.Width / GeomTransform.Zoom / (360f / zoom));
@@ -51,7 +51,8 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
                             if (feature.Layer is not VectorLineStyleLayer layer) continue;
                             paint.Color = layer.LineColor is null ? SKColors.White : layer.LineColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
                             paint.StrokeWidth =
-                                (layer.LineWidth is null ? 1 : layer.LineWidth.GetValue(feature.Tags)!.ToFloat()) / scale / widthFactor;
+                                (layer.LineWidth is null ? 1 : layer.LineWidth.GetValue(feature.Tags)!.ToFloat()) /
+                                (point.Z > 12 ? 5000f : scale) / widthFactor;
                             paint.StrokeCap = SKStrokeCap.Round;
                             paint.StrokeJoin = SKStrokeJoin.Round;
                             paint.Style = SKPaintStyle.Stroke;
