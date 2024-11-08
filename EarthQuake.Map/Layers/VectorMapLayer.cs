@@ -10,7 +10,7 @@ namespace EarthQuake.Map.Layers;
 /// ベクトルタイルを描画するレイヤー
 /// </summary>
 /// <param name="styles"></param>
-public class VectorMapLayer(VectorMapStyle styles, string url) : CacheableLayer
+public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
 {
     private VectorTilesController? _controller;
     private VectorMapStyle? _styles = styles;
@@ -90,7 +90,7 @@ public class VectorMapLayer(VectorMapStyle styles, string url) : CacheableLayer
 
     private protected override void Initialize()
     {
-        _controller = new VectorTilesController(url, _styles!)
+        _controller = new VectorTilesController(_styles!)
         {
             OnUpdate = HandleUpdated
         };

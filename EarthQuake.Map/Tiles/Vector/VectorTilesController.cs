@@ -18,7 +18,7 @@ public class VectorTilesController : MapTilesController<VectorTile>
     /// </summary>
     /// <param name="url"></param>
     /// <param name="styles"></param>
-    public VectorTilesController(string url, VectorMapStyle styles) : base(url)
+    public VectorTilesController(VectorMapStyle styles) : base(styles.Sources.Count == 0 || styles.Sources[0].Url is null ? "unknown url" : styles.Sources[0].Url!, 64)
     {
         styles1 = styles;
         var s = styles.Sources[0].Url;

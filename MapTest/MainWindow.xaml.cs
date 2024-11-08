@@ -23,9 +23,9 @@ public partial class MainWindow
         using var stream = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\world.mpk.lz4", FileMode.Open);
         var worldSet = Serializer.Deserialize<WorldPolygonSet>(stream);
         var world = new CountriesLayer(worldSet);
-        using var stream2 = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\default_light.json", FileMode.Open);
+        using var stream2 = new FileStream(@"E:\source\EarthQuake\EarthQuake\Assets\mono2.json", FileMode.Open);
         var styles = MapboxStyle.LoadGLJson(stream2);
-        var map = new VectorMapLayer(styles, "https://map.okayugroup.com/tiles/{z}/{x}/{y}.pbf");
+        var map = new VectorMapLayer(styles);
         Controller = new MapViewController
         {
             MapLayers = [world, map]
