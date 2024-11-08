@@ -48,8 +48,7 @@ public static class MapRequestHelper
                         {
                             var (x, y, z) = vectorTileRequest.TilePoint;
                             if (vectorTileRequest.PMReader is null) continue;
-                            var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
-                            if (response is null) continue;
+                            await using var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
                             var result = vectorTileRequest.GetAndParse(response);
                             vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
                             break;
@@ -60,17 +59,12 @@ public static class MapRequestHelper
                             var code = response.StatusCode;
                             if (code is HttpStatusCode.OK or HttpStatusCode.Accepted or HttpStatusCode.NotModified)
                             {
-                                Stream? stream;
-                                if (response.Content.Headers.ContentEncoding.Contains("gzip"))
-                                {
+                                await using var stream =
                                     // GZip圧縮されている場合
-                                    stream = new GZipStream(await response.Content.ReadAsStreamAsync(),
-                                        CompressionMode.Decompress);
-                                }
-                                else
-                                {
-                                    stream = await response.Content.ReadAsStreamAsync();
-                                }
+                                    response.Content.Headers.ContentEncoding.Contains("gzip")
+                                    ? new GZipStream(await response.Content.ReadAsStreamAsync(),
+                                        CompressionMode.Decompress)
+                                    : await response.Content.ReadAsStreamAsync();
 
                                 var result = tileRequest.GetAndParse(stream);
                                 tileRequest.Finished?.Invoke(tileRequest, result);
