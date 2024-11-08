@@ -79,7 +79,7 @@ public class SelectableCanvas : MapCanvas
         var canvas = lease.SkCanvas;
         SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
         canvas.ClipRect(clipRect);
-        canvas.Clear(Background);
+        Controller?.Clear(canvas, Scale);
         var region = new SKRect(-Offset.X / Scale, -Offset.Y / Scale, (float)(-Offset.X + Bounds.Width) / Scale,
             (float)(-Offset.Y + Bounds.Height) / Scale);
         using (new SKAutoCanvasRestore(canvas))

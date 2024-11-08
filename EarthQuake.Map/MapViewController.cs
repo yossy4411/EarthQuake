@@ -34,6 +34,15 @@ public class MapViewController
     }
 
     public Action? OnUpdated;
+    private readonly Dictionary<string, IConstValue?> _zoomCache = new(); 
+    public VectorBackgroundStyleLayer? Background { get; init; }
+    public void Clear(SKCanvas canvas, float zoom)
+    {
+        _zoomCache["$zoom"] = new ConstFloatValue(MathF.Log2(zoom) + 5);
+        canvas.Clear(Background?.BackgroundColor is not null
+            ? Background.BackgroundColor.GetValue(_zoomCache).ToColor().ToSKColor()
+            : SKColors.Silver);
+    }
 
     public void Render(SKCanvas canvas, float scale, SKRect bounds)
     {

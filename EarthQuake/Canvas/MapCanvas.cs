@@ -45,8 +45,7 @@ public class MapCanvas : SkiaCanvasView
             o => o.Controller,
             (o, value) => o.Controller = value
         );
-
-    private protected static SKColor Background => SKColors.Lavender;
+    
     private Point _scrollOffset;
     private protected SKPoint Offset => Translate + Center;
 
@@ -85,7 +84,7 @@ public class MapCanvas : SkiaCanvasView
 
         SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
         canvas.ClipRect(clipRect);
-        canvas.Clear(Background);
+        Controller?.Clear(canvas, Scale);
         var translate = Translate + Center;
         var region = new SKRect(-translate.X / Scale, -translate.Y / Scale,
             (float)(-translate.X + Bounds.Width) / Scale, (float)(-translate.Y + Bounds.Height) / Scale);
