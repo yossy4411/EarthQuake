@@ -9,14 +9,14 @@
   <ItemGroup>
     <PackageReference Include="LibTessDotNet" Version="1.1.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Okayu.VectorTiles.Mvt" Version="0.1.3" />
-    <PackageReference Include="Okayu.VectorTiles.Styles" Version="0.1.0" />
-    <PackageReference Include="PMTiles.NET" Version="0.1.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EarthQuake.Core\EarthQuake.Core.csproj" />
+    <ProjectReference Include="..\PMTiles.NET\src\PMTiles.NET.csproj" />
+    <ProjectReference Include="..\VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj" />
+    <ProjectReference Include="..\VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj" />
   </ItemGroup>
 
   <ItemGroup>
