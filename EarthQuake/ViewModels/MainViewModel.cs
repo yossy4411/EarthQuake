@@ -67,7 +67,7 @@ public class MainViewModel : ViewModelBase
             }
 
             VectorMapLayer map;
-            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/basic.json", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/light.json", UriKind.Absolute)))
             {
                 var styles = MapboxStyle.LoadGLJson(stream);
                 map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
