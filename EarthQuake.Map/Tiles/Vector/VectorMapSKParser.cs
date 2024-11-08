@@ -19,6 +19,14 @@ public static class VectorMapSKParser
             foreach (var tileLayerFeature in tileLayer.Features)
             {
                 tileLayerFeature.Tags["$zoom"] = new ConstFloatValue(z);
+                var type = tileLayerFeature.Type switch
+                {
+                    MapboxTile.Layer.Feature.FeatureType.Point => "Point",
+                    MapboxTile.Layer.Feature.FeatureType.LineString => "LineString",
+                    MapboxTile.Layer.Feature.FeatureType.Polygon => "Polygon",
+                    _ => "Unknown"
+                };
+                tileLayerFeature.Tags["$type"] = new ConstStringValue(type);
             }
         }
         foreach (var styleLayer in style.Layers)
