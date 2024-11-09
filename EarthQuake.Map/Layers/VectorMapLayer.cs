@@ -1,6 +1,7 @@
 ﻿using EarthQuake.Core;
 using EarthQuake.Map.Tiles;
 using EarthQuake.Map.Tiles.Vector;
+using PMTiles;
 using SkiaSharp;
 using VectorTiles.Styles;
 
@@ -13,6 +14,7 @@ namespace EarthQuake.Map.Layers;
 public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
 {
     private VectorTilesController? _controller;
+    private Header? _header;
     private VectorMapStyle? _styles = styles;
     private TilePoint _point;
 
@@ -20,7 +22,10 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
     {
         if (_controller is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
-        VectorTilesController.GetXyzTile(origin, Math.Min(16, Math.Max(4, (int)Math.Log2(scale) + 5)), out var point);
+        
+        VectorTilesController.GetXyzTile(origin, Math.Min(_header?.MaxZoom ?? 15, Math.Max(_header?.MinZoom ?? 5, (int)Math.Log2(scale) + 5)), out var point);
+        VectorTilesController.GetXyzTileFromLatLon(_header?.MinLon ?? 0, _header?.MaxLat ?? 0, point.Z, out var leftTop);
+        VectorTilesController.GetXyzTileFromLatLon(_header?.MaxLon ?? 0, _header?.MinLat ?? 0, point.Z, out var rightBottom);
         var zoom = (int)Math.Pow(2, point.Z);
         var h = (int)Math.Ceiling(bounds.Height / GeomTransform.Zoom / (GeomTransform.Height * 2f / zoom));
         var w = (int)Math.Ceiling(bounds.Width / GeomTransform.Zoom / (360f / zoom));
@@ -41,7 +46,10 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
         {
             for (var i = 0; i <= w; i++)
             {
-                if (!_controller.TryGetTile(point.Add(i, j), out var tile) || tile?.Vertices is null) continue;
+                var currentPoint = point.Add(i, j);
+                if (currentPoint.X < leftTop.X || currentPoint.Y < leftTop.Y || currentPoint.X > rightBottom.X ||
+                    currentPoint.Y > rightBottom.Y) continue;
+                if (!_controller.TryGetTile(currentPoint, out var tile) || tile?.Vertices is null) continue;
                 foreach (var feature in tile.Vertices)
                 {
                     switch (feature)
@@ -110,6 +118,8 @@ public class VectorMapLayer(VectorMapStyle styles) : CacheableLayer
         {
             OnUpdate = HandleUpdated
         };
+        if (_controller.PMTiles != null) _header = _controller.PMTiles.GetHeader();
+
         _styles = null; // 参照を解放
     }
 

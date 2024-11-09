@@ -25,15 +25,13 @@ public class VectorTilesController : MapTilesController<VectorTile>
         
         var s = styles.Sources[0].Url;
         
-        Task.Run(async () =>
+
+        if (s is not null && s.StartsWith("pmtiles://"))
         {
-            if (s is not null && s.StartsWith("pmtiles://"))
-            {
-                // PMTiles の場合、私が作った`PMTiles.NET`のライブラリを使う
-                // pmtiles://<url>/{z}/{x}/{y} の形式で指定されているが、必要なのは<url>の部分のみ。
-                PMTiles = await PMTilesReader.FromUrl(s[10..].Replace("/{z}/{x}/{y}", ""));  // PMTilesReaderを作成する際にWebリクエストを行うため、非同期で実行
-            }
-        });
+            // PMTiles の場合、私が作った`PMTiles.NET`のライブラリを使う
+            // pmtiles://<url>/{z}/{x}/{y} の形式で指定されているが、必要なのは<url>の部分のみ。
+            PMTiles = PMTilesReader.FromUrl(s[10..].Replace("/{z}/{x}/{y}", ""));  // PMTilesReaderを作成する際にWebリクエストを行うため、非同期で実行
+        }
     }
     
     internal class VectorTileRequest(SKPoint point, TilePoint tilePoint, string url, VectorMapStyle styles, PMTilesReader? reader)
