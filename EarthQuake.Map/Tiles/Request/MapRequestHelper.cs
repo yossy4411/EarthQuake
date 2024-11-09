@@ -48,9 +48,18 @@ public static class MapRequestHelper
                         {
                             var (x, y, z) = vectorTileRequest.TilePoint;
                             if (vectorTileRequest.PMReader is null) continue;
-                            await using var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
-                            var result = vectorTileRequest.GetAndParse(response);
-                            vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
+                            try
+                            {
+                                await using var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
+                                var result = vectorTileRequest.GetAndParse(response);
+                                vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
+                            }
+                            catch (ArgumentException)
+                            {
+                                Debug.WriteLine("存在しないタイルを読み込んだようです。");
+                            }
+
+                            
                             break;
                         }
                         case MapTileRequest tileRequest:
