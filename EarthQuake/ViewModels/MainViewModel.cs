@@ -67,11 +67,13 @@ public class MainViewModel : ViewModelBase
             }
 
             VectorBackgroundStyleLayer? bg;
+            VectorMapLandLayer land;
             VectorMapLayer map;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/dark.json", UriKind.Absolute)))
             {
                 var styles = MapboxStyle.LoadGLJson(stream);
-                map = new VectorMapLayer(styles);
+                map = new VectorMapLayer(styles, "行政区画");
+                land = new VectorMapLandLayer(map);
                 bg = styles.Layers.FirstOrDefault(x => x is VectorBackgroundStyleLayer) as VectorBackgroundStyleLayer;
             }
 
@@ -90,17 +92,17 @@ public class MainViewModel : ViewModelBase
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [world, map, grid],
+                MapLayers = [world, land, map, grid],
                 Background = bg
             };
             Controller2 = new MapViewController
             {
-                MapLayers = [world, map, _land, _foreground],
+                MapLayers = [world, land, _land, map, _foreground],
                 Background = bg
             };
             Controller3 = new MapViewController
             {
-                MapLayers = [tile, map, Hypo],
+                MapLayers = [land, map, Hypo],
                 Background = bg
             };
         }
