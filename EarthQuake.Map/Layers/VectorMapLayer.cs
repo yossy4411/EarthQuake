@@ -15,13 +15,12 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
 {
     protected internal VectorTilesController? Controller;
     protected internal Header? Header;
-    private VectorMapStyle? styles = styles;
     private TilePoint _point;
     protected internal string Land = land;
 
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
-        if (Controller is null) return;
+        if (Controller is null || styles is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
         
         VectorTilesController.GetXyzTile(origin, Math.Min(Header?.MaxZoom ?? 15, Math.Max(Header?.MinZoom ?? 5, (int)Math.Log2(scale) + 5)), out var point);
@@ -43,6 +42,7 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             < 12 => 8,
             _ => 14
         }; // ズームするほど太くなっていっちゃうから調整
+        List<VectorTileFeature> features = [];
         for (var j = 0; j <= h; j++)
         {
             for (var i = 0; i <= w; i++)
@@ -51,12 +51,13 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
                 if (currentPoint.X < leftTop.X || currentPoint.Y < leftTop.Y || currentPoint.X > rightBottom.X ||
                     currentPoint.Y > rightBottom.Y) continue;
                 if (!Controller.TryGetTile(currentPoint, out var tile) || tile?.Vertices is null) continue;
-                foreach (var feature in tile.Vertices)
-                {
-                    if (feature.Layer?.Id == Land) continue;  // Landレイヤーは別のクラスで描画する
-                    DrawLayer(canvas, scale, feature, paint, point, widthFactor, path);
-                }
+                features.AddRange(tile.Vertices);
             }
+        }
+        
+        foreach (var feature in from styleLayer in styles.Layers from feature in features where ReferenceEquals(feature.Layer, styleLayer) where feature.Layer?.Id != Land select feature)
+        {
+            DrawLayer(canvas, scale, feature, paint, point, widthFactor, path);
         }
     }
 
@@ -127,8 +128,6 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             OnUpdate = HandleUpdated
         };
         if (Controller.PMTiles != null) Header = Controller.PMTiles.GetHeader();
-
-        styles = null; // 参照を解放
     }
 
     public override bool IsReloadRequired(float zoom, SKRect bounds)
