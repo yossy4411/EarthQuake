@@ -64,35 +64,27 @@ public class StatisticsCanvas : SkiaCanvasView
             {
                 case StatisticType.EpicentersDepth:
                 {
-                    double minX, rangeX;
-                    double maxY, rangeY;
+                    CalculateOffset(Epicenters.Min(x => x.Geometry.Coordinates[0]),
+                        Epicenters.Max(x => x.Geometry.Coordinates[0]), width - 50, 50, out var deltaX, out var minX,
+                        out var maxX, out var count);
+                    for (var i = 0; i <= count; i ++)
                     {
-                        (double min, double _, double delta, double range) =
-                            CalculateOffset(Epicenters, x => x.Geometry.Coordinates[0]);
-                        for (double i = 0; i <= range; i += delta)
-                        {
-                            var x = (float)(i * (width - 50) / range);
-                            canvas.DrawLine(x, 0, x, height, paint);
-                            canvas.DrawText($"E{i + min:F1}", x, height - 6, paint);
-                        }
-
-                        minX = min;
-                        rangeX = range;
+                        var x = i * (width - 70) / count + 20;
+                        canvas.DrawLine(x, 0, x, height, paint);
+                        canvas.DrawText($"E{i * deltaX + minX:F2}", x, height - 6, paint);
                     }
+                    var rangeX = maxX - minX;
+                    CalculateOffset(Epicenters.Min(x => x.Geometry.Coordinates[1]),
+                        Epicenters.Max(x => x.Geometry.Coordinates[1]), height - 50, 50, out var deltaY, out var minY,
+                        out var maxY, out count);
+                    for (var i = 0; i <= count; i ++)
                     {
-                        (double _, double max, double delta, double range) =
-                            CalculateOffset(Epicenters, x => x.Geometry.Coordinates[1]);
-                        for (double i = 0; i <= range; i += delta)
-                        {
-                            var y = (float)(i * (height - 50) / range) + 50;
-                            canvas.DrawLine(0, y, width, y, paint);
-                            canvas.DrawText($"N{max - i:F1}", 0, y, paint);
-                        }
-
-                        maxY = max;
-                        rangeY = range;
+                        var y = i * (height - 70) / count + 50;
+                        canvas.DrawLine(0, y, width, y, paint);
+                        canvas.DrawText($"N{i * deltaY + minY:F2}", 0, y, paint);
                     }
-                    paint.Color = SKColors.Pink;
+                    var rangeY = maxY - minY;
+                    
                     paint.StrokeWidth = 1;
                     var dMax = Epicenters.Select(x => x.Properties.Dep ?? 0).Max();
                     foreach (var item in Epicenters)
@@ -282,28 +274,30 @@ public class StatisticsCanvas : SkiaCanvasView
             canvas.DrawText("データなし", width / 2, height / 2, paint);
         }
     }
-
-    private static (float, float, float, float) CalculateOffset(List<Epicenters.Epicenter> floats,
-        Func<Epicenters.Epicenter, float> func)
+    
+    /// <summary>
+    /// 描画サイズを計算します。
+    /// </summary>
+    /// <param name="min">値の最小値</param>
+    /// <param name="max">値の最大値</param>
+    /// <param name="size">サイズ（画面座標）</param>
+    /// <param name="preferredSize">好ましい間隔（画面座標）</param>
+    /// <param name="delta">計算された間隔（画面座標）</param>
+    /// <param name="start">初期値（値）</param>
+    /// <param name="end">最終値（値）</param>
+    /// <param name="count">描画回数</param>
+    private static void CalculateOffset(float min, float max, float size, float preferredSize, out float delta, out float start, out float end, out int count)
     {
-        var max = floats.Max(func);
-        var min = floats.Min(func);
-        var a = (int)Math.Max(-1, Math.Floor(Math.Log10(max - min)));
-        var delta = Pow(10, a);
-        var min2 = MathF.Floor(min / delta) * delta;
-        var max2 = MathF.Floor(max / delta) * delta + delta;
-        return (min2, max2, delta, max2 - min2);
-    }
-
-    private static float Pow(int a, int b)
-    {
-        if (b < 0) return 1f / a;
-        var v = 1;
-        for (var i = 0; i < b; i++)
-        {
-            v *= a;
-        }
-
-        return v;
+        var range = max - min;
+        var preferredCount = MathF.Ceiling(size / preferredSize);
+        var preferredDelta = range / preferredCount;
+        // 10の累乗数の範囲で最も近い整数を求める
+        var pow = Math.Pow(10, Math.Floor(Math.Log10(preferredDelta)));
+        var delta1 = (float)(Math.Ceiling(preferredDelta / pow) * pow);
+        var delta2 = (float)(Math.Floor(preferredDelta / pow) * pow);
+        delta = Math.Abs(delta1 - preferredDelta) < Math.Abs(delta2 - preferredDelta) ? delta1 : delta2;
+        start = (float)Math.Floor(min / delta) * delta;
+        end = (float)Math.Ceiling(max / delta) * delta;
+        count = (int)((end - start) / delta);
     }
 }
