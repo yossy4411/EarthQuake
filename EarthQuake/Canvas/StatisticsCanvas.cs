@@ -89,8 +89,17 @@ public class StatisticsCanvas : SkiaCanvasView
                     var dMax = Epicenters.Select(x => x.Properties.Dep ?? 0).Max();
                     foreach (var item in Epicenters)
                     {
-                        var x = (float)((item.Geometry.Coordinates[0] - minX) * (width - 50) / rangeX);
-                        var y = (float)((maxY - item.Geometry.Coordinates[1]) * (height - 50) / rangeY) + 50;
+                        var x = (item.Geometry.Coordinates[0] - minX) * (width - 70) / rangeX + 20;
+                        var y = (maxY - item.Geometry.Coordinates[1]) * (height - 70) / rangeY + 50;
+                        paint.Color = SKColors.Pink.WithAlpha(item.Properties.Mag switch
+                        {
+                            >= 5 => 255,
+                            >= 4 => 200,
+                            >= 3 => 150,
+                            >= 2 => 100,
+                            >= 1 => 50,
+                            _ => 25
+                        });
                         canvas.DrawPoint(x, (item.Properties.Dep ?? 0) / dMax * 50, paint);
                         canvas.DrawPoint(width - 50 + (item.Properties.Dep ?? 0) / dMax * 50, y, paint);
                         canvas.DrawPoint(x, y, paint);
