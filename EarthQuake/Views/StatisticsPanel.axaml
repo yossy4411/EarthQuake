@@ -3,20 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:EarthQuake.ViewModels"
-             xmlns:cv="clr-namespace:EarthQuake.Converter.Statistics;assembly=EarthQuake"
              xmlns:canvas="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="EarthQuake.Views.StatisticsPanel"
-             x:DataType="vm:StatisticsViewModel">
-  <UserControl.Resources>
-    <cv:RectangleConverter x:Key="RConverter"/>
-  </UserControl.Resources>
-  <Design.DataContext>
-    <vm:StatisticsViewModel/>
-  </Design.DataContext>
+             x:Class="EarthQuake.Views.StatisticsPanel">
   <DockPanel>
     <StackPanel DockPanel.Dock="Top">
-      <TextBlock FontWeight="Bold"
+      <TextBlock FontWeight="Black"
                  Text="統計情報"
                  FontSize="20"/>
       <TextBlock x:Name="RangeText"
@@ -29,7 +21,7 @@
                   Padding="4">
         <TabItem Header="深さ">
           <DockPanel>
-            <TextBlock DockPanel.Dock="Top">緯度経度と深さの相関図</TextBlock>
+            <TextBlock DockPanel.Dock="Top">緯度・経度に対する深さ</TextBlock>
             <canvas:StatisticsCanvas x:Name="A"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
@@ -39,7 +31,7 @@
         </TabItem>
         <TabItem Header="規模">
           <DockPanel>
-            <TextBlock DockPanel.Dock="Top">時間と地震の規模の相関図</TextBlock>
+            <TextBlock DockPanel.Dock="Top">時間と地震の規模</TextBlock>
             <canvas:StatisticsCanvas x:Name="B"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
@@ -49,7 +41,7 @@
         </TabItem>
         <TabItem Header="震度">
           <DockPanel>
-            <TextBlock DockPanel.Dock="Top">日毎の地震の最大震度のグラフ</TextBlock>
+            <TextBlock DockPanel.Dock="Top">最大震度の推移</TextBlock>
             <canvas:StatisticsCanvas x:Name="C"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
