@@ -53,6 +53,7 @@ public class StatisticsCanvas : SkiaCanvasView
         paint.Color = SKColors.Gray;
         paint.Typeface = MapLayer.Font;
         paint.TextSize = 6;
+        paint.IsAntialias = true;
         canvas.ClipRect(new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height));
         canvas.Clear(SKColors.Black);
         var height = (float)Bounds.Height;
@@ -72,7 +73,7 @@ public class StatisticsCanvas : SkiaCanvasView
                         {
                             var x = (float)(i * (width - 50) / range);
                             canvas.DrawLine(x, 0, x, height, paint);
-                            canvas.DrawText("E" + ((int)((i + min) * 10)) * 0.1, x, height - 7, paint);
+                            canvas.DrawText($"E{i + min:F1}", x, height - 6, paint);
                         }
 
                         minX = min;
@@ -85,13 +86,14 @@ public class StatisticsCanvas : SkiaCanvasView
                         {
                             var y = (float)(i * (height - 50) / range) + 50;
                             canvas.DrawLine(0, y, width, y, paint);
-                            canvas.DrawText("N" + (int)((max - i) * 10) * 0.1, 0, y, paint);
+                            canvas.DrawText($"N{max - i:F1}", 0, y, paint);
                         }
 
                         maxY = max;
                         rangeY = range;
                     }
                     paint.Color = SKColors.Pink;
+                    paint.StrokeWidth = 1;
                     var dMax = Epicenters.Select(x => x.Properties.Dep ?? 0).Max();
                     foreach (var item in Epicenters)
                     {
