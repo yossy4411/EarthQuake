@@ -19,7 +19,8 @@
       <TextBlock FontWeight="Bold"
                  Text="統計情報"
                  FontSize="20"/>
-      <TextBlock Text="{Binding Range, Converter={StaticResource RConverter}}"
+      <TextBlock x:Name="RangeText"
+                 Text="範囲: 未選択"
                  Margin="0,0,0,10"/>
     </StackPanel>
       <TabControl DockPanel.Dock="Bottom"

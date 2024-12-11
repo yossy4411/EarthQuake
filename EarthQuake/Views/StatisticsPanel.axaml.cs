@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using EarthQuake.Core.GeoJson;
-using EarthQuake.ViewModels;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -8,7 +7,6 @@ namespace EarthQuake.Views;
 
 public partial class StatisticsPanel : UserControl
 {
-    private readonly StatisticsViewModel viewModel = new();
     public List<Epicenters.Epicenter> Epicenters
     {
         set
@@ -21,10 +19,14 @@ public partial class StatisticsPanel : UserControl
             C.InvalidateVisual();
         }
     }
-    public SKRect Selected { get => viewModel.Range; set => viewModel.Range = value; }
+
+    public SKRect Selected
+    {
+        set => RangeText.Text = $"範囲: {value.Left:F2},{value.Top:F2} - {value.Right:F2},{value.Bottom:F2}";
+    }
+
     public StatisticsPanel()
     {
         InitializeComponent();
-        DataContext = viewModel;
     }
 }
