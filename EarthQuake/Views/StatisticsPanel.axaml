@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:EarthQuake.ViewModels"
              xmlns:canvas="clr-namespace:EarthQuake.Canvas;assembly=EarthQuake"
+             xmlns:statistics="clr-namespace:EarthQuake.Canvas.Statistics"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="EarthQuake.Views.StatisticsPanel">
   <DockPanel>
@@ -22,30 +23,27 @@
         <TabItem Header="深さ">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">緯度・経度に対する深さ</TextBlock>
-            <canvas:StatisticsCanvas x:Name="A"
+            <statistics:EpicenterPlot x:Name="A"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
-                                     Type="0"
                                      ClipToBounds="True"/>
           </DockPanel>
         </TabItem>
         <TabItem Header="規模">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">時間と地震の規模</TextBlock>
-            <canvas:StatisticsCanvas x:Name="B"
+            <statistics:MagnitudeChart x:Name="B"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
-                                     Type="1"
                                      ClipToBounds="True"/>
           </DockPanel>
         </TabItem>
         <TabItem Header="震度">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">最大震度の推移</TextBlock>
-            <canvas:StatisticsCanvas x:Name="C"
+            <statistics:QuakeScalesGraph x:Name="C"
                                      HorizontalAlignment="Stretch"
                                      VerticalAlignment="Stretch"
-                                     Type="2"
                                      ClipToBounds="True"/>
           </DockPanel>
         </TabItem>
