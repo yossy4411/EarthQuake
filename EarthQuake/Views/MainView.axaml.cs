@@ -44,8 +44,7 @@ public partial class MainView : UserControl
 
     private void Selection_OnSelected(object? sender, Canvas.SelectionEventArgs e)
     {
-        Statistics.Selected = e.Selected;
-        Statistics.Epicenters = App.ViewModel.Hypo.GetPoints(e.Selected).ToList();
+        Statistics.Select(App.ViewModel.Hypo.GetPoints(e.Selected).ToList(), e.Selected);
     }
 
     private async void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)

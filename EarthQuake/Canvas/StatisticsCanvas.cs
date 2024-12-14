@@ -26,6 +26,8 @@ public class StatisticsCanvas : SkiaCanvasView
     }
 
     public StatisticType Type { get; set; }
+    
+    private SKPicture? picture;
 
     public List<Epicenters.Epicenter> Epicenters
     {
@@ -35,6 +37,14 @@ public class StatisticsCanvas : SkiaCanvasView
             epicenters = value;
             buffer = null;
         }
+    }
+    
+    public void Redraw()
+    {
+        picture?.Dispose();
+        picture = null; // 新しく描くのでキャッシュを破棄
+        InvalidateVisual();
+        
     }
 
     private List<Epicenters.Epicenter> epicenters = [];
@@ -49,13 +59,29 @@ public class StatisticsCanvas : SkiaCanvasView
         using var lease = GetSKCanvas(context);
         if (lease is null) return;
         var canvas = lease.SkCanvas;
+        canvas.Clear(SKColors.Black);
+        
+        if (picture is null)
+        {
+            // キャッシュがない場合は再描画して溜める
+            using var recorder = new SKPictureRecorder();
+            var rect = new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height);
+            var recordCanvas = recorder.BeginRecording(rect);
+            Render(recordCanvas);
+            picture = recorder.EndRecording();
+        }
+        
+        canvas.DrawPicture(picture);
+    }
+
+    private void Render(SKCanvas canvas)
+    {
         using SKPaint paint = new();
         paint.Color = SKColors.Gray;
         paint.Typeface = MapLayer.Font;
         paint.TextSize = 6;
         paint.IsAntialias = true;
-        canvas.ClipRect(new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height));
-        canvas.Clear(SKColors.Black);
+
         var height = (float)Bounds.Height;
         var width = (float)Bounds.Width;
         if (Epicenters.Count != 0)
@@ -91,7 +117,8 @@ public class StatisticsCanvas : SkiaCanvasView
                     {
                         var x = (item.Geometry.Coordinates[0] - minX) * (width - 70) / rangeX + 20;
                         var y = (maxY - item.Geometry.Coordinates[1]) * (height - 70) / rangeY + 50;
-                        paint.Color = SKColors.Pink.WithAlpha(item.Properties.Mag switch
+                        byte alpha = 255; // デバッグのためにコメントアウト
+                        /*item.Properties.Mag switch
                         {
                             >= 5 => 255,
                             >= 4 => 200,
@@ -99,7 +126,8 @@ public class StatisticsCanvas : SkiaCanvasView
                             >= 2 => 100,
                             >= 1 => 50,
                             _ => 25
-                        });
+                        };*/
+                        paint.Color = SKColors.Pink.WithAlpha(alpha);
                         canvas.DrawPoint(x, (item.Properties.Dep ?? 0) / dMax * 50, paint);
                         canvas.DrawPoint(width - 50 + (item.Properties.Dep ?? 0) / dMax * 50, y, paint);
                         canvas.DrawPoint(x, y, paint);
@@ -283,7 +311,7 @@ public class StatisticsCanvas : SkiaCanvasView
             canvas.DrawText("データなし", width / 2, height / 2, paint);
         }
     }
-    
+
     /// <summary>
     /// 描画サイズを計算します。
     /// </summary>

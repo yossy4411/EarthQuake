@@ -7,22 +7,19 @@ namespace EarthQuake.Views;
 
 public partial class StatisticsPanel : UserControl
 {
-    public List<Epicenters.Epicenter> Epicenters
+    /// <summary>
+    /// 表示する震央のリストを設定します
+    /// </summary>
+    /// <param name="epicenters">震央リスト</param>
+    public void Select(List<Epicenters.Epicenter> epicenters, SKRect bounds)
     {
-        set
-        {
-            A.Epicenters = value;
-            B.Epicenters = value;
-            C.Epicenters = value;
-            A.InvalidateVisual();
-            B.InvalidateVisual();
-            C.InvalidateVisual();
-        }
-    }
-
-    public SKRect Selected
-    {
-        set => RangeText.Text = $"範囲: {value.Left:F2},{value.Top:F2} - {value.Right:F2},{value.Bottom:F2}";
+        A.Epicenters = epicenters;
+        B.Epicenters = epicenters;
+        C.Epicenters = epicenters;
+        A.Redraw();
+        B.Redraw();
+        C.Redraw();
+        RangeText.Text = $"範囲: {bounds.Left:F2},{bounds.Top:F2} - {bounds.Right:F2},{bounds.Bottom:F2}";
     }
 
     public StatisticsPanel()
