@@ -50,7 +50,7 @@ public static class MapRequestHelper
                             if (vectorTileRequest.PMReader is null) continue;
                             try
                             {
-                                await using var response = await vectorTileRequest.PMReader.GetTileZxy(z, x, y);
+                                await using var response = await vectorTileRequest.PMReader.GetTileZxyAsync(z, x, y);
                                 var result = vectorTileRequest.GetAndParse(response);
                                 vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
                             }
