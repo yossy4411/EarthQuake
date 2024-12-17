@@ -55,14 +55,15 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             }
         }
         
+        List<SKRect> rects = [];
         foreach (var feature in from styleLayer in styles.Layers from feature in features where ReferenceEquals(feature.Layer, styleLayer) where feature.Layer?.Id != Land select feature)
         {
-            DrawLayer(canvas, scale, feature, paint, point, widthFactor, path);
+            DrawLayer(canvas, scale, feature, paint, point, widthFactor, path, rects);
         }
     }
 
     private protected static void DrawLayer(SKCanvas canvas, float scale, VectorTileFeature feature, SKPaint paint,
-        TilePoint point, int widthFactor, SKPath path)
+        TilePoint point, int widthFactor, SKPath path, List<SKRect> rects)
     {
         switch (feature)
         {
@@ -115,6 +116,9 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
                 paint.TextSize = (layer.TextSize is null ? 15 : layer.TextSize.GetValue(feature.Tags)!.ToFloat()) / scale;
                 paint.Color = layer.TextColor is null ? SKColors.White : layer.TextColor!.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.Style = SKPaintStyle.Fill;
+                var rect = new SKRect(symbol.Point.X, symbol.Point.Y - paint.TextSize, symbol.Point.X + paint.MeasureText(symbol.Text), symbol.Point.Y);
+                if (rects.Any(x => x.IntersectsWith(rect))) return; // 重なっていたら描画しない
+                rects.Add(rect);
                 canvas.DrawText(symbol.Text, symbol.Point, paint);
                 break;
             }
