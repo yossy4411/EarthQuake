@@ -58,6 +58,7 @@ public class MainViewModel : ViewModelBase
             }
 
             _land = new LandLayer(calculated, "scity");
+            var land = new LandLayer(calculated, "eew", true);
             CountriesLayer world;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
@@ -65,21 +66,13 @@ public class MainViewModel : ViewModelBase
                 world = new CountriesLayer(geojson);
             }
 
-            VectorMapLayer map;
-            using (var stream =
-                   AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute)))
-            {
-                using var streamReader = new StreamReader(stream);
-                var styles = VectorMapStyles.LoadGLJson(streamReader);
-                map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
-            }
-
             InterpolatedWaveData wave;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/jma2001.mpk", UriKind.Absolute)))
             {
                 wave = MessagePackSerializer.Deserialize<InterpolatedWaveData>(stream);
             }
-
+            
+            // todo マージ前にコミットをrevertしないとちゃんとできないよ！
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
 
@@ -89,15 +82,15 @@ public class MainViewModel : ViewModelBase
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [world, map, grid]
+                MapLayers = [world, land, grid]
             };
             Controller2 = new MapViewController
             {
-                MapLayers = [world, _land, map, _foreground]
+                MapLayers = [world, land, _land, _foreground]
             };
             Controller3 = new MapViewController
             {
-                MapLayers = [tile, map, Hypo]
+                MapLayers = [land, Hypo]
             };
         }
         GC.Collect();

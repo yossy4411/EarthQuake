@@ -9,23 +9,41 @@ namespace EarthQuake.Map.Layers;
 /// <summary>
 /// 地形の塗りつぶしを行うレイヤー
 /// </summary>
-/// <param name="polygons">ポリゴンデータ</param>
-/// <param name="layerName">データから読み込むレイヤー名</param>
-public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
+public class LandLayer : CacheableLayer
 {
     public bool Draw { get; set; } = true;
     private SKColor[]? colors;
-    private readonly string[]? names = polygons?.Filling[layerName].Names;
+    private readonly string[]? names;
 
     private FileTilesController? fileTilesController;
-    public bool AutoFill { get; init; }
     private int previousScale = -1;
+    private readonly PolygonsSet? _polygons;
+    private readonly string _layerName;
+    private readonly bool _autoFill;
+
+    /// <summary>
+    /// 地形の塗りつぶしを行うレイヤー
+    /// </summary>
+    /// <param name="polygons">ポリゴンデータ</param>
+    /// <param name="layerName">データから読み込むレイヤー名</param>
+    /// <param name="autoFill">自動塗りつぶし</param>
+    public LandLayer(PolygonsSet? polygons, string layerName, bool autoFill = false)
+    {
+        _polygons = polygons;
+        _layerName = layerName;
+        names = polygons?.Filling[layerName].Names;
+        _autoFill = autoFill;
+        if (autoFill)
+        {
+            colors = Enumerable.Repeat(SKColors.DarkGreen, names?.Length ?? 0).ToArray();
+        }
+    }
 
     private protected override void Initialize()
     {
-        fileTilesController = polygons is null
+        fileTilesController = _polygons is null
             ? null
-            : new FileTilesController(polygons, layerName)
+            : new FileTilesController(_polygons, _layerName)
             {
                 OnUpdate = HandleUpdated
             };
@@ -41,7 +59,7 @@ public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
             var name = names[i];
             var a = quakeData.Points.FirstOrDefault(x => x.Addr.StartsWith(name));
             if (a is not null) colors[i] = a.Scale.GetKiwi3Color();
-            else if (AutoFill) colors[i] = SKColors.DarkGreen;
+            else if (_autoFill) colors[i] = SKColors.DarkGreen;
             else colors[i] = SKColors.Empty;
         }
 
