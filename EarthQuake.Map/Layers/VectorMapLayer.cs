@@ -116,10 +116,22 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
                 paint.TextSize = (layer.TextSize is null ? 15 : layer.TextSize.GetValue(feature.Tags)!.ToFloat()) / scale;
                 paint.Color = layer.TextColor is null ? SKColors.White : layer.TextColor!.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.Style = SKPaintStyle.Fill;
-                var rect = new SKRect(symbol.Point.X, symbol.Point.Y - paint.TextSize, symbol.Point.X + paint.MeasureText(symbol.Text), symbol.Point.Y);
-                if (rects.Any(x => x.IntersectsWith(rect))) return; // 重なっていたら描画しない
-                rects.Add(rect);
-                canvas.DrawText(symbol.Text, symbol.Point, paint);
+                if (symbol.Point.Length < 2)
+                {
+                    var sPoint = symbol.Point[0];
+                    var rect = new SKRect(sPoint.X, sPoint.Y - paint.TextSize,
+                        sPoint.X + paint.MeasureText(symbol.Text), sPoint.Y);
+                    if (rects.Any(x => x.IntersectsWith(rect))) return; // 重なっていたら描画しない
+                    rects.Add(rect);
+                    canvas.DrawText(symbol.Text, sPoint, paint);
+                }
+                else
+                {
+                    using var sPath = new SKPath();
+                    sPath.AddPoly(symbol.Point, false);
+                    canvas.DrawTextOnPath(symbol.Text, sPath, 0, 0, paint);
+                }
+
                 break;
             }
         }

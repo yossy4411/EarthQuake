@@ -1,4 +1,5 @@
-﻿using EarthQuake.Core;
+﻿using System.Diagnostics;
+using EarthQuake.Core;
 using LibTessDotNet;
 using SkiaSharp;
 using VectorTiles.Styles;
@@ -26,14 +27,7 @@ public class VectorFillFeature : VectorTileFeature
         foreach (var coordinates in feature.Geometries)
         {
             var contourVertices = new List<ContourVertex>(coordinates.Points.Count); // 結果を格納するリスト
-            foreach (var v in coordinates.Points)
-            {
-                // pos を計算
-                var pos = GeomTransform.Translate(v.Lon, v.Lat);
-    
-                // 新しい ContourVertex をリストに追加
-                contourVertices.Add(new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 }));
-            }
+            contourVertices.AddRange(coordinates.Points.Select(v => GeomTransform.Translate(v.Lon, v.Lat)).Select(pos => new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 })));
             // 生成された頂点を tess に追加
             tess.AddContour(contourVertices);
         }
@@ -63,7 +57,7 @@ public class VectorLineFeature : VectorTileFeature
 public class VectorSymbolFeature : VectorTileFeature
 {
     public string? Text { get; }
-    public SKPoint Point { get; }
+    public SKPoint[] Point { get; }
     public VectorSymbolFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer, tags)
     {
         var field = (Layer as VectorSymbolStyleLayer)?.TextField;
@@ -72,9 +66,7 @@ public class VectorSymbolFeature : VectorTileFeature
             Text = null;
             return;
         }
-        var coord = feature.Geometries[0].Points[0];
-        Point = GeomTransform.Translate(coord.Lon, coord.Lat);
-        var text = feature.Tags.GetValueOrDefault(field)?.ToString();
-        Text = text;
+        Point = feature.Geometries[0].Points.Select(coord => GeomTransform.Translate(coord.Lon, coord.Lat)).ToArray();
+        Text = feature.Tags.GetValueOrDefault(field)?.ToString();
     }
 }
