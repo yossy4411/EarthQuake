@@ -46,7 +46,7 @@ public class VectorMapLandLayer(VectorMapLayer baseLayer) : VectorMapLayer(null,
                 foreach (var feature in tile.Vertices)
                 {
                     if (feature.Layer?.Id != Land) continue;  // Land以外は別のクラスで描画する
-                    DrawLayer(canvas, scale, feature, paint, point, widthFactor, path, null!);
+                    DrawLayer(canvas, scale, feature, paint, point, widthFactor, null!);
                 }
             }
         }

@@ -66,4 +66,14 @@ public class VectorTilesController : MapTilesController<VectorTile>
     }
 }
 
-public record VectorTile(VectorTileFeature[]? Vertices);
+public record VectorTile(VectorTileFeature[]? Vertices) : IDisposable
+{
+    public void Dispose()
+    {
+        foreach (var vertex in Vertices ?? [])
+        {
+            vertex.Dispose();
+        }
+        GC.SuppressFinalize(this);
+    }
+}

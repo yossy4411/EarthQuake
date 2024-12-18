@@ -16,7 +16,7 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
     protected internal VectorTilesController? Controller;
     protected internal Header? Header;
     private TilePoint _point;
-    protected internal string Land = land;
+    protected internal readonly string Land = land;
 
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
@@ -34,7 +34,6 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
         using var paint = new SKPaint();
         paint.IsAntialias = true;
         paint.Typeface = Font;
-        using var path = new SKPath();
         var widthFactor = point.Z switch
         {
             < 8 => 1,
@@ -58,12 +57,12 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
         List<SKRect> rects = [];
         foreach (var feature in from styleLayer in styles.Layers from feature in features where ReferenceEquals(feature.Layer, styleLayer) where feature.Layer?.Id != Land select feature)
         {
-            DrawLayer(canvas, scale, feature, paint, point, widthFactor, path, rects);
+            DrawLayer(canvas, scale, feature, paint, point, widthFactor, rects);
         }
     }
 
     private protected static void DrawLayer(SKCanvas canvas, float scale, VectorTileFeature feature, SKPaint paint,
-        TilePoint point, int widthFactor, SKPath path, List<SKRect> rects)
+        TilePoint point, int widthFactor, List<SKRect> rects)
     {
         switch (feature)
         {
@@ -88,25 +87,17 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
                 {
                     paint.PathEffect = null;
                 }
-                            
-                            
-                foreach (var skPoints in line.Geometry)
-                {
-                    path.AddPoly(skPoints, false);
-                }
 
-                canvas.DrawPath(path, paint);
-                path.Reset();
+                canvas.DrawPath(line.Path, paint);
                 break;
             }
             case VectorFillFeature fill:
             {
                 if (feature.Layer is not VectorFillStyleLayer layer) return;
+                if (fill.Vertices is null) return;
                 paint.Color = layer.FillColor is null ? SKColors.White : layer.FillColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.Style = SKPaintStyle.Fill;
-                using var vertices =
-                    SKVertices.CreateCopy(SKVertexMode.Triangles, fill.Geometry, null);
-                canvas.DrawVertices(vertices, SKBlendMode.Src, paint);
+                canvas.DrawVertices(fill.Vertices, SKBlendMode.Src, paint);
                 break;
             }
             case VectorSymbolFeature symbol:
