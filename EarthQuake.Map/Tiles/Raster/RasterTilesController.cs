@@ -23,10 +23,7 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
             Finished = (request, result) =>
             {
                 if (request is not RasterTileRequest req || result is not RasterTile tile) return;
-                lock (Tiles)
-                {
-                    Tiles.Put(req.TilePoint, tile);
-                }
+                Tiles.Put(req.TilePoint, tile);
 
                 OnUpdate?.Invoke();
             }

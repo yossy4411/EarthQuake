@@ -32,7 +32,7 @@ public static class MapRequestHelper
     public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
 
 
-    private class MapRequestClient
+    private class MapRequestClient : IDisposable
     {
         private readonly HttpClient _client = new();
 
@@ -101,6 +101,11 @@ public static class MapRequestHelper
         public MapRequestClient()
         {
             Task.Run(Handle);
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
     }
 }

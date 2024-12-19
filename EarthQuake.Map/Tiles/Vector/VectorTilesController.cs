@@ -50,10 +50,7 @@ public class VectorTilesController : MapTilesController<VectorTile>
             Finished = (request, result) =>
             {
                 if (request is not VectorTileRequest req || result is not VectorTile tile) return;
-                lock (Tiles)
-                {
-                    Tiles.Put(req.TilePoint, tile);
-                }
+                Tiles.Put(req.TilePoint, tile);
 
                 OnUpdate?.Invoke();
             }
