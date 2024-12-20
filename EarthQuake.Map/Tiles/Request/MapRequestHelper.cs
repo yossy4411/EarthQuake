@@ -27,7 +27,10 @@ public static class MapRequestHelper
         Requests.Add(request);
     }
 
-    public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
+    public static bool Exists(MapRequest request)
+    {
+        return Requests.Contains(request);
+    }
 
 
     private class MapRequestClient : IDisposable

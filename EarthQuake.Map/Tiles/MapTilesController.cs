@@ -88,10 +88,12 @@ public abstract class MapTilesController<T>(string url, int capacity = 256) wher
                 return (tile = value) is not null;
             }
 
-            if (MapRequestHelper.Any(req => RequestExists(req, point))) return false;
+            var request = GenerateRequest(leftTop, point);
+            if (MapRequestHelper.Exists(request))
             {
-                MapRequestHelper.AddRequest(GenerateRequest(leftTop, point));
+                return false;
             }
+            MapRequestHelper.AddRequest(request);
             return false;
         }
         catch (Exception ex)
@@ -102,8 +104,6 @@ public abstract class MapTilesController<T>(string url, int capacity = 256) wher
     }
 
     private protected abstract MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint);
-
-    private protected abstract bool RequestExists(MapRequest request, TilePoint tilePoint);
 
     private static string GenerateUrl(string source, int x, int y, int zoom)
     {

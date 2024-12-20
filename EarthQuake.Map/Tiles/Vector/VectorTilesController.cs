@@ -41,6 +41,16 @@ public class VectorTilesController : MapTilesController<VectorTile>
         public PMTilesReader? PMReader { get; } = reader;
         public override VectorTile GetAndParse(Stream? data) => data is null ? new VectorTile(null) :
             new VectorTile(styles.ParsePaths(data, TilePoint));
+
+        public override bool Equals(object? obj)
+        {
+            return obj is VectorTileRequest request && request.TilePoint == TilePoint;
+        }
+        
+        public override int GetHashCode()
+        {
+            return TilePoint.GetHashCode();
+        }
     }
 
     private protected override MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint)
@@ -55,11 +65,6 @@ public class VectorTilesController : MapTilesController<VectorTile>
                 OnUpdate?.Invoke();
             }
         };
-    }
-
-    private protected override bool RequestExists(MapRequest request, TilePoint tilePoint)
-    {
-        return request is VectorTileRequest req && req.TilePoint.Equals(tilePoint);
     }
 }
 

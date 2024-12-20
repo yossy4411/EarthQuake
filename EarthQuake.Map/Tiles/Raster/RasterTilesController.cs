@@ -14,6 +14,16 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
     {
         public override object GetAndParse(Stream? data) =>
             new RasterTile(Point, Zoom, data is null ? null : SKImage.FromEncodedData(data));
+
+        public override bool Equals(object? obj)
+        {
+            return obj is RasterTileRequest request && request.TilePoint == TilePoint;
+        }
+        
+        public override int GetHashCode()
+        {
+            return TilePoint.GetHashCode();
+        }
     }
 
     private protected override MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint)
@@ -30,8 +40,7 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
         };
     }
 
-    private protected override bool RequestExists(MapRequest request, TilePoint tilePoint) =>
-        request is RasterTileRequest req && req.TilePoint.Equals(tilePoint);
+
 }
 
 public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image) : IDisposable
