@@ -25,8 +25,6 @@ public static class MapRequestHelper
     public static void AddRequest(MapRequest request)
     {
         Requests.Add(request);
-        Debug.WriteLine($"Request Added: #{Requests.Count}");
-        Debug.WriteLine($"Request Added: {request}");
     }
 
     public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
