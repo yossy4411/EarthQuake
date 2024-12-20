@@ -36,6 +36,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github/workflows", ".githu
 		.github\workflows\dotnet-deploy.yml = .github\workflows\dotnet-deploy.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Mvt", "VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj", "{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles", "VectorTiles\src\VectorTiles\VectorTiles.csproj", "{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Styles", "VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj", "{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMTiles.NET", "PMTiles.NET\src\PMTiles.NET.csproj", "{D06E7D46-C764-4CFB-AA03-3E7297BB013C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +98,38 @@ Global
 		{48EE7424-25B4-450C-955A-31D7DACCABB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48EE7424-25B4-450C-955A-31D7DACCABB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48EE7424-25B4-450C-955A-31D7DACCABB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9F802FB-91D0-4203-9C54-99CDA3707D73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9F802FB-91D0-4203-9C54-99CDA3707D73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9F802FB-91D0-4203-9C54-99CDA3707D73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9F802FB-91D0-4203-9C54-99CDA3707D73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAB2F2D3-7A1A-4ACD-873F-54BCE5865744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAB2F2D3-7A1A-4ACD-873F-54BCE5865744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAB2F2D3-7A1A-4ACD-873F-54BCE5865744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAB2F2D3-7A1A-4ACD-873F-54BCE5865744}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94470710-C57C-4025-BA29-9F6853A018A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94470710-C57C-4025-BA29-9F6853A018A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94470710-C57C-4025-BA29-9F6853A018A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94470710-C57C-4025-BA29-9F6853A018A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31395CA1-F24A-4F44-BE5E-7172E9AB0803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31395CA1-F24A-4F44-BE5E-7172E9AB0803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31395CA1-F24A-4F44-BE5E-7172E9AB0803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31395CA1-F24A-4F44-BE5E-7172E9AB0803}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

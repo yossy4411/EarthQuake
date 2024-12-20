@@ -1,4 +1,5 @@
-﻿using EarthQuake.Core;
+﻿using System.Collections.Concurrent;
+using EarthQuake.Core;
 using EarthQuake.Core.TopoJson;
 using EarthQuake.Map.Tiles.Request;
 using LibTessDotNet;
@@ -14,48 +15,39 @@ namespace EarthQuake.Map.Tiles.File;
 public class FileTilesController(PolygonsSet file, string layerName)
 {
     public Action? OnUpdate { get; set; }
-    private Dictionary<(int, int), SKVertices> Tiles { get; } = new();
+    private ConcurrentDictionary<(int, int), SKVertices> Tiles { get; } = new();
 
     public SKVertices? TryGetTile(int zoom, int index)
     {
-        lock (Tiles)
+        if (Tiles.TryGetValue((zoom, index), out var tile))
         {
-            if (Tiles.TryGetValue((zoom, index), out var tile))
-            {
-                return tile;
-            }
-
-            var request = new FillFileTileRequest(file.Points.Points, file.Filling[layerName].Indices[index],
-                file.Points.Transform, zoom)
-            {
-                Finished = (request, result) =>
-                {
-                    if (request is not FileTileRequest || result is not SKVertices vertices) return;
-                    lock (Tiles)
-                    {
-                        Tiles.Add((zoom, index), vertices);
-                    }
-
-                    OnUpdate?.Invoke();
-                }
-            };
-            MapRequestHelper.AddRequest(request);
+            return tile;
         }
+
+        var request = new FillFileTileRequest(file.Points.Points, file.Filling[layerName].Indices[index],
+            file.Points.Transform, zoom)
+        {
+            Finished = (request, result) =>
+            {
+                if (request is not FileTileRequest || result is not SKVertices vertices) return;
+                Tiles[(zoom, index)] = vertices;   // ここでAddを使わないのは、すでに存在する場合は上書きするため
+
+                OnUpdate?.Invoke();
+            }
+        };
+        MapRequestHelper.AddRequest(request);
 
         return null;
     }
 
     public void ClearCaches()
     {
-        lock (Tiles)
+        foreach (var (_, value) in Tiles)
         {
-            foreach (var (_, value) in Tiles)
-            {
-                value.Dispose();
-            }
-
-            Tiles.Clear();
+            value.Dispose();
         }
+
+        Tiles.Clear();
     }
 
     private class FillFileTileRequest(IntPoint[][] points, int[][] indices, Transform transform, int zoom)

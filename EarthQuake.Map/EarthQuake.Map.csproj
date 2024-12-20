@@ -8,13 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="LibTessDotNet" Version="1.1.15" />
-    <PackageReference Include="mapbox-vector-tile" Version="5.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EarthQuake.Core\EarthQuake.Core.csproj" />
+    <ProjectReference Include="..\PMTiles.NET\src\PMTiles.NET.csproj" />
+    <ProjectReference Include="..\VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj" />
+    <ProjectReference Include="..\VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj" />
   </ItemGroup>
 
   <ItemGroup>

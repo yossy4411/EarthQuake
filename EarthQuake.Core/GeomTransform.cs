@@ -53,14 +53,14 @@ public static class GeomTransform
     /// </summary>
     /// <param name="latitude">緯度</param>
     /// <returns>画面上Y</returns>
-    private static double TranslateFromLat(double latitude) => Mercator(latitude);
+    public static double TranslateFromLat(double latitude) => Mercator(latitude);
 
     /// <summary>
     /// メルカトル図法
     /// </summary>
     /// <param name="latitude">緯度</param>
     /// <returns>画面上Y</returns>
-    private static double Mercator(double latitude) => latitude <= -MercatorLimit ? -Height :
+    public static double Mercator(double latitude) => latitude <= -MercatorLimit ? -Height :
         latitude >= MercatorLimit ? Height : Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) * Height / Math.PI;
 
     /// <summary>
@@ -70,13 +70,6 @@ public static class GeomTransform
     /// <returns>画面上Y</returns>
     public static double Mirror(double latitude) =>
         1.25 * Math.Asinh(Math.Tan(0.8 * latitude * Math.PI / 360)) * Height;
-
-    /// <summary>
-    /// Webメルカトル図法
-    /// </summary>
-    /// <param name="latitude">緯度</param>
-    /// <returns>画面上Y</returns>
-    private static double WebMercator(double latitude) => Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) / Math.PI;
 
     public static int RealIndex(int value)
     {

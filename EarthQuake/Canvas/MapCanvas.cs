@@ -20,7 +20,9 @@ public class MapCanvas : SkiaCanvasView
         public SKPoint Translate { get; set; }
         public float Scale { get; set; } = 1f;
     }
-
+    
+    private long _lastRenderTime;
+    
     public MapViewController? Controller
     {
         get => controller;
@@ -32,8 +34,11 @@ public class MapCanvas : SkiaCanvasView
                 // 描画スレッドでInvalidateVisualを呼び出す。(誤ったスレッドで呼び出すと例外が発生するため)
                 controller.OnUpdated += () =>
                 {
+                    // 30ms以上の間隔を空けて描画する
+                    // 非常に多くの描画リクエストを行った場合、詰まって処理が遅くなるため
+                    if (Stopwatch.GetTimestamp() - _lastRenderTime < 30000000) return;
                     Dispatcher.UIThread.Post(InvalidateVisual);
-                    Debug.WriteLine($"InvalidateVisual for Canvas [{Name}]");
+                    _lastRenderTime = Stopwatch.GetTimestamp();
                 };
             }
         }
@@ -45,8 +50,7 @@ public class MapCanvas : SkiaCanvasView
             o => o.Controller,
             (o, value) => o.Controller = value
         );
-
-    private protected static SKColor Background => SKColors.Lavender;
+    
     private Point _scrollOffset;
     private protected SKPoint Offset => Translate + Center;
 
@@ -85,7 +89,7 @@ public class MapCanvas : SkiaCanvasView
 
         SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
         canvas.ClipRect(clipRect);
-        canvas.Clear(Background);
+        Controller?.Clear(canvas, Scale);
         var translate = Translate + Center;
         var region = new SKRect(-translate.X / Scale, -translate.Y / Scale,
             (float)(-translate.X + Bounds.Width) / Scale, (float)(-translate.Y + Bounds.Height) / Scale);
