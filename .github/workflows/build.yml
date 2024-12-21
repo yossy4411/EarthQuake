@@ -56,14 +56,35 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Compress and Upload Release Assets
-        run: |
-          mkdir -p release-assets
-          zip -r release-assets/EarthQuake-win-x64.zip artifacts/win-x64-build
-          zip -r release-assets/EarthQuake-linux-x64.zip artifacts/linux-x64-build
-          zip -r release-assets/EarthQuake-osx-x64.zip artifacts/osx-x64-build
+      - name: Upload Windows Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-assets/EarthQuake-win-x64.zip
+          asset_name: EarthQuake-win-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-assets/EarthQuake-linux-x64.zip
+          asset_name: EarthQuake-linux-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-assets/EarthQuake-osx-x64.zip
+          asset_name: EarthQuake-osx-x64.zip
+          asset_content_type: application/zip
       
       - name: Debug Artifacts
         run: ls -la release-assets
