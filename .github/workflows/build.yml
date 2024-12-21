@@ -84,5 +84,5 @@ jobs:
           file: ${{ github.workspace }}/release-assets/EarthQuake-win-x64.zip
           asset_name: EarthQuake-win-x64.zip
           overwrite: true
-          tag: ${{ github.ref }}
+          tag: ${{ github.ref_name }}
           
