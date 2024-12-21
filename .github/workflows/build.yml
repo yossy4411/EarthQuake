@@ -48,12 +48,13 @@ jobs:
       - name: Pack build artifacts
         run: |
           mkdir -p $GITHUB_WORKSPACE/release-assets
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip $GITHUB_WORKSPACE/artifacts/win-x64
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip $GITHUB_WORKSPACE/artifacts/win-x86
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip $GITHUB_WORKSPACE/artifacts/linux-x64
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip $GITHUB_WORKSPACE/artifacts/linux-arm
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip $GITHUB_WORKSPACE/artifacts/linux-arm64
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip $GITHUB_WORKSPACE/artifacts/osx-x64
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip artifacts/win-x64-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip artifacts/win-x86-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip artifacts/linux-x64-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip artifacts/linux-arm-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip artifacts/linux-arm64-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip artifacts/osx-x64-build
+          
 
       - name: Edit permission
         run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-*
