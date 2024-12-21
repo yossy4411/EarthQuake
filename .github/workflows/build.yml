@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [win-x64, linux-x64, osx-x64]
+        target: [win-x64, win-x86, linux-x64, linux-arm, linux-arm64, osx-x64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -48,41 +48,20 @@ jobs:
       - name: Pack build artifacts
         run: |
           mkdir -p $GITHUB_WORKSPACE/release-assets
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip artifacts/win-x64-build
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip artifacts/linux-x64-build
-          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip artifacts/osx-x64-build
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip $GITHUB_WORKSPACE/artifacts/win-x64
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip $GITHUB_WORKSPACE/artifacts/win-x86
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip $GITHUB_WORKSPACE/artifacts/linux-x64
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip $GITHUB_WORKSPACE/artifacts/linux-arm
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip $GITHUB_WORKSPACE/artifacts/linux-arm64
+          zip -r $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip $GITHUB_WORKSPACE/artifacts/osx-x64
 
-      - name: Create Release Draft
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: true
-          prerelease: false
-          
       - name: Edit permission
-        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip
+        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-*
       
-      - name: Debug Artifacts
-        run: |
-          echo "Checking if file exists:"
-          ls -la $GITHUB_WORKSPACE/release-assets
-          if [ -f "$GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip" ]; then
-            echo "File exists."
-          else
-            echo "File does not exist."
-            exit 1
-          fi
-      
-      - name: Upload Windows Asset
+      - name: Upload Windows x64 Asset
         uses: svenstaro/upload-release-action@v2 
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/release-assets/EarthQuake-win-x64.zip
-          asset_name: EarthQuake-win-x64.zip
+          file: ${{ github.workspace }}/release-assets/EarthQuake-*
           overwrite: true
           tag: ${{ github.ref_name }}
-          
