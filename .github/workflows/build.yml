@@ -57,12 +57,65 @@ jobs:
           
 
       - name: Edit permission
-        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-*
-      
+        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip \
+          $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip \
+          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip \
+          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip \
+          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip \
+          $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip
+        
       - name: Upload Windows x64 Asset
         uses: svenstaro/upload-release-action@v2 
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/release-assets/EarthQuake-*
+          file: ${{ github.workspace }}/release-assets/EarthQuake-win-x64.zip
+          asset_name: EarthQuake-win-x64.zip
           overwrite: true
           tag: ${{ github.ref_name }}
+            
+      - name: Upload Windows x86 Asset
+        uses: svenstaro/upload-release-action@v2 
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/release-assets/EarthQuake-win-x86.zip
+          asset_name: EarthQuake-win-x86.zip
+          overwrite: true
+          tag: ${{ github.ref_name }}
+    
+      - name: Upload Linux x64 Asset
+        uses: svenstaro/upload-release-action@v2 
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/release-assets/EarthQuake-linux-x64.zip
+          asset_name: EarthQuake-linux-x64.zip
+          overwrite: true
+          tag: ${{ github.ref_name }}
+      
+      - name: Upload Linux ARM Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/release-assets/EarthQuake-linux-arm.zip
+          asset_name: EarthQuake-linux-arm.zip
+          overwrite: true
+          tag: ${{ github.ref_name }}
+            
+      - name: Upload Linux ARM64 Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/release-assets/EarthQuake-linux-arm64.zip
+          asset_name: EarthQuake-linux-arm64.zip
+          overwrite: true
+          tag: ${{ github.ref_name }}
+      
+      - name: Upload OSX x64 Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/release-assets/EarthQuake-osx-x64.zip
+          asset_name: EarthQuake-osx-x64.zip
+          overwrite: true
+          tag: ${{ github.ref_name }}
+          
+            
