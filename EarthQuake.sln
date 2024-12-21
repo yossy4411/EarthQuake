@@ -31,11 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.Browser", "Earth
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github/workflows", ".github/workflows", "{E2733B0C-B2BD-4672-B7D8-B149B1F22D2A}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\dotnet-deploy.yml = .github\workflows\dotnet-deploy.yml
-	EndProjectSection
-EndProject 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +125,5 @@ Global
 		SolutionGuid = {2918D28D-D62A-4004-85B3-B4C6FF68B6D0}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E2733B0C-B2BD-4672-B7D8-B149B1F22D2A} = {65F068C0-A7A5-4B0A-A846-22C9BAF66F36}
 	EndGlobalSection
 EndGlobal
