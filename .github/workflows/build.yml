@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [win-x64, linux-x64, osx-x64] # Define your targets here
+        target: [win-x64, linux-x64, osx-x64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -43,7 +43,10 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.target }}-build
+          name: |
+            win-x64-build
+            linux-x64-build
+            osx-x64-build
 
       - name: Create Release Draft
         id: create_release
@@ -63,6 +66,11 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: |
-            **/bin/Release/net8.0/${{ matrix.target }}/*
-          asset_name: ${{ matrix.target }}-build.zip
+            **/bin/Release/net8.0/win-x64/*
+            **/bin/Release/net8.0/linux-x64/*
+            **/bin/Release/net8.0/osx-x64/*
+          asset_name: |
+            EarthQuake-win-x64.zip
+            EarthQuake-linux-x64.zip
+            EarthQuake-osx-x64.zip
           asset_content_type: application/zip
