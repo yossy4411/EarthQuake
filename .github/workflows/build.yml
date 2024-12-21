@@ -64,13 +64,19 @@ jobs:
           zip -r release-assets/EarthQuake-osx-x64.zip artifacts/osx-x64-build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      
+      - name: Debug Artifacts
+      - run: ls -la release-assets
+      
       - name: Upload Release Assets
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-assets/*
+          asset_path: |
+            release-assets/EarthQuake-win-x64.zip
+            release-assets/EarthQuake-linux-x64.zip
+            release-assets/EarthQuake-osx-x64.zip
           asset_name: ${{ github.ref_name }}-artifacts.zip
           asset_content_type: application/zip
