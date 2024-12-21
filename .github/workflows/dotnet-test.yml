@@ -1,4 +1,4 @@
-name: Publish .NET App
+name: Test .NET Application
 
 on:
   push:
