@@ -66,7 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Debug Artifacts
-      - run: ls -la release-assets
+        run: ls -la release-assets
       
       - name: Upload Release Assets
         uses: actions/upload-release-asset@v1
