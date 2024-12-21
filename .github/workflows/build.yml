@@ -63,15 +63,26 @@ jobs:
           draft: true
           prerelease: false
           
+      - name: Edit permission
+        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip
+      
       - name: Debug Artifacts
-        run: ls -la $GITHUB_WORKSPACE/release-assets
-        
+        run: |
+          echo "Checking if file exists:"
+          ls -la $GITHUB_WORKSPACE/release-assets
+          if [ -f "$GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip" ]; then
+            echo "File exists."
+          else
+            echo "File does not exist."
+            exit 1
+          fi
+      
       - name: Upload Windows Asset
         uses: svenstaro/upload-release-action@v2 
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip
+          file: ${{ github.workspace }}/release-assets/EarthQuake-win-x64.zip
           asset_name: EarthQuake-win-x64.zip
           overwrite: true
-          tag: ${{ github.ref_name }}
+          tag: ${{ github.ref }}
           
