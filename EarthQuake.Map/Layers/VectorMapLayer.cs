@@ -42,6 +42,7 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             _ => 14
         }; // ズームするほど太くなっていっちゃうから調整
         List<VectorTileFeature> features = [];
+        List<SKRect> rects = [];
         for (var j = 0; j <= h; j++)
         {
             for (var i = 0; i <= w; i++)
@@ -54,10 +55,16 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             }
         }
         
-        List<SKRect> rects = [];
-        foreach (var feature in from styleLayer in styles.Layers from feature in features where ReferenceEquals(feature.Layer, styleLayer) where feature.Layer?.Id != Land select feature)
+        
+        foreach (var styleLayer in styles.Layers)
         {
-            DrawLayer(canvas, scale, feature, paint, point, widthFactor, rects);
+            foreach (var feature in features)
+            {
+                if (feature.Layer?.Id != Land && ReferenceEquals(feature.Layer, styleLayer))
+                {
+                    DrawLayer(canvas, scale, feature, paint, point, widthFactor, rects);
+                }
+            }
         }
     }
 
