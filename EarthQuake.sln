@@ -35,15 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github/workflows", ".githu
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnet-deploy.yml = .github\workflows\dotnet-deploy.yml
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Mvt", "VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj", "{DC8D7E16-3080-4432-B9D6-5AE89B55DC91}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles", "VectorTiles\src\VectorTiles\VectorTiles.csproj", "{14D23CD9-5E76-4AB1-9AC5-D70FDDD62F39}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Styles", "VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj", "{549FFBA5-BF1C-458E-B5F6-F57A2567EC31}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMTiles.NET", "PMTiles.NET\src\PMTiles.NET.csproj", "{D06E7D46-C764-4CFB-AA03-3E7297BB013C}"
-EndProject
+EndProject 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
