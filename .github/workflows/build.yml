@@ -44,6 +44,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          
+      - name: Pack build artifacts
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/release-assets
+          cp -r $GITHUB_WORKSPACE/artifacts/* $GITHUB_WORKSPACE/release-assets
+          cd $GITHUB_WORKSPACE/release-assets
+          zip -r EarthQuake-win-x64.zip win-x64
+          zip -r EarthQuake-linux-x64.zip linux-x64
+          zip -r EarthQuake-osx-x64.zip osx-x64
 
       - name: Create Release Draft
         id: create_release
