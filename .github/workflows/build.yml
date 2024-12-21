@@ -57,12 +57,13 @@ jobs:
           
 
       - name: Edit permission
-        run: chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip \
-          $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip \
-          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip \
-          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip \
-          $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip \
-          $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip
+        run: |
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x64.zip
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-win-x86.zip
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-x64.zip
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm.zip
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-linux-arm64.zip
+          chmod 777 $GITHUB_WORKSPACE/release-assets/EarthQuake-osx-x64.zip
         
       - name: Upload Windows x64 Asset
         uses: svenstaro/upload-release-action@v2 
