@@ -1,0 +1,31 @@
+name: Test .NET Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  PROJECT_PATH: EarthQuake.Desktop/EarthQuake.Desktop.csproj
+  OUTPUT_PATH: ./publish
+
+jobs:
+  build-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.x' # .NET 7 以上を指定
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+        
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release

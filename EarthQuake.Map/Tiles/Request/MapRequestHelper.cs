@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
+using EarthQuake.Map.Tiles.Vector;
 
 namespace EarthQuake.Map.Tiles.Request;
 
@@ -26,10 +27,13 @@ public static class MapRequestHelper
         Requests.Add(request);
     }
 
-    public static bool Any(Func<MapRequest, bool> func) => Requests.Any(func);
+    public static bool Exists(MapRequest request)
+    {
+        return Requests.Contains(request);
+    }
 
 
-    private class MapRequestClient
+    private class MapRequestClient : IDisposable
     {
         private readonly HttpClient _client = new();
 
@@ -41,23 +45,36 @@ public static class MapRequestHelper
                 {
                     switch (req)
                     {
+                        case VectorTilesController.VectorTileRequest vectorTileRequest:
+                        {
+                            var (x, y, z) = vectorTileRequest.TilePoint;
+                            if (vectorTileRequest.PMReader is null) continue;
+                            try
+                            {
+                                await using var response = await vectorTileRequest.PMReader.GetTileZxyAsync(z, x, y);
+                                var result = vectorTileRequest.GetAndParse(response);
+                                vectorTileRequest.Finished?.Invoke(vectorTileRequest, result);
+                            }
+                            catch (ArgumentException)
+                            {
+                                Debug.WriteLine("存在しないタイルを読み込んだようです。");
+                            }
+
+                            
+                            break;
+                        }
                         case MapTileRequest tileRequest:
                         {
                             var response = await _client.GetAsync(tileRequest.Url);
                             var code = response.StatusCode;
                             if (code is HttpStatusCode.OK or HttpStatusCode.Accepted or HttpStatusCode.NotModified)
                             {
-                                Stream? stream;
-                                if (response.Content.Headers.ContentEncoding.Contains("gzip"))
-                                {
+                                await using var stream =
                                     // GZip圧縮されている場合
-                                    stream = new GZipStream(await response.Content.ReadAsStreamAsync(),
-                                        CompressionMode.Decompress);
-                                }
-                                else
-                                {
-                                    stream = await response.Content.ReadAsStreamAsync();
-                                }
+                                    response.Content.Headers.ContentEncoding.Contains("gzip")
+                                    ? new GZipStream(await response.Content.ReadAsStreamAsync(),
+                                        CompressionMode.Decompress)
+                                    : await response.Content.ReadAsStreamAsync();
 
                                 var result = tileRequest.GetAndParse(stream);
                                 tileRequest.Finished?.Invoke(tileRequest, result);
@@ -85,6 +102,11 @@ public static class MapRequestHelper
         public MapRequestClient()
         {
             Task.Run(Handle);
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
     }
 }
