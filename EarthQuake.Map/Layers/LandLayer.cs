@@ -16,7 +16,7 @@ public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
     public bool Draw { get; set; } = true;
     private SKColor[]? colors;
     private readonly string[]? names = polygons?.Filling[layerName].Names;
-    
+
     private FileTilesController? fileTilesController;
     public bool AutoFill { get; init; }
     private int previousScale = -1;
@@ -85,12 +85,11 @@ public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
                 if (paint.Color == SKColors.Empty) continue;
                 var tile = fileTilesController.TryGetTile(zoom, i);
                 if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
-
             }
         }
     }
 
-    public override bool IsReloadRequired(float zoom, SKRect bounds)
+    public override bool ShouldReload(float zoom, SKRect bounds)
     {
         if (previousScale == GetIndex(zoom)) return false;
         previousScale = GetIndex(zoom);

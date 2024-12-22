@@ -30,7 +30,6 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller3 { get; set; }
     public Brush BgBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
     private static MapSource MapTilesBase => MapSource.GsiVector;
-    private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private IEnumerable<Station>? _stations;
     private readonly ObservationsLayer _foreground;
@@ -82,7 +81,7 @@ public class MainViewModel : ViewModelBase
             {
                 wave = MessagePackSerializer.Deserialize<InterpolatedWaveData>(stream);
             }
-            
+
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
 

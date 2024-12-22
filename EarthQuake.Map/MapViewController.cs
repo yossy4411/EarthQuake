@@ -16,12 +16,26 @@ public class MapViewController
     private readonly IEnumerable<MapLayer> _mapLayers = [];
     private readonly IEnumerable<CacheableLayer> cacheableLayers = [];
     private SKPicture? cached;
-    
+
     /// <summary>
     /// キャッシュを使用するかどうか
     /// </summary>
     public bool UseCache { get; set; } = true;
 
+    /// <summary>
+    /// キャッシュされたレイヤーのキャッシュを更新する
+    /// </summary>
+    public void UpdateCache()
+    {
+        foreach (var cacheableLayer in cacheableLayers)
+        {
+            cacheableLayer.IsUpdated = true;
+        }
+    }
+
+    /// <summary>
+    /// 描画レイヤー
+    /// </summary>
     public MapLayer[] MapLayers
     {
         init
@@ -41,9 +55,22 @@ public class MapViewController
         }
     }
 
+    /// <summary>
+    /// 更新されたときのイベント
+    /// </summary>
     public Action? OnUpdated;
-    private readonly Dictionary<string, IConstValue?> _zoomCache = new(); 
+
+    // ズームの値のキャッシュ
+    private readonly Dictionary<string, IConstValue?> _zoomCache = new();
+
+    /// <summary>
+    /// 動的な背景色
+    /// </summary>
     public VectorBackgroundStyleLayer? Background { get; init; }
+
+    /// <summary>
+    /// キャンバスをクリアする
+    /// </summary>
     public void Clear(SKCanvas canvas, float zoom)
     {
         _zoomCache["$zoom"] = new ConstFloatValue(MathF.Log2(zoom) + 5);
@@ -52,11 +79,17 @@ public class MapViewController
             : SKColors.Silver);
     }
 
+    /// <summary>
+    /// 描画する
+    /// </summary>
+    /// <param name="canvas">キャンバス</param>
+    /// <param name="scale">ズームレベル</param>
+    /// <param name="bounds">表示範囲</param>
     public void Render(SKCanvas canvas, float scale, SKRect bounds)
     {
         if (UseCache)
         {
-            if (cacheableLayers.Any(x => x.IsUpdated || x.IsReloadRequired(scale, bounds)))
+            if (cacheableLayers.Any(x => x.IsUpdated || x.ShouldReload(scale, bounds)))
             {
                 cached?.Dispose();
                 cached = null;

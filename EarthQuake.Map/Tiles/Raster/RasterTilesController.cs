@@ -19,7 +19,7 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
         {
             return obj is RasterTileRequest request && request.TilePoint == TilePoint;
         }
-        
+
         public override int GetHashCode()
         {
             return TilePoint.GetHashCode();
@@ -39,8 +39,6 @@ public class RasterTilesController(string url) : MapTilesController<RasterTile>(
             }
         };
     }
-
-
 }
 
 public record RasterTile(SKPoint LeftTop, float Zoom, SKImage? Image) : IDisposable

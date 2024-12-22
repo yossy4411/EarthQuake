@@ -22,10 +22,12 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
     {
         if (Controller is null || styles is null) return;
         var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
-        
-        VectorTilesController.GetXyzTile(origin, Math.Min(Header?.MaxZoom ?? 15, Math.Max(Header?.MinZoom ?? 5, (int)Math.Log2(scale) + 5)), out var point);
+
+        VectorTilesController.GetXyzTile(origin,
+            Math.Min(Header?.MaxZoom ?? 15, Math.Max(Header?.MinZoom ?? 5, (int)Math.Log2(scale) + 5)), out var point);
         VectorTilesController.GetXyzTileFromLatLon(Header?.MinLon ?? 0, Header?.MaxLat ?? 0, point.Z, out var leftTop);
-        VectorTilesController.GetXyzTileFromLatLon(Header?.MaxLon ?? 0, Header?.MinLat ?? 0, point.Z, out var rightBottom);
+        VectorTilesController.GetXyzTileFromLatLon(Header?.MaxLon ?? 0, Header?.MinLat ?? 0, point.Z,
+            out var rightBottom);
         var zoom = (int)Math.Pow(2, point.Z);
         var h = (int)Math.Ceiling(bounds.Height / GeomTransform.Zoom / (GeomTransform.Height * 2f / zoom));
         var w = (int)Math.Ceiling(bounds.Width / GeomTransform.Zoom / (360f / zoom));
@@ -54,8 +56,8 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
                 features.AddRange(tile.Vertices);
             }
         }
-        
-        
+
+
         foreach (var styleLayer in styles.Layers)
         {
             foreach (var feature in features)
@@ -76,7 +78,9 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             case VectorLineFeature line:
             {
                 if (feature.Layer is not VectorLineStyleLayer layer) return;
-                paint.Color = layer.LineColor is null ? SKColors.White : layer.LineColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
+                paint.Color = layer.LineColor is null
+                    ? SKColors.White
+                    : layer.LineColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.StrokeWidth =
                     (layer.LineWidth is null ? 1 : layer.LineWidth.GetValue(feature.Tags)!.ToFloat()) /
                     (point.Z > 12 ? 5000f : scale) / widthFactor;
@@ -102,7 +106,9 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             {
                 if (feature.Layer is not VectorFillStyleLayer layer) return;
                 if (fill.Vertices is null) return;
-                paint.Color = layer.FillColor is null ? SKColors.White : layer.FillColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
+                paint.Color = layer.FillColor is null
+                    ? SKColors.White
+                    : layer.FillColor.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.Style = SKPaintStyle.Fill;
                 canvas.DrawVertices(fill.Vertices, SKBlendMode.Src, paint);
                 break;
@@ -111,10 +117,14 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
             {
                 if (feature.Layer is not VectorSymbolStyleLayer layer || symbol.Text is null) return;
 
-                paint.TextSize = (layer.TextSize is null ? 15 : layer.TextSize.GetValue(feature.Tags)!.ToFloat()) / scale;
-                paint.Color = layer.TextColor is null ? SKColors.White : layer.TextColor!.GetValue(feature.Tags)!.ToColor().ToSKColor();
+                paint.TextSize = (layer.TextSize is null ? 15 : layer.TextSize.GetValue(feature.Tags)!.ToFloat()) /
+                                 scale;
+                paint.Color = layer.TextColor is null
+                    ? SKColors.White
+                    : layer.TextColor!.GetValue(feature.Tags)!.ToColor().ToSKColor();
                 paint.Style = SKPaintStyle.Fill;
-                var rect = new SKRect(symbol.Point.X, symbol.Point.Y - paint.TextSize, symbol.Point.X + paint.MeasureText(symbol.Text), symbol.Point.Y);
+                var rect = new SKRect(symbol.Point.X, symbol.Point.Y - paint.TextSize,
+                    symbol.Point.X + paint.MeasureText(symbol.Text), symbol.Point.Y);
                 if (rects.Any(x => x.IntersectsWith(rect))) return; // 重なっていたら描画しない
                 rects.Add(rect);
                 canvas.DrawText(symbol.Text, symbol.Point, paint);
@@ -132,9 +142,9 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
         if (Controller.PMTiles != null) Header = Controller.PMTiles.GetHeader();
     }
 
-    public override bool IsReloadRequired(float zoom, SKRect bounds)
+    public override bool ShouldReload(float zoom, SKRect bounds)
     {
-        var origin = GeomTransform.TranslateToNonTransform(bounds.Left, bounds.Top);
+        var origin = GeomTransform.TranslateToNonTransform(bounds.MidX, bounds.MidY);
         VectorTilesController.GetXyzTile(origin, (int)Math.Log2(zoom) + 5, out var point);
         // 表示範囲のタイルが変わったか
         if (_point == point) return false;
