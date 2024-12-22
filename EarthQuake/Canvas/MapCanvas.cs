@@ -55,9 +55,9 @@ public class MapCanvas : SkiaCanvasView
     private protected SKPoint Offset => Translate + Center;
 
 
-    private SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
+    protected SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
 
-    private SKPoint Translate
+    protected SKPoint Translate
     {
         get => Translation.Translate;
         set => Translation.Translate = value;

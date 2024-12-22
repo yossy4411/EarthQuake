@@ -1,7 +1,5 @@
 ﻿using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Skia;
 using SkiaSharp;
 using System;
 
@@ -70,25 +68,25 @@ public class SelectableCanvas : MapCanvas
 
     public override void Render(ImmediateDrawingContext context)
     {
-        if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var feature))
-        {
-            return;
-        }
-
-        using var lease = feature.Lease();
+        using var lease = GetSKCanvas(context);
+        if (lease is null) return;
         var canvas = lease.SkCanvas;
+
         SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
         canvas.ClipRect(clipRect);
         Controller?.Clear(canvas, Scale);
-        var region = new SKRect(-Offset.X / Scale, -Offset.Y / Scale, (float)(-Offset.X + Bounds.Width) / Scale,
-            (float)(-Offset.Y + Bounds.Height) / Scale);
+        var translate = Translate + Center;
+        var region = new SKRect(-translate.X / Scale, -translate.Y / Scale,
+            (float)(-translate.X + Bounds.Width) / Scale, (float)(-translate.Y + Bounds.Height) / Scale);
         using (new SKAutoCanvasRestore(canvas))
         {
-            canvas.Translate(Offset);
+            canvas.Translate(Translate + Center);
             canvas.Scale(Scale);
+
             Controller?.Render(canvas, Scale, region);
         }
-
+        
+        // 選択している場所を表示する部分
         using (new SKAutoCanvasRestore(canvas))
         {
             canvas.Translate(Offset);

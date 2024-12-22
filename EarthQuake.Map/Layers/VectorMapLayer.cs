@@ -16,6 +16,7 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
     protected internal VectorTilesController? Controller;
     protected internal Header? Header;
     private TilePoint _point;
+    private int _previousZoom;
     protected internal readonly string Land = land;
 
     public override void Render(SKCanvas canvas, float scale, SKRect bounds)
@@ -145,9 +146,11 @@ public class VectorMapLayer(VectorMapStyle? styles, string land) : CacheableLaye
     public override bool ShouldReload(float zoom, SKRect bounds)
     {
         var origin = GeomTransform.TranslateToNonTransform(bounds.MidX, bounds.MidY);
-        VectorTilesController.GetXyzTile(origin, (int)Math.Log2(zoom) + 5, out var point);
+        var zoomI = (int)Math.Log2(zoom) + 5;
+        VectorTilesController.GetXyzTile(origin, zoomI, out var point);
         // 表示範囲のタイルが変わったか
-        if (_point == point) return false;
+        if (_point == point && zoomI == _previousZoom) return false;
+        _previousZoom = zoomI;
         _point = point;
         return true;
     }
