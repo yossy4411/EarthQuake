@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EarthQuake.Core\EarthQuake.Core.csproj" />
+    <ProjectReference Include="..\..\src\EarthQuake.Core\EarthQuake.Core.csproj" />
   </ItemGroup>
 
 </Project>
