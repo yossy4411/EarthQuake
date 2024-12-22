@@ -9,25 +9,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake", "EarthQuake\EarthQuake.csproj", "{EA71206D-899D-49CF-BC39-50BA61D96EF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake", "src\EarthQuake\EarthQuake.csproj", "{EA71206D-899D-49CF-BC39-50BA61D96EF6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Desktop", "EarthQuake.Desktop\EarthQuake.Desktop.csproj", "{16CDB355-848B-491E-9BFE-5C937F8580F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Desktop", "src\EarthQuake.Desktop\EarthQuake.Desktop.csproj", "{16CDB355-848B-491E-9BFE-5C937F8580F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Map", "EarthQuake.Map\EarthQuake.Map.csproj", "{BB85CF5B-8AFB-4C4E-9154-93F429A4961F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Map", "src\EarthQuake.Map\EarthQuake.Map.csproj", "{BB85CF5B-8AFB-4C4E-9154-93F429A4961F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Core", "EarthQuake.Core\EarthQuake.Core.csproj", "{DCDAC228-2818-42A5-9F79-959C8CC5623C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Core", "src\EarthQuake.Core\EarthQuake.Core.csproj", "{DCDAC228-2818-42A5-9F79-959C8CC5623C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "P2PConsole", "ConsoleTest\P2PConsole\P2PConsole.csproj", "{7F37703B-31E3-4D6B-8018-58B52235E81E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "P2PConsole", "test\P2PConsole\P2PConsole.csproj", "{7F37703B-31E3-4D6B-8018-58B52235E81E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Android", "EarthQuake.Android\EarthQuake.Android.csproj", "{1E18EB32-3C2B-4754-982D-7116F6816097}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.Android", "src\EarthQuake.Android\EarthQuake.Android.csproj", "{1E18EB32-3C2B-4754-982D-7116F6816097}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.iOS", "EarthQuake.iOS\EarthQuake.iOS.csproj", "{1BFB1E88-577E-49AC-B539-073DB5DC98F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthQuake.iOS", "src\EarthQuake.iOS\EarthQuake.iOS.csproj", "{1BFB1E88-577E-49AC-B539-073DB5DC98F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapDataGenerator", "MapDataGenerator\MapDataGenerator.csproj", "{A8C026CC-050B-4594-8929-3CC208408009}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapDataGenerator", "src\MapDataGenerator\MapDataGenerator.csproj", "{A8C026CC-050B-4594-8929-3CC208408009}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTest", "ConsoleTest\PerformanceTest\PerformanceTest.csproj", "{47E28924-47B5-47AD-98EA-136B8335CA22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTest", "test\PerformanceTest\PerformanceTest.csproj", "{47E28924-47B5-47AD-98EA-136B8335CA22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.Browser", "EarthQuake.Browser\EarthQuake.Browser.csproj", "{48EE7424-25B4-450C-955A-31D7DACCABB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.Browser", "src\EarthQuake.Browser\EarthQuake.Browser.csproj", "{48EE7424-25B4-450C-955A-31D7DACCABB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "test\MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
 EndProject

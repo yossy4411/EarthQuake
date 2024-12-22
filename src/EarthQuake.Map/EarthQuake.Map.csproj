@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EarthQuake.Core\EarthQuake.Core.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Remove="Assets\NotoSansJP-Regular.ttf" />
     <EmbeddedResource Include="Assets\NotoSansJP-Regular.ttf" />
