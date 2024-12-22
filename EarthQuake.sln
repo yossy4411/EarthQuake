@@ -31,7 +31,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.Browser", "src\E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "test\MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMTiles.NET", "lib\PMTiles.NET\src\PMTiles.NET.csproj", "{0A6E82E7-E4B3-4E6A-BE92-626CB89599FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Mvt", "lib\VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj", "{3ABC074D-FF6D-48CF-B0C9-9F4EE4A6D13A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles.Styles", "lib\VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj", "{6F811011-E900-4034-B97D-6FB6652F6049}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTiles", "lib\VectorTiles\src\VectorTiles\VectorTiles.csproj", "{4CCC9308-D030-47D8-98AE-86F209DAA6E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.DesktopTest", "test\EarthQuake.DesktopTest\EarthQuake.DesktopTest.csproj", "{644DE9BA-0072-4727-BD95-C86395D1118F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +127,26 @@ Global
 		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D06E7D46-C764-4CFB-AA03-3E7297BB013C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A6E82E7-E4B3-4E6A-BE92-626CB89599FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A6E82E7-E4B3-4E6A-BE92-626CB89599FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A6E82E7-E4B3-4E6A-BE92-626CB89599FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A6E82E7-E4B3-4E6A-BE92-626CB89599FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ABC074D-FF6D-48CF-B0C9-9F4EE4A6D13A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABC074D-FF6D-48CF-B0C9-9F4EE4A6D13A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABC074D-FF6D-48CF-B0C9-9F4EE4A6D13A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABC074D-FF6D-48CF-B0C9-9F4EE4A6D13A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F811011-E900-4034-B97D-6FB6652F6049}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F811011-E900-4034-B97D-6FB6652F6049}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F811011-E900-4034-B97D-6FB6652F6049}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F811011-E900-4034-B97D-6FB6652F6049}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CCC9308-D030-47D8-98AE-86F209DAA6E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CCC9308-D030-47D8-98AE-86F209DAA6E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CCC9308-D030-47D8-98AE-86F209DAA6E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CCC9308-D030-47D8-98AE-86F209DAA6E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{644DE9BA-0072-4727-BD95-C86395D1118F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{644DE9BA-0072-4727-BD95-C86395D1118F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{644DE9BA-0072-4727-BD95-C86395D1118F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{644DE9BA-0072-4727-BD95-C86395D1118F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

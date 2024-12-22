@@ -9,9 +9,6 @@
   <ItemGroup>
     <PackageReference Include="LibTessDotNet" Version="1.1.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Okayu.VectorTiles.Mvt" Version="0.2.0" />
-    <PackageReference Include="Okayu.VectorTiles.Styles" Version="0.2.0" />
-    <PackageReference Include="PMTiles.NET" Version="0.1.2" />
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 
@@ -22,6 +19,18 @@
   <ItemGroup>
     <None Remove="Assets\NotoSansJP-Regular.ttf" />
     <EmbeddedResource Include="Assets\NotoSansJP-Regular.ttf" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="PMTiles.NET" Version="0.1.2" />
+    <PackageReference Include="Okayu.VectorTiles.Mvt" Version="0.2.0" />
+    <PackageReference Include="Okayu.VectorTiles.Styles" Version="0.2.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\lib\PMTiles.NET\src\PMTiles.NET.csproj" />
+    <ProjectReference Include="..\..\lib\VectorTiles\src\VectorTiles.Mvt\VectorTiles.Mvt.csproj" />
+    <ProjectReference Include="..\..\lib\VectorTiles\src\VectorTiles.Styles\VectorTiles.Styles.csproj" />    
   </ItemGroup>
 
 </Project>

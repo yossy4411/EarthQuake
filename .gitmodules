@@ -1,0 +1,6 @@
+[submodule "PMTiles.NET"]
+	path = lib/PMTiles.NET
+	url = https://github.com/yossy4411/PMTiles.NET.git
+[submodule "VectorTiles"]
+	path = lib/VectorTiles
+	url = https://github.com/yossy4411/VectorTiles.git
