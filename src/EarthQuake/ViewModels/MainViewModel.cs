@@ -58,7 +58,6 @@ public class MainViewModel : ViewModelBase
             }
 
             _land = new LandLayer(calculated, "scity");
-            var eewLand = new LandLayer(calculated, "eew", true);
             CountriesLayer world;
             using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/world.mpk.lz4", UriKind.Absolute)))
             {
@@ -98,7 +97,7 @@ public class MainViewModel : ViewModelBase
             };
             Controller2 = new MapViewController
             {
-                MapLayers = [world, eewLand, land, _land, map, _foreground],
+                MapLayers = [world, land, _land, map, _foreground],
                 Background = bg
             };
             Controller3 = new MapViewController
