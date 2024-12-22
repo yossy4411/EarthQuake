@@ -23,10 +23,15 @@
         <TabItem Header="深さ">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top">緯度・経度に対する深さ</TextBlock>
-            <statistics:EpicenterPlot x:Name="A"
-                                     HorizontalAlignment="Stretch"
-                                     VerticalAlignment="Stretch"
-                                     ClipToBounds="True"/>
+            <Border Padding="4"
+                    Background="Brown"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    >
+              <statistics:EpicenterPlot x:Name="A"
+                                        ClipToBounds="True"/>
+            </Border>
+            
           </DockPanel>
         </TabItem>
         <TabItem Header="規模">
