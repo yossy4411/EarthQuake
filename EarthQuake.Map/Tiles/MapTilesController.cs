@@ -5,54 +5,40 @@ using EarthQuake.Map.Tiles.Request;
 
 namespace EarthQuake.Map.Tiles;
 
-public abstract class MapTilesController<T>(string url, int capacity = 256) where T : class
+public abstract class MapTilesController<T>(string url) where T : class
 {
     public Action? OnUpdate;
     public const int ImageSize = 256;
     private protected readonly string Url = url;
-    private protected readonly LRUCache<TilePoint, T> Tiles = new(capacity);
+    private protected readonly LRUCache<TilePoint, T> Tiles = new(256);
 
-    /// <summary>
-    /// 位置からXYZタイルを取得します。
-    /// </summary>
-    /// <param name="screenX">画面上のX=経度</param>
-    /// <param name="screenY">画面上のY=メルカトル図法で変換された緯度</param>
-    /// <param name="zoom">ズームレベル</param>
-    /// <returns>タイルの位置</returns>
-    private static TilePoint GetXyzTile(double screenX, double screenY, int zoom)
+    private static void GetXyzTile(double screenX, double screenY, int zoom, out int x, out int y, out int z)
     {
-        var z = Math.Min(18, Math.Max(0, zoom));
+        z = Math.Min(18, Math.Max(0, zoom));
         var n = Math.Pow(2, z);
 
-        var x = (int)Math.Floor((screenX + 180.0) / 360.0 * n);
-        var y = (int)Math.Floor((1.0 - screenY / GeomTransform.Height) / 2.0 * n);
-        return new TilePoint(Math.Max(0, x), Math.Max(0, y), z);
+        x = (int)Math.Floor((screenX + 180.0) / 360.0 * n);
+        y = (int)Math.Floor((1.0 - screenY / GeomTransform.Height) / 2.0 * n);
     }
 
-    /// <summary>
-    /// 位置からXYZタイルを取得します。
-    /// </summary>
-    /// <param name="screen">メルカトル図法で変換された位置</param>
-    /// <param name="zoom">ズームレベル</param>
-    /// <param name="point">位置</param>
     public static void GetXyzTile(SKPoint screen, int zoom, out TilePoint point)
     {
-        point = GetXyzTile(screen.X, screen.Y, zoom);
+        GetXyzTile(screen.X, screen.Y, zoom, out var x, out var y, out var z);
+        point = new TilePoint(Math.Max(0, x), Math.Max(0, y), z);
     }
-    
-    /// <summary>
-    /// 経度緯度からXYZタイルを取得します。
-    /// </summary>
-    /// <param name="lon">経度</param>
-    /// <param name="lat">緯度</param>
-    /// <param name="zoom">ズーム</param>
-    /// <param name="point">位置</param>
-    public static void GetXyzTileFromLatLon(double lon, double lat, int zoom, out TilePoint point)
+
+    /*private static void GetTileLeftTop(double screenX, double screenY, int zoom, out double left, out double top, out int x, out int y, out int z)
     {
-        var screen = GeomTransform.Mercator(lat);
-        point = GetXyzTile(lon, screen, zoom);
-    }
-    
+        GetXyzTile(screenX, screenY, zoom, out x, out y, out z);
+
+        var n = Math.Pow(2, z);
+        var lonDeg = x / n * 360.0 - 180.0;
+        var latRad = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * y / n)));
+        var latDeg = latRad * 180.0 / Math.PI;
+
+        left = lonDeg;
+        top = latDeg;
+    }*/
     private static void GetTileLeftTop(int x, int y, int z, out double left, out double top)
     {
         var n = Math.Pow(2, z);
@@ -63,6 +49,26 @@ public abstract class MapTilesController<T>(string url, int capacity = 256) wher
         left = lonDeg;
         top = latDeg;
     }
+    /*
+    /// <summary>
+    /// 緯度・経度からタイルを取得します。
+    /// </summary>
+    /// <param name="lon">経度</param>
+    /// <param name="lat">緯度</param>
+    /// <param name="zoom">ズームレベル</param>
+    /// <param name="tile">出力</param>
+    /// <param name="tilePoint">その位置</param>
+    /// <returns></returns>
+    public bool TryGetTile(double lon, double lat, int zoom, out T? tile, out TilePoint tilePoint)
+    {
+
+        tile = default;
+
+        GetTileLeftTop(lon, GeomTransform.TranslateFromLat(lat), zoom, out var left, out var top, out var x, out var y, out var z);
+        tilePoint = new TilePoint(x, y, z);
+        return GetTile(ref tile, tilePoint, left, top);
+    }
+    */
 
     /// <summary>
     /// タイルの位置(XYZ)からタイルを取得します。
@@ -88,12 +94,10 @@ public abstract class MapTilesController<T>(string url, int capacity = 256) wher
                 return (tile = value) is not null;
             }
 
-            var request = GenerateRequest(leftTop, point);
-            if (MapRequestHelper.Exists(request))
+            if (MapRequestHelper.Any(req => RequestExists(req, point))) return false;
             {
-                return false;
+                MapRequestHelper.AddRequest(GenerateRequest(leftTop, point));
             }
-            MapRequestHelper.AddRequest(request);
             return false;
         }
         catch (Exception ex)
@@ -104,6 +108,8 @@ public abstract class MapTilesController<T>(string url, int capacity = 256) wher
     }
 
     private protected abstract MapTileRequest GenerateRequest(SKPoint point, TilePoint tilePoint);
+
+    private protected abstract bool RequestExists(MapRequest request, TilePoint tilePoint);
 
     private static string GenerateUrl(string source, int x, int y, int zoom)
     {

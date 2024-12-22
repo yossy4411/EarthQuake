@@ -7,4 +7,25 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="mapbox-vector-tile" Version="5.0.2" />
+      <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="3244.pbf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="gsi.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="osm.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\EarthQuake.Map\EarthQuake.Map.csproj" />
+    </ItemGroup>
+
 </Project>
