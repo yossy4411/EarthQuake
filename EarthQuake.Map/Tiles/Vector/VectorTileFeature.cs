@@ -1,99 +1,114 @@
-﻿using System.Diagnostics;
-using EarthQuake.Core;
+﻿using EarthQuake.Core;
 using LibTessDotNet;
+using Mapbox.Vector.Tile;
 using SkiaSharp;
-using VectorTiles.Styles;
-using VectorTiles.Values;
-using MVectorTileFeature = VectorTiles.Mvt.MapboxTile.Layer.Feature;
+using MVectorTileFeature = Mapbox.Vector.Tile.VectorTileFeature;
 
 namespace EarthQuake.Map.Tiles.Vector;
 
-public abstract class VectorTileFeature(VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : IDisposable
+public abstract class VectorTileFeature : IDisposable
 {
-    internal VectorMapStyleLayer? Layer { get; private set; } = layer;
+    public virtual SKObject? Geometry => null;
+    public VectorTileMapLayer Layer { get; init; } = null!;
 
-    public Dictionary<string, IConstValue?>? Tags { get; set; } = tags;
-
-    protected virtual void Dispose(bool disposing)
+    public virtual void Dispose()
     {
+        if (Geometry is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+        GC.SuppressFinalize(this);
     }
 
-    public void Dispose()
+    private protected static uint GetFactor(TilePoint point)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        return point.Z < 8 ? 16384u : 4096u; // 地理院地図の場合
+        // return 4096u; // Mapbox の場合
     }
 }
 
 public class VectorFillFeature : VectorTileFeature
 {
-    
-    public SKVertices? Vertices { get; init; }
+    public override SKVertices? Geometry { get; }
 
-    public VectorFillFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer, tags)
+    public VectorFillFeature(IEnumerable<MVectorTileFeature> features, TilePoint point)
     {
         var tess = new Tess();
-        if (feature.Geometries.Count <= 0) return;
-        foreach (var contourVertices in feature.Geometries.Select(coordinates =>
-                     coordinates.Points.Select(v => GeomTransform.Translate(v.Lon, v.Lat))
-                         .Select(pos => new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 })).ToList()))
+        foreach (var feature in features)
         {
-            // 生成された頂点を tess に追加
-            tess.AddContour(contourVertices);
+            if (feature.Geometry.Count <= 0) return;
+            foreach (var coordinates in feature.Geometry)
+            {
+                var contourVertices = new List<ContourVertex>(coordinates.Count); // 結果を格納するリスト
+                foreach (var v in coordinates)
+                {
+                    // coord を計算
+                    var coord = v.ToPosition(point.X, point.Y, point.Z, GetFactor(point));
+                    // pos を計算
+                    var pos = GeomTransform.Translate(coord.Longitude, coord.Latitude);
+        
+                    // 新しい ContourVertex をリストに追加
+                    contourVertices.Add(new ContourVertex(new Vec3 { X = pos.X, Y = pos.Y, Z = 0 }));
+                }
+                // 生成された頂点を tess に追加
+                tess.AddContour(contourVertices);
+            }
         }
         tess.Tessellate(WindingRule.Positive);
-        
         var points = new SKPoint[tess.ElementCount * 3];
         for (var j = 0; j < points.Length; j++)
         { 
             points[j] = new SKPoint(tess.Vertices[tess.Elements[j]].Position.X, 
                 tess.Vertices[tess.Elements[j]].Position.Y);
         }
-        Vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-            Vertices?.Dispose();
+        Geometry = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null);
     }
 }
 
 public class VectorLineFeature : VectorTileFeature
 {
-    public SKPath Path { get; } = new();
+    public override SKPath? Geometry { get; }
 
-    public VectorLineFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer,tags)
+    public VectorLineFeature(IEnumerable<MVectorTileFeature> features, TilePoint point)
     {
-        foreach (var points in feature.Geometries.Select(featureGeometry =>
-                     featureGeometry.Points.Select(a => GeomTransform.Translate(a.Lon, a.Lat)).ToArray()))
+        var path = new SKPath();
+        foreach (var feature in features)
         {
-            Path.AddPoly(points, false);
+            foreach (var points in feature.Geometry)
+            {
+                path.AddPoly(points.Select(point1 => point1.ToPosition(point.X, point.Y, point.Z, GetFactor(point)))
+                             .Select(coord => GeomTransform.Translate(coord.Longitude, coord.Latitude)).ToArray(), false);
+            }
         }
-    }
-    
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-            Path.Dispose();
+        Geometry = path;
     }
 }
 
 public class VectorSymbolFeature : VectorTileFeature
 {
-    public string? Text { get; }
-    public SKPoint Point { get; }
-    public VectorSymbolFeature(MVectorTileFeature feature, VectorMapStyleLayer layer, Dictionary<string, IConstValue?> tags) : base(layer, tags)
+    public SKTextBlob?[] Points { get; }
+    public VectorSymbolFeature(IEnumerable<MVectorTileFeature> features, TilePoint point, SKFont font, string? fieldKey = "name")
     {
-        var field = (Layer as VectorSymbolStyleLayer)?.TextField;
-        if (field is null)
+        if (fieldKey is null)
         {
-            Text = null;
+            Points = [];
             return;
         }
-        var coord = feature.Geometries[0].Points[0];
-        Point = GeomTransform.Translate(coord.Lon, coord.Lat);
-        var text = feature.Tags.GetValueOrDefault(field)?.ToString();
-        Text = text;
+        Points = (from feature in features
+            let coord = feature.Geometry[0][0].ToPosition(point.X, point.Y, point.Z, GetFactor(point))
+            let skPoint = GeomTransform.Translate(coord.Longitude, coord.Latitude)
+            let text = feature.Attributes.FirstOrDefault(x => x.Key == fieldKey).Value?.ToString()
+            let blob = SKTextBlob.Create(text, font, skPoint)
+            select blob).ToArray();
     }
+
+    public override void Dispose()
+    {
+        foreach (var textBlob in Points)
+        {
+            textBlob?.Dispose();
+        }
+        GC.SuppressFinalize(this);
+    }
+    
 }

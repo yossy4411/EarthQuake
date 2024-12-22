@@ -11,7 +11,7 @@ public static class GeomTransform
     private static readonly SKPoint Offset = new(135, (float)TranslateFromLat(35));
     public const int Height = 150;
     private const double MercatorLimit = 85.05112877980659;
-
+    
     /// <summary>
     /// 緯度経度の点を計算された位置に変換します。
     /// </summary>
@@ -19,7 +19,7 @@ public static class GeomTransform
     /// <returns>画面上の座標</returns>
     public static SKPoint Translate(SKPoint point) => Translate(point.X, point.Y);
 
-
+    
     public static SKPoint Translate(float lon, float lat)
     {
         var x = (lon - Offset.X) * Zoom;
@@ -39,7 +39,7 @@ public static class GeomTransform
         var y = -(float)(TranslateFromLat(lat) - Offset.Y) * Zoom;
         return new SKPoint(x, y);
     }
-
+    
     /// <summary>
     /// 画面上の座標からオフセットを戻します。(
     /// </summary>
@@ -60,7 +60,7 @@ public static class GeomTransform
     /// </summary>
     /// <param name="latitude">緯度</param>
     /// <returns>画面上Y</returns>
-    public static double Mercator(double latitude) => latitude <= -MercatorLimit ? -Height :
+    private static double Mercator(double latitude) => latitude <= -MercatorLimit ? -Height :
         latitude >= MercatorLimit ? Height : Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) * Height / Math.PI;
 
     /// <summary>
@@ -70,6 +70,13 @@ public static class GeomTransform
     /// <returns>画面上Y</returns>
     public static double Mirror(double latitude) =>
         1.25 * Math.Asinh(Math.Tan(0.8 * latitude * Math.PI / 360)) * Height;
+
+    /// <summary>
+    /// Webメルカトル図法
+    /// </summary>
+    /// <param name="latitude">緯度</param>
+    /// <returns>画面上Y</returns>
+    private static double WebMercator(double latitude) => Math.Log(Math.Tan((90 + latitude) * Math.PI / 360)) / Math.PI;
 
     public static int RealIndex(int value)
     {

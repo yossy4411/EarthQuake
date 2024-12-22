@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using EarthQuake.Map;
 using System;
-using System.Threading;
+using System.Diagnostics;
 using Avalonia.Threading;
 using SkiaSharp;
 
@@ -15,25 +15,12 @@ namespace EarthQuake.Canvas;
 /// </summary>
 public class MapCanvas : SkiaCanvasView
 {
-    public MapCanvas()
-    {
-        _timer = new Timer(_ =>
-        {
-            if (!_hasUpdated) return;
-            Dispatcher.UIThread.Post(InvalidateVisual);
-            _hasUpdated = false;
-        }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
-    }
-
     public class MapCanvasTranslation
     {
         public SKPoint Translate { get; set; }
         public float Scale { get; set; } = 1f;
     }
-    
-    private Timer _timer;
-    private bool _hasUpdated;
-    
+
     public MapViewController? Controller
     {
         get => controller;
@@ -45,7 +32,8 @@ public class MapCanvas : SkiaCanvasView
                 // 描画スレッドでInvalidateVisualを呼び出す。(誤ったスレッドで呼び出すと例外が発生するため)
                 controller.OnUpdated += () =>
                 {
-                    _hasUpdated = true;
+                    Dispatcher.UIThread.Post(InvalidateVisual);
+                    Debug.WriteLine($"InvalidateVisual for Canvas [{Name}]");
                 };
             }
         }
@@ -57,14 +45,15 @@ public class MapCanvas : SkiaCanvasView
             o => o.Controller,
             (o, value) => o.Controller = value
         );
-    
+
+    private protected static SKColor Background => SKColors.Lavender;
     private Point _scrollOffset;
     private protected SKPoint Offset => Translate + Center;
 
 
-    protected SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
+    private SKPoint Center => new((float)Bounds.Width / 2, (float)Bounds.Height / 2);
 
-    protected SKPoint Translate
+    private SKPoint Translate
     {
         get => Translation.Translate;
         set => Translation.Translate = value;
@@ -96,7 +85,7 @@ public class MapCanvas : SkiaCanvasView
 
         SKRect clipRect = new(0, 0, (float)Bounds.Width, (float)Bounds.Height);
         canvas.ClipRect(clipRect);
-        Controller?.Clear(canvas, Scale);
+        canvas.Clear(Background);
         var translate = Translate + Center;
         var region = new SKRect(-translate.X / Scale, -translate.Y / Scale,
             (float)(-translate.X + Bounds.Width) / Scale, (float)(-translate.Y + Bounds.Height) / Scale);
