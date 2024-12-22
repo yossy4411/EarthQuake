@@ -1,0 +1,175 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EarthQuake.Controls"
+        xmlns:ogsp="clr-namespace:EarthQuake.Core.EarthQuakes.OGSP;assembly=EarthQuake.Core"
+        xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
+    <Design.PreviewWith>
+        <controls:EEWPanel>
+            <controls:EEWPanel.EEW>
+                <ogsp:EEW Title="緊急地震速報(警報)"
+                          Announced="0"
+                          IsWarning="True"
+                          IsTraining="True"
+                          Assumption="True"
+                          IsSea="False"
+                          IsCancel="False"
+                          IsFinal="False"
+                          Serial="1"
+                          WarnAreaStr="東京都">
+                    <ogsp:EEW.Hypocenter>
+                        <ogsp:Hypocenter Depth="10" 
+                                         Mag="6.0"
+                                         Lat="35"
+                                         Lon="140"
+                                         MaxInt="Scale5L"
+                                         Name="東京都"/>
+                    </ogsp:EEW.Hypocenter>
+                    <ogsp:EEW.WarnArea>
+                        <generic:List x:TypeArguments="ogsp:WarnArea">
+                            <ogsp:WarnArea AreaCode="350"
+                                           AreaName="東京都23区"
+                                           MaxInt="Scale5L"
+                                           MinInt="Scale4"/>
+                            <ogsp:WarnArea AreaCode="351"
+                                           AreaName="東京都多摩東部"
+                                           MaxInt="Scale5L"
+                                           MinInt="Scale4"/>
+                            <ogsp:WarnArea AreaCode="352"
+                                           AreaName="東京都多摩西部"
+                                           MaxInt="Scale5L"
+                                           MinInt="Scale4"/>
+                        </generic:List>
+                    </ogsp:EEW.WarnArea>
+                </ogsp:EEW>
+            </controls:EEWPanel.EEW>
+        </controls:EEWPanel>
+    </Design.PreviewWith>
+    <StyleInclude Source="EEWScaleFrame.axaml"/>
+    <Style Selector="TextBlock.eewInfo">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style Selector="TextBlock.eewInfoWarn">
+
+        <Setter Property="Foreground" Value="OrangeRed"/>
+    </Style>
+    <Style Selector="TextBlock.eewInfoWarningArea">
+        <Setter Property="Foreground" Value="Red"/>
+    </Style>
+    <Style Selector="controls|EEWPanel">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="0,0,0,5">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,10">
+                                <GradientStop Color="Red"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <TextBlock FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Text="{Binding EEW.Title, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}"
+                                   FontSize="20"></TextBlock>
+                    </Border>
+                    <Grid ColumnDefinitions="*,100" DockPanel.Dock="Top">
+                        <StackPanel Grid.Column="0" >
+                            <TextBlock Classes="eewInfo eewInfoWarn"
+                                       FontWeight="Bold" 
+                                       Text="※試験配信または訓練です"
+                                       IsVisible="{Binding EEW.IsTraining, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Classes="eewInfo" Text="{Binding EEW.Hypocenter.Name, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}"/>
+                                <TextBlock Classes="eewInfoWarn" Text="*" IsVisible="{Binding EEW.Assumption, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}"/>
+                                <TextBlock Classes="eewInfo" Text="で地震"/>
+                            </StackPanel>
+                            <TextBlock Classes="eewInfo eewInfoWarn" 
+                                       Text="*PLUM法による仮定震源要素"
+                                       IsVisible="{Binding EEW.Assumption, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}"/>
+                                                                     
+                            <TextBlock Classes="eewInfo eewInfoWarningArea" 
+                                       Text="{Binding 
+                                       Path=EEW.WarnAreaStr, 
+                                       RelativeSource={RelativeSource AncestorType=controls:EEWPanel}, 
+                                       Converter={StaticResource QuakeAreaConverter}
+                                       }" TextWrapping="Wrap"/>
+                            <TextBlock Classes="eewInfo">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}発表元: {0}">
+                                        <Binding Path="EEW.Source" RelativeSource="{RelativeSource AncestorType=controls:EEWPanel}"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <TextBlock Classes="eewInfo">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} 発表">
+                                        <Binding Path="EEW.Announced" RelativeSource="{RelativeSource AncestorType=controls:EEWPanel}" Converter="{StaticResource TimeConverter}"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                        <Border Background="{Binding
+                        Path=EEW.Hypocenter.MaxInt,
+                        RelativeSource={RelativeSource AncestorType=controls:EEWPanel},
+                        Converter={StaticResource QuakeColorConverter}}" Grid.Column="1" Padding="4" CornerRadius="5">
+                            <StackPanel>
+                                <StackPanel.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="Foreground" Value="{Binding EEW.Hypocenter.MaxInt, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}, Converter={StaticResource QuakeColorFgConverter}}"/>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <TextBlock Text="{Binding EEW.Hypocenter.MaxInt, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}, Converter={StaticResource QuakeScaleConverter}}"
+                                           FontSize="42"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock FontSize="30"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}M{0:F1}">
+                                            <Binding Path="EEW.Hypocenter.Mag"
+                                                     RelativeSource="{RelativeSource AncestorType=controls:EEWPanel}"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock FontSize="13"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}深さ{0}km">
+                                            <Binding Path="EEW.Hypocenter.Depth"
+                                                     RelativeSource="{RelativeSource AncestorType=controls:EEWPanel}"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock FontSize="9"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} 発生">
+                                            <Binding Path="EEW.Origin"
+                                                     RelativeSource="{RelativeSource AncestorType=controls:EEWPanel}"
+                                                     Converter="{StaticResource TimeConverter}"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <TextBlock FontWeight="Bold"
+                               DockPanel.Dock="Top"
+                               Text="警報地域"
+                               FontSize="20"
+                               Margin="0,10,0,0"/>
+                    <ScrollViewer MaxHeight="150">
+                        <StackPanel DockPanel.Dock="Top">
+                            <ItemsControl ItemsSource="{Binding EEW.WarnArea, RelativeSource={RelativeSource AncestorType=controls:EEWPanel}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <controls:EEWScaleFrame Scale="{Binding MaxInt}" AreaName="{Binding AreaName}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

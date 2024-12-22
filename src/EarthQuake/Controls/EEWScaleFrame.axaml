@@ -1,0 +1,38 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EarthQuake.Controls">
+    <Design.PreviewWith>
+        <StackPanel>
+            <controls:EEWScaleFrame Scale="Scale7" AreaName="神奈川県西部"/>
+            <controls:EEWScaleFrame Scale="Scale6H" AreaName="神奈川県東部"/>
+            <controls:EEWScaleFrame Scale="Scale6L" AreaName="伊豆大島"/>
+            <controls:EEWScaleFrame Scale="Scale5H" AreaName="静岡県伊豆"/>
+            <controls:EEWScaleFrame Scale="Scale5L" AreaName="三宅島"/>
+            <controls:EEWScaleFrame Scale="Scale4" AreaName="東京都23区"/>
+            <controls:EEWScaleFrame Scale="Scale3" AreaName="東京都多摩東部"/>
+            <controls:EEWScaleFrame Scale="Scale2" AreaName="東京都多摩西部"/>
+            <controls:EEWScaleFrame Scale="Scale1" AreaName="茨城県南部"/>
+            <controls:EEWScaleFrame Scale="Unknown" AreaName="不明な地域"/>
+        </StackPanel>
+        
+    </Design.PreviewWith>
+    <Style Selector="controls|EEWScaleFrame">
+        <!-- Set Defaults -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockPanel>
+                    <TextBlock Text="{Binding Scale, RelativeSource={RelativeSource AncestorType=controls:EEWScaleFrame}, Converter={StaticResource QuakeScaleConverter}}"
+                               Background="{Binding Scale, RelativeSource={RelativeSource AncestorType=controls:EEWScaleFrame}, Converter={StaticResource QuakeColorConverter}}"
+                               Foreground="{Binding Scale, RelativeSource={RelativeSource AncestorType=controls:EEWScaleFrame}, Converter={StaticResource QuakeColorFgConverter}}"
+                               Width="28"
+                               FontSize="15"
+                               TextAlignment="Center"
+                               DockPanel.Dock="Left"/>
+                    <TextBlock Text="{Binding AreaName, RelativeSource={RelativeSource AncestorType=controls:EEWScaleFrame}}"
+                               FontSize="15"
+                               DockPanel.Dock="Right"/>
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

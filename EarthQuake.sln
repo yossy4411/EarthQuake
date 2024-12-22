@@ -31,8 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthQuake.Browser", "src\E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "test\MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapTest", "MapTest\MapTest.csproj", "{55B42566-B182-49CD-BC68-718A43EA3FFC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
