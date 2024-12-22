@@ -16,7 +16,7 @@
 - 地震情報の表示
 - 地図上での地震情報の表示(塗り/観測点)
 - 震央分布図の表示
-- ベクターマップの表示 ← v0.1.0 New!
+- ベクターマップの表示 (v0.1.0 追加、v0.1.1 PMTilesに変更)
 
 ### 未提供
 
@@ -41,7 +41,7 @@
 
 - Android (一部サポート、レイアウトの最適化が必要)
 - iOS 
-- Web (一部サポート、文字化け、パフォーマンスが低い)
+- Web (一部サポート、文字化け、パフォーマンスが低い #14)
 
 ## 開発環境
 
@@ -54,17 +54,14 @@
 このリポジトリにPythonとNode.jsのコードは含まれていません。
 Goのコードは[こちら](https://github.com/yossy4411/gsi-tiles-downloader)にあります。(現在非公開)
 
-## ライセンス
 
-[MIT License](LICENSE)
-
-## 作者
-
-- @yossy4411 おかゆ (おかゆグループ)
 
 ## バージョン
 
+- 0.1.1 (プレリリース) 2024/12/22
 - 0.1.0 (プレリリース) 2024/09/22
+
+詳しくは[Changelog](CHANGELOG.md)をご覧ください。
 
 ### プレリリースについて
 
@@ -72,4 +69,12 @@ Goのコードは[こちら](https://github.com/yossy4411/gsi-tiles-downloader)�
 
 プレリリース版は、おかゆグループ公式サイトからダウンロードできます。
 
-[ダウンロード](https://archive.okayugroup.com/public/earthquake/desktop/)
+[ダウンロード](https://archive.okayugroup.com/public/EarthQuake/releases/pre/)
+
+## ライセンス
+
+[MIT License](LICENSE)
+
+## 作者
+
+- @yossy4411 おかゆ (おかゆグループ)

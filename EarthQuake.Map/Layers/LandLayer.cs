@@ -66,17 +66,30 @@ public class LandLayer(PolygonsSet? polygons, string layerName) : CacheableLayer
         paint.IsAntialias = true;
         paint.Style = SKPaintStyle.Fill;
         if (fileTilesController is null) return;
-        if (colors is null) return;
-        for (var i = 0; i < colors.Length; i++)
+        if (AutoFill)
         {
-            paint.Color = colors[i];
-            if (paint.Color == SKColors.Empty) continue;
-            var tile = fileTilesController.TryGetTile(zoom, i);
-            if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
+            if (names is null) return;
+            for (var i = 0; i < names.Length; i++)
+            {
+                paint.Color = SKColors.Green;
+                var tile = fileTilesController.TryGetTile(zoom, i);
+                if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
+            }
+        }
+        else
+        {
+            if (colors is null) return;
+            for (var i = 0; i < colors.Length; i++)
+            {
+                paint.Color = colors[i];
+                if (paint.Color == SKColors.Empty) continue;
+                var tile = fileTilesController.TryGetTile(zoom, i);
+                if (tile is not null) canvas.DrawVertices(tile, SKBlendMode.Src, paint);
+            }
         }
     }
 
-    public override bool IsReloadRequired(float zoom, SKRect bounds)
+    public override bool ShouldReload(float zoom, SKRect bounds)
     {
         if (previousScale == GetIndex(zoom)) return false;
         previousScale = GetIndex(zoom);

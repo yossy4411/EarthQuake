@@ -10,7 +10,7 @@ using Avalonia.Platform;
 using EarthQuake.Core.EarthQuakes;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.Linq;
 using DynamicData;
 using EarthQuake.Core.GeoJson;
 using EarthQuake.Map.Layers.OverLays;
@@ -18,9 +18,10 @@ using EarthQuake.Core.Animation;
 using EarthQuake.Canvas;
 using EarthQuake.Core.Controller;
 using EarthQuake.Core.EarthQuakes.OGSP;
-using EarthQuake.Map.Tiles.Vector;
 using EarthQuake.Models;
 using MessagePack;
+using VectorTiles.Styles;
+using VectorTiles.Styles.MapboxGL;
 
 namespace EarthQuake.ViewModels;
 
@@ -31,7 +32,6 @@ public class MainViewModel : ViewModelBase
     public MapViewController Controller3 { get; set; }
     public Brush BgBrush { get; } = new SolidColorBrush(new Color(100, 255, 255, 255));
     private static MapSource MapTilesBase => MapSource.GsiVector;
-    private static MapSource MapTiles2 => MapSource.GsiDiagram;
     public ObservableCollection<PQuakeData> Data { get; set; } = [];
     private IEnumerable<Station>? _stations;
     private readonly ObservationsLayer _foreground;
@@ -67,13 +67,15 @@ public class MainViewModel : ViewModelBase
                 world = new CountriesLayer(geojson);
             }
 
+            VectorBackgroundStyleLayer? bg;
+            VectorMapLandLayer land;
             VectorMapLayer map;
-            using (var stream =
-                   AssetLoader.Open(new Uri("avares://EarthQuake/Assets/default_light.json", UriKind.Absolute)))
+            using (var stream = AssetLoader.Open(new Uri("avares://EarthQuake/Assets/light.json", UriKind.Absolute)))
             {
-                using var streamReader = new StreamReader(stream);
-                var styles = VectorMapStyles.LoadGLJson(streamReader);
-                map = new VectorMapLayer(styles, MapTilesBase.TileUrl);
+                var styles = MapboxStyle.LoadGLJson(stream);
+                map = new VectorMapLayer(styles, "行政区画");
+                land = new VectorMapLandLayer(map);
+                bg = styles.Layers.FirstOrDefault(x => x is VectorBackgroundStyleLayer) as VectorBackgroundStyleLayer;
             }
 
             InterpolatedWaveData wave;
@@ -81,8 +83,6 @@ public class MainViewModel : ViewModelBase
             {
                 wave = MessagePackSerializer.Deserialize<InterpolatedWaveData>(stream);
             }
-            
-
 
             var grid = new GridLayer();
             _kmoni = new KmoniLayer { Wave = wave };
@@ -95,19 +95,22 @@ public class MainViewModel : ViewModelBase
             Task.Run(eewController.ConnectAndLoopAsync);
             Hypo = new HypoViewLayer();
             _ = Task.Run(() => GetEpicenters(DateTime.Now.AddDays(-4), 4)); // 過去４日分の震央分布を気象庁から取得
-            RasterMapLayer tile = new(MapTiles2.TileUrl); // 陰影起伏図
+            // RasterMapLayer tile = new(MapTiles2.TileUrl); // 陰影起伏図
             _foreground = new ObservationsLayer();
             Controller1 = new MapViewController
             {
-                MapLayers = [world, map, grid , _kmoni]
+                MapLayers = [world, land, map, grid, _kmoni],
+                Background = bg
             };
             Controller2 = new MapViewController
             {
-                MapLayers = [world, _land, map, _foreground]
+                MapLayers = [world, land, _land, map, _foreground],
+                Background = bg
             };
             Controller3 = new MapViewController
             {
-                MapLayers = [tile, map, Hypo]
+                MapLayers = [land, map, Hypo],
+                Background = bg
             };
         }
         GC.Collect();

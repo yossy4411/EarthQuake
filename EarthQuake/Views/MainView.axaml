@@ -47,7 +47,8 @@
     </UserControl.Styles>
     <Panel>
 
-        <TabControl TabStripPlacement="Left">
+        <TabControl TabStripPlacement="Left" 
+                    x:Name="TabControl">
             <TabItem Header="K">
                 <DockPanel Name="KmoniPanel">
                     <Panel>
