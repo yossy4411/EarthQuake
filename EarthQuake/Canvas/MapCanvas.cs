@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using EarthQuake.Map;
 using System;
-using System.Diagnostics;
+using System.Threading;
 using Avalonia.Threading;
 using SkiaSharp;
 
@@ -15,13 +15,24 @@ namespace EarthQuake.Canvas;
 /// </summary>
 public class MapCanvas : SkiaCanvasView
 {
+    public MapCanvas()
+    {
+        _timer = new Timer(_ =>
+        {
+            if (!_hasUpdated) return;
+            Dispatcher.UIThread.Post(InvalidateVisual);
+            _hasUpdated = false;
+        }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+    }
+
     public class MapCanvasTranslation
     {
         public SKPoint Translate { get; set; }
         public float Scale { get; set; } = 1f;
     }
     
-    private long _lastRenderTime;
+    private Timer _timer;
+    private bool _hasUpdated;
     
     public MapViewController? Controller
     {
@@ -34,11 +45,7 @@ public class MapCanvas : SkiaCanvasView
                 // 描画スレッドでInvalidateVisualを呼び出す。(誤ったスレッドで呼び出すと例外が発生するため)
                 controller.OnUpdated += () =>
                 {
-                    // 30ms以上の間隔を空けて描画する
-                    // 非常に多くの描画リクエストを行った場合、詰まって処理が遅くなるため
-                    if (Stopwatch.GetTimestamp() - _lastRenderTime < 30000000) return;
-                    Dispatcher.UIThread.Post(InvalidateVisual);
-                    _lastRenderTime = Stopwatch.GetTimestamp();
+                    _hasUpdated = true;
                 };
             }
         }
