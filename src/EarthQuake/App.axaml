@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:EarthQuake.Converter"
+             x:Class="EarthQuake.App"
+             RequestedThemeVariant="Light">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <Application.Resources>
+        <converter:QuakeScaleConverter x:Key="QuakeScaleConverter"/>
+        <x:String x:Key="ColorScheme">Kiwi3</x:String>
+        <converter:QuakeColorConverter x:Key="QuakeColorConverter" ColorScheme="{StaticResource ColorScheme}"/>
+        <converter:QuakeColorConverter x:Key="QuakeColorFgConverter" ColorScheme="fg"/>
+        <converter:QuakeAreaConverter x:Key="QuakeAreaConverter"/>
+        <converter:EpochTimeConverter x:Key="TimeConverter"/>
+        <converter:QuakeListConverter x:Key="QConvert" />        
+    </Application.Resources>
+    <Application.Styles>
+      <FluentTheme />
+    </Application.Styles>
+</Application>
