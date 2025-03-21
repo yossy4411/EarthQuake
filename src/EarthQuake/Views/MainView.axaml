@@ -101,31 +101,37 @@
                         </GridSplitter>
                         <Border Grid.Column="2"
                                 Padding="5">
-                            <ScrollViewer>
-                                <StackPanel>
-                                    <Button Command="{Binding Update}">
-                                        最新の情報に更新
-                                    </Button>
-                                    <CheckBox IsChecked="{Binding IsPoints}" Content="観測点を描画" />
-                                    <ScrollViewer VerticalAlignment="Stretch">
-                                        <ListBox x:Name="Quakes"
-                                                 VerticalAlignment="Stretch"
-                                                 HorizontalAlignment="Stretch"
-                                                 Height="300"
-                                                 Background="{Binding BgBrush}"
-                                                 ItemsSource="{Binding Data, Mode=TwoWay}"
-                                                 SelectionChanged="ListBox_SelectionChanged"
-                                                 CornerRadius="4">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Decorator Child="{Binding Converter={StaticResource QConvert}}" />
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-
-                                    </ScrollViewer>
-                                </StackPanel>
-                            </ScrollViewer>
+                            <StackPanel Orientation="Vertical">
+                                <ScrollViewer>
+                                    <StackPanel>
+                                        <Button Command="{Binding Update}">
+                                            最新の情報に更新
+                                        </Button>
+                                        <CheckBox IsChecked="{Binding IsPoints}" Content="観測点を描画" />
+                                        <ScrollViewer VerticalAlignment="Stretch">
+                                            <ListBox x:Name="Quakes"
+                                                     VerticalAlignment="Stretch"
+                                                     HorizontalAlignment="Stretch"
+                                                     Height="300"
+                                                     Background="{Binding BgBrush}"
+                                                     ItemsSource="{Binding Data, Mode=TwoWay}"
+                                                     SelectionChanged="ListBox_SelectionChanged"
+                                                     CornerRadius="4">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Decorator Child="{Binding Converter={StaticResource QConvert}}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+    
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                </ScrollViewer>
+                                <Border Margin="4" BorderThickness="2" BorderBrush="Gray" CornerRadius="4">
+                                    <controls:InfoPanel x:Name="InfoPanel" Padding="6"/>
+                                </Border>
+                            </StackPanel>
+                            
                         </Border>
                     </Grid>
                 </Panel>

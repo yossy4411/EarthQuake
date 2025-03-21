@@ -203,9 +203,9 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public void SetQInfo(int index)
+    public void SetQInfo(int index, out PQuakeData quakeData)
     {
-        var quakeData = Data[index]; // 震源・震度情報
+        quakeData = Data[index]; // 震源・震度情報
         var sw = Stopwatch.StartNew();
         quakeData.SortPoints(_stations!);
         sw.Stop();

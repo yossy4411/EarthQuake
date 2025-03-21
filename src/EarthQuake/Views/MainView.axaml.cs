@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Interactivity;
+using EarthQuake.Core.EarthQuakes.P2PQuake;
 
 namespace EarthQuake.Views; 
 public partial class MainView : UserControl
@@ -51,10 +52,13 @@ public partial class MainView : UserControl
     private async void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         Loading.IsVisible = true;
-        await Task.Run(() =>
+        var data = await Task.Run(() =>
         {
-            App.ViewModel.SetQInfo(Quakes.SelectedIndex);
+            App.ViewModel.SetQInfo(Quakes.SelectedIndex, out var data);
+            return data;
         });
+        InfoPanel.SetData(data);
+        
         Info.InvalidateVisual();
         Loading.IsVisible = false;
     }
@@ -75,4 +79,5 @@ public partial class MainView : UserControl
     {
         EpSplit.IsPaneOpen = !EpSplit.IsPaneOpen;
     }
+
 }
